@@ -3,9 +3,9 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 source("parameters.R")
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 data <- read_csv(pathToCSV)
 
 data$end_datetime <- as.POSIXct(strptime(data$end_datetime, "%Y-%m-%d %H:%M:%S"))
