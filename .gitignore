@@ -16,7 +16,7 @@
 
 # RStudio files
 .Rproj.user/
-.Rproj
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -35,3 +35,5 @@ vignettes/*.pdf
 
 # Personal parameters.R
 parameters.R
+.Rproj.user
+*.Rproj
