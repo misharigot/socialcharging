@@ -1,4 +1,3 @@
-library(rstudioapi)
 library(readr)
 library(dplyr)
 library(lubridate)
