@@ -3,10 +3,10 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-source("parameters.R")
+library(config)
+config <- config::get()
 
-data <- read_csv(pathToCSV)
+data <- read_csv(config$scDataset)
 
 data$end_datetime <- as.POSIXct(strptime(data$end_datetime, "%Y-%m-%d %H:%M:%S"))
 data$time_elapsed <- sapply(data$end_datetime - data$start_datetime, function(x) {

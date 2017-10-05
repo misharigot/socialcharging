@@ -34,6 +34,6 @@ vignettes/*.pdf
 *.knit.md
 
 # Personal parameters.R
-parameters.R
+config.yml
 .Rproj.user
 *.Rproj
