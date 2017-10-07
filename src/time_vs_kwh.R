@@ -2,7 +2,7 @@
 library(readr)
 library(ggplot2)
 library(config)
-config <- config::get()
+config <- config::get(file = "../config.yml")
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
@@ -14,9 +14,9 @@ df <- df %>%
            round(x/3600, 2)
         }))
 
-  CreatePlotTimeKwh <- function(){
+CreatePlotTimeKwh <- function() {
     p <- ggplot(df, aes(y = charged_kwh, x = hours_elapsed)) + geom_point(alpha = 0.3) + geom_smooth()
     p + labs(x = "session time in hours", y = "kWh charged")
   return(p)
 }
-
+CreatePlotTimeKwh()

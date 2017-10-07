@@ -2,6 +2,8 @@ library(shiny)
 library(readr)
 library(shinydashboard)
 library(config)
+config <- config::get(file = "../config.yml")
+source(config$baseClean)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Social Charging"),
@@ -56,10 +58,6 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
-  
-  config <- config::get()
-  source(config$baseClean)
-  
   options(shiny.maxRequestSize=30*1024^2)
 
   df <- read_csv2(config$scDataset)
