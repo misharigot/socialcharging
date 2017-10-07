@@ -1,10 +1,15 @@
 # Getting started
-Run the deploy.R script via the console with
+
+## Packrat
+Packrat is a package/dependency manager for R.
+
+Run the deploy.R script via the terminal with:
 ```
 Rscript deploy.R
 ```
-This will install the dependencies via Packrat (dependency manager for R).
+This will install the dependencies located in via Packrat.
 
+See https://rstudio.github.io/packrat/walkthrough.html for more Packrat information.
 ## R Shiny
 R Shiny has a default file size maximum of 5 MB. If you want to change that, put the next line in server.R:
 ```
