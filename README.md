@@ -3,10 +3,7 @@
 ## Packrat
 Packrat is a package/dependency manager for R.
 
-Run the deploy.R script via the terminal with:
-```
-Rscript deploy.R
-```
+Run the deploy.R script via RStudio.
 This will install the dependencies located in via Packrat.
 
 See https://rstudio.github.io/packrat/walkthrough.html for more Packrat information.
