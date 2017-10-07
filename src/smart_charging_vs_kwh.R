@@ -7,8 +7,6 @@ source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
-class(df$kw_charge_point_speed)
-class(df$charged_kwh)
 
 df <- df %>%
   filter(!is.na(end_date), !is.na(charged_kwh))
