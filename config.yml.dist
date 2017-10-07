@@ -1,3 +1,2 @@
 default:
-  scDataset: ""
-  pdDataset: ""
+  scDataset: "path_to_csv"
