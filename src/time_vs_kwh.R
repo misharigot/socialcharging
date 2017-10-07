@@ -12,7 +12,11 @@ df <- df %>%
   filter(!is.na(end_date), !is.na(charged_kwh)) %>%
   mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
            round(x/3600, 2)
-         }))
+        }))
 
-p <- ggplot(df, aes(y = charged_kwh, x = hours_elapsed)) + geom_point(alpha = 0.3) + geom_smooth()
-p + labs(x = "session time in hours", y = "kWh charged")
+  CreatePlotTimeKwh <- function(){
+    p <- ggplot(df, aes(y = charged_kwh, x = hours_elapsed)) + geom_point(alpha = 0.3) + geom_smooth()
+    p + labs(x = "session time in hours", y = "kWh charged")
+  return(p)
+}
+
