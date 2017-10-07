@@ -1,2 +1,4 @@
 default:
   scDataset: "path_to_csv"
+  baseClean: "src/base_clean.R"
+  
