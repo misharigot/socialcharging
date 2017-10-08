@@ -14,13 +14,16 @@ uniqueUsersPerStationSubset <- df %>%
   arrange(user_id) %>% 
   distinct(user_id,longitude,latitude) 
 
-#The amount of users per amount of station used
-#TODO: How is this distributed in percentages
+#The amount of users per amount of stations used
+#TODO: How is this distributed in percentages?
 countOfUsersPerDifferentStations <- uniqueUsersPerStationSubset %>%
   group_by(user_id) %>%
   summarise(charging_station_count = n()) %>%
   group_by(charging_station_count) %>%
   summarise(user_amount = n())
+
+#Git credential test
+
 
 #Plot countOfUsersPerDifferentStations as bar graph
 plotUsersPerDifferentStations <- ggplot(data=countOfUsersPerDifferentStations,aes(x=charging_station_count , y=user_amount)) + geom_bar(stat="identity")
