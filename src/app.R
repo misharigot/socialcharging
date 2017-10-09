@@ -12,7 +12,7 @@ ui <- dashboardPage(
     menuItem("Raw data", tabName = "raw", icon = icon("th")),
     menuItem("Charts", tabName = "raw", icon = icon("bar-chart"),
              menuSubItem("Time vs KWH", tabName = "chart1"),
-             menuSubItem("lorem", tabName = "chart2"),
+             menuSubItem("Smart vs not Smart", tabName = "chart2"),
              menuSubItem("lorem", tabName = "chart3"),
              menuSubItem("lorem", tabName = "chart4"),
              menuSubItem("lorem", tabName = "chart5")
@@ -24,8 +24,12 @@ ui <- dashboardPage(
               fluidRow()
       ),
       tabItem(tabName = "raw",
-              h2("Raw Data"),
-              tableOutput("table1")
+              fluidRow(
+                box(
+                  title = "Social Charging dataset", status = "success", solidHeader = TRUE, width = 12,
+                  div(style = 'overflow-x: scroll', DT::dataTableOutput("table1"))
+                )
+              )
       ),
       tabItem(tabName = "chart1",
               fluidRow(
@@ -34,7 +38,18 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart2",
               fluidRow(
-                box(plotOutput("plot2"))
+                box(
+                  plotOutput("plot2")
+                    ),
+                box(
+                  title = "Controls", width = 4, solidHeader = TRUE, status = "primary",
+                  selectInput("SmartVsNotSmart", "Smart/Not Smart:",
+                              c("Smart/not Smart" = "smart",
+                                "Session/kWh Smart" = "sessionKwh",
+                                "Effective/Elapsed Smart" = "effectiveElapsed",
+                                "Session/kWh not Smart" = "sessionKwhNS",
+                                "Effective/Elapsed not Smart" = "effectiveElapsedNS"))
+                    )
               )
       ),
       tabItem(tabName = "chart3",
@@ -63,7 +78,7 @@ server <- function(input, output) {
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
   
-  output$table1 <- renderTable({
+  output$table1 <- DT::renderDataTable({
     df
   })
   
@@ -73,11 +88,19 @@ server <- function(input, output) {
   })
   
   output$plot2 <- renderPlot({
-    set.seed(122)
-    histdata <- rnorm(500)
-    
-    data <- histdata
-    hist(data)
+    source("smart_charging_vs_kwh.R")
+    if(input$SmartVsNotSmart == "smart"){
+      CreateBarPlotSmartKwh()
+    } else if (input$SmartVsNotSmart == "sessionKwh"){
+      CreatePlotSmartKwh1()
+    } else if (input$SmartVsNotSmart == "effectiveElapsed"){
+      CreatePlotSmartKwh2()
+    } else if (input$SmartVsNotSmart == "sessionKwhNS"){
+      CreatePlotSmartKwh3()
+    } else if (input$SmartVsNotSmart == "effectiveElapsedNS"){
+      CreatePlotSmartKwh4()
+    }
+
   })
   
   output$plot3 <- renderPlot({
