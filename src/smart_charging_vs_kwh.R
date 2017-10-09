@@ -1,8 +1,8 @@
-# smart charging related to kwh
+# Smart charging related to kWh
 library(ggplot2)
 library(config)
 library(readr)
-config <- config::get()
+config <- config::get(file = "../config.yml")
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
@@ -34,4 +34,3 @@ plotNonSmartChargers1 + labs(x = "session time in hours", y = "kWh charged")
 # plot 2.1
 plotNonSmartChargers2 <-  ggplot(df_not_smart, aes(y = effective_charging_hours, x = hours_elapsed)) + geom_point(alpha = 0.3) 
 plotNonSmartChargers2 + labs(x = "effective charging time in hours", y = "elapsed time in hours")
-

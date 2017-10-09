@@ -1,4 +1,4 @@
 default:
   scDataset: "path_to_csv"
-  baseClean: "src/base_clean.R"
+  baseClean: "/absolute_path_to/base_clean.R" # Absolute path to base_clean.R
   
