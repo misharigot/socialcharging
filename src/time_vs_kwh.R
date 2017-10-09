@@ -10,7 +10,7 @@ df <- cleanDataframe(df)
 
 # Table functions ---------------------------------------------------------
 
-GetDfHoursElapsed <- function() {
+getDfHoursElapsed <- function() {
   df %>%
     filter(!is.na(end_date), !is.na(charged_kwh)) %>%
     mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
@@ -20,7 +20,7 @@ GetDfHoursElapsed <- function() {
 
 # Plot functions ----------------------------------------------------------
 
-PlotTimeKwh <- function() {
+plotTimeKwh <- function() {
   p <- ggplot(GetDfHoursElapsed(), aes(y = charged_kwh, x = hours_elapsed)) + 
     geom_point(alpha = 0.3) + 
     geom_smooth() + 
@@ -30,4 +30,4 @@ PlotTimeKwh <- function() {
 
 # Calls -------------------------------------------------------------------
 
-PlotTimeKwh()
+plotTimeKwh()
