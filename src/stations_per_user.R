@@ -14,7 +14,7 @@ uniqueUsersPerStationSubset <- df %>%
   arrange(user_id) %>% 
   distinct(user_id,longitude,latitude) 
 
-#The amount of users per amount of stations used
+#Distributed amount of charging stations used per user in Januari
 #TODO: How is this distributed in percentages?
 countOfUsersPerDifferentStations <- uniqueUsersPerStationSubset %>%
   group_by(user_id) %>%
@@ -22,14 +22,16 @@ countOfUsersPerDifferentStations <- uniqueUsersPerStationSubset %>%
   group_by(charging_station_count) %>%
   summarise(user_amount = n())
 
-#Git credential test
+#Check per week?
+#IF user used more than 1 chargingstation -> check distances between charging stations
+#Distributed between users (also calculate mean)
 
 
 #Plot countOfUsersPerDifferentStations as bar graph
 plotUsersPerDifferentStations <- ggplot(data=countOfUsersPerDifferentStations,aes(x=charging_station_count , y=user_amount)) + geom_bar(stat="identity")
 plotUsersPerDifferentStations + labs(x = "Amount of charging stations used", y = "Amount of users")
+ggtitle("Distributed amount of charging stations used per user in Januari")
 
-#
 
 
 
