@@ -2,13 +2,9 @@
 library(ggplot2)
 library(config)
 library(readr)
+# setwd("D:/Projects/SocialCharging/src")
 config <- config::get(file = "../config.yml")
 source(config$baseClean)
-
-# TODO: write functions for plots
-# TODO: chain plots correctly
-# TODO: add titles to plots
-# TODO: add calls
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
@@ -23,13 +19,13 @@ getRemovedNa <- function() {
 
 # Returns table with smart rows
 getIsSmart <- function() {
-  GetRemovedNa() %>%
+  getRemovedNa() %>%
     filter(smart_charging == 'Yes')
 }
 
 # Returns table with not-smart rows
 getIsNotSmart <- function() {
-  GetRemovedNa() %>% 
+  getRemovedNa() %>% 
     filter(smart_charging == 'No')
 }
 
@@ -45,24 +41,46 @@ plotSmart <- function() {
 }
 
 # plot 1 
-
-plotSmartChargers1 <- ggplot(getIsSmart(), aes(y = charged_kwh, x = hours_elapsed)) + geom_point(alpha = 0.3) + geom_smooth()
-plotSmartChargers1 + labs(x = "session time in hours", y = "kWh charged")
+plotKwhElapsedSmart <- function(){
+  p <-  ggplot(getIsSmart(), aes(y = charged_kwh, x = hours_elapsed)) + 
+    geom_point(alpha = 0.3) + geom_smooth() +
+    labs(x = "session time in hours", y = "kWh charged")
+  return(p)
+}
 
 # plot 1.1
-plotSmartChargers2 <- ggplot(getIsSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + geom_point(alpha = 0.3)
-plotSmartChargers2 + labs(x = "effective charging time in hours", y = "elapsed time in hours")
+plotEffectiveChargingHourElapsedSmart <- function(){
+  p <- ggplot(getIsSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + 
+    geom_point(alpha = 0.3) + 
+    labs(x = "effective charging time in hours", y = "elapsed time in hours")
+  return(p)
+}
 
 # plot 2
-plotNonSmartChargers1 <- ggplot(getIsNotSmart(), aes(y = charged_kwh, x = hours_elapsed)) + geom_point(alpha = 0.3) + geom_smooth()
-plotNonSmartChargers1 + labs(x = "session time in hours", y = "kWh charged")
+plotKwhElapsed <- function(){
+  p <- ggplot(getIsNotSmart(), aes(y = charged_kwh, x = hours_elapsed)) + 
+    geom_point(alpha = 0.3) + geom_smooth() + 
+    labs(x = "session time in hours", y = "kWh charged")
+  return(p)
+}
 
 # plot 2.1
-plotNonSmartChargers2 <-  ggplot(getIsNotSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + geom_point(alpha = 0.3) 
-plotNonSmartChargers2 + labs(x = "effective charging time in hours", y = "elapsed time in hours")
-
+plotEffectiveChargingHourElapsed <- function(){
+  p <- ggplot(getIsNotSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + 
+    geom_point(alpha = 0.3) + 
+    labs(x = "effective charging time in hours", y = "elapsed time in hours")
+  return(p)
+}
 
 # Calls -------------------------------------------------------------------
+
+plotSmart()
+plotKwhElapsedSmart()
+plotEffectiveChargingHourElapsedSmart()
+plotKwhElapsed()
+plotEffectiveChargingHourElapsed()
+
+
 
 
 
