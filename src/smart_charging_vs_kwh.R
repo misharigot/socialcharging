@@ -2,7 +2,6 @@
 library(ggplot2)
 library(config)
 library(readr)
-# setwd("D:/Projects/SocialCharging/src")
 config <- config::get(file = "../config.yml")
 source(config$baseClean)
 
@@ -41,7 +40,7 @@ plotSmart <- function() {
 }
 
 # plot 1 
-plotKwhElapsedSmart <- function(){
+plotKwhElapsedSmart <- function() {
   p <-  ggplot(getIsSmart(), aes(y = charged_kwh, x = hours_elapsed)) + 
     geom_point(alpha = 0.3) + geom_smooth() +
     labs(x = "session time in hours", y = "kWh charged")
@@ -49,7 +48,7 @@ plotKwhElapsedSmart <- function(){
 }
 
 # plot 1.1
-plotEffectiveChargingHourElapsedSmart <- function(){
+plotEffectiveChargingHourElapsedSmart <- function() {
   p <- ggplot(getIsSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + 
     geom_point(alpha = 0.3) + 
     labs(x = "effective charging time in hours", y = "elapsed time in hours")
@@ -57,7 +56,7 @@ plotEffectiveChargingHourElapsedSmart <- function(){
 }
 
 # plot 2
-plotKwhElapsed <- function(){
+plotKwhElapsed <- function() {
   p <- ggplot(getIsNotSmart(), aes(y = charged_kwh, x = hours_elapsed)) + 
     geom_point(alpha = 0.3) + geom_smooth() + 
     labs(x = "session time in hours", y = "kWh charged")
@@ -65,7 +64,7 @@ plotKwhElapsed <- function(){
 }
 
 # plot 2.1
-plotEffectiveChargingHourElapsed <- function(){
+plotEffectiveChargingHourElapsed <- function() {
   p <- ggplot(getIsNotSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + 
     geom_point(alpha = 0.3) + 
     labs(x = "effective charging time in hours", y = "elapsed time in hours")
@@ -79,8 +78,3 @@ plotKwhElapsedSmart()
 plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()
 plotEffectiveChargingHourElapsed()
-
-
-
-
-
