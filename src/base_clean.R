@@ -3,8 +3,9 @@ library(readr)
 library(dplyr)
 library(lubridate)
 
+# Returns the social charging dataframe given, with general cleaning executed on the data set.
 cleanDataframe <- function(df) {
-  df <- df %>% 
+  df %>% 
   rename(charged_kwh = `charged_kwh,`, kw_charge_point_speed = `kw  charge point speed)`) %>% 
   mutate(start_date = dmy_hm(start_date), 
          end_date = dmy_hm(end_date), 
