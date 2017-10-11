@@ -69,7 +69,7 @@ server <- function(input, output) {
   
   output$plot1 <- renderPlot({
     source("time_vs_kwh.R")
-    CreatePlotTimeKwh()
+    plotTimeKwh()
   })
   
   output$plot2 <- renderPlot({
