@@ -1,4 +1,4 @@
-# Plot charged_kwh against hours_elapsed
+# Plot charged_kwh against hours_elapsed per station
 library(readr)
 library(ggplot2)
 library(config)
