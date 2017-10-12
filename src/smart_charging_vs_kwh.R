@@ -4,10 +4,9 @@ library(config)
 library(readr)
 config <- config::get(file = "../config.yml")
 source(config$baseClean)
-
+source(config$multiplotHelper)
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
-
 # Table functions ---------------------------------------------------------
 
 # Returns table with na values removed on end_date and charged_kwh
@@ -21,6 +20,8 @@ getIsSmart <- function() {
   getRemovedNa() %>%
     filter(smart_charging == 'Yes')
 }
+
+a <- getIsSmart()
 
 # Returns table with not-smart rows
 getIsNotSmart <- function() {
@@ -41,40 +42,52 @@ plotSmart <- function() {
 
 # IsSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
 plotKwhElapsedSmart <- function() {
-  p <-  ggplot(getIsSmart(), aes(y = charged_kwh, x = hours_elapsed)) + 
-    geom_point(alpha = 0.3) + geom_smooth() +
-    labs(x = "session time in hours", y = "kWh charged")
+  p <-  ggplot(getIsSmart(), aes(x = hours_elapsed, y = charged_kwh)) + 
+    geom_point(alpha = 0.3) + 
+    geom_smooth(alpha = 0.2, size = 1) +
+    labs(x = "session time in hours", y = "kWh charged") +
+    ggtitle("Smart charging station")
   return(p)
 }
 
 # IsSmart scatterplot displaying a possible relation between the effective charging time and session time
 plotEffectiveChargingHourElapsedSmart <- function() {
-  p <- ggplot(getIsSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + 
+  p <- ggplot(getIsSmart(), aes(x = hours_elapsed, y = effective_charging_hours)) + 
     geom_point(alpha = 0.3) + 
-    labs(x = "effective charging time in hours", y = "elapsed time in hours")
+    geom_smooth(alpha = 0.2, size = 1) +
+    labs(x = "elapsed time in hours", y = "effective charging time in hours") +
+    #xlim(0,40) +
+    ggtitle("Smart charging station")
   return(p)
 }
 
 # NotSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
 plotKwhElapsed <- function() {
-  p <- ggplot(getIsNotSmart(), aes(y = charged_kwh, x = hours_elapsed)) + 
-    geom_point(alpha = 0.3) + geom_smooth() + 
-    labs(x = "session time in hours", y = "kWh charged")
+  p <- ggplot(getIsNotSmart(), aes(x = hours_elapsed, y = charged_kwh)) + 
+    geom_point(alpha = 0.3) + 
+    geom_smooth(alpha = 0.2, size = 1) +
+    labs(x = "session time in hours", y = "kWh charged") +
+    ggtitle("Normal charging station")
   return(p)
 }
 
 # NotSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
 plotEffectiveChargingHourElapsed <- function() {
-  p <- ggplot(getIsNotSmart(), aes(y = effective_charging_hours, x = hours_elapsed)) + 
+  p <- ggplot(getIsNotSmart(), aes(x = hours_elapsed, y = effective_charging_hours)) + 
     geom_point(alpha = 0.3) + 
-    labs(x = "effective charging time in hours", y = "elapsed time in hours")
+    geom_smooth(alpha = 0.2, size = 1) +
+    labs(x = "elapsed time in hours", y = "effective charging time in hours") +
+    #xlim(0,40) +
+    ggtitle("Normal charging station")
   return(p)
 }
 
 # Calls -------------------------------------------------------------------
-
 plotSmart()
 plotKwhElapsedSmart()
 plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()
 plotEffectiveChargingHourElapsed()
+
+multiplotHelper(plotKwhElapsedSmart(),plotKwhElapsed())
+multiplotHelper(plotEffectiveChargingHourElapsedSmart(),plotEffectiveChargingHourElapsed())
