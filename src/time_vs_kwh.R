@@ -2,7 +2,7 @@
 library(readr)
 library(ggplot2)
 library(config)
-config <- config::get(file = "../config.yml")
+config <- config::get(file = "config.yml")
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
@@ -21,7 +21,7 @@ getDfHoursElapsed <- function() {
 # Plot functions ----------------------------------------------------------
 
 plotTimeKwh <- function() {
-  p <- ggplot(GetDfHoursElapsed(), aes(y = charged_kwh, x = hours_elapsed)) + 
+  p <- ggplot(getDfHoursElapsed(), aes(y = charged_kwh, x = hours_elapsed)) + 
     geom_point(alpha = 0.3) + 
     geom_smooth() + 
     labs(x = "session time in hours", y = "kWh charged")
