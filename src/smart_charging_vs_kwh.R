@@ -2,17 +2,22 @@
 library(ggplot2)
 library(config)
 library(readr)
-config <- config::get(file = "../config.yml")
+library(reshape2)
+config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
+
 # Table functions ---------------------------------------------------------
 
 # Returns table with na values removed on end_date and charged_kwh
 getRemovedNa <- function() {
   df %>%
-    filter(!is.na(end_date), !is.na(charged_kwh))
+    filter(!is.na(end_date), !is.na(charged_kwh)) %>%
+    mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
+      round(x, digits = 2)
+    }))
 }
 
 # Returns table with smart rows
@@ -21,20 +26,45 @@ getIsSmart <- function() {
     filter(smart_charging == 'Yes')
 }
 
-a <- getIsSmart()
-
 # Returns table with not-smart rows
 getIsNotSmart <- function() {
   getRemovedNa() %>% 
     filter(smart_charging == 'No')
 }
 
+# AVG percentage of usage
+getAvgCharigngPercentageDf <- function() {
+  totalSmartCharging <- sum(getIsSmart()$percentage_charging, na.rm = T)
+  avgSmartPercentage <- round(totalSmartCharging/nrow(getIsSmart()), digits = 2)
+  
+  totalNonSmartCharging <- sum(getIsNotSmart()$percentage_charging, na.rm = T)
+  avgNonSmartPercentage <- round(totalNonSmartCharging/nrow(getIsNotSmart()), digits = 2)
+  
+  df <- data.frame("smart_charging" = c("Yes","No"),
+                          "number_of_usage" = c(nrow(getIsSmart()), nrow(getIsNotSmart())),
+                          "average_charging_percentage" = c(avgSmartPercentage,avgNonSmartPercentage))
+  return(df)
+}
+
+
 # Plot functions ----------------------------------------------------------
 
+plotPieChart <- function() {
+  transformPlot <- ggplot(getAvgCharigngPercentageDf()) + 
+    geom_bar(aes(x = smart_charging, y = number_of_usage),stat="identity") +
+    labs(x = "Smart charging station", y = "number of usage") +
+    ggtitle("Number of usages over charging stations") +
+    coord_polar()
+  
+  p <- transformPlot + coord_polar("y", start=0)
+  return(p)
+}
+
 # checking the amount of usages on the smart- and non smart chargers
-plotSmart <- function() {
-  p <- ggplot(getRemovedNa(), aes(x = smart_charging)) + 
-    geom_bar() + 
+plotBarSmart <- function() {
+  reshaped <- melt(getRemovedNa(), id.vars = "smart_charging")
+  p <- ggplot(getRemovedNa(), aes(x = factor(smart_charging), fill = factor(smart_charging))) + 
+    geom_bar(width = 1) +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -1) + 
     labs(x = "smart charging")
   return(p)
@@ -83,11 +113,12 @@ plotEffectiveChargingHourElapsed <- function() {
 }
 
 # Calls -------------------------------------------------------------------
-plotSmart()
+plotBarSmart()
 plotKwhElapsedSmart()
 plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()
 plotEffectiveChargingHourElapsed()
+plotPieChart()
 
 multiplotHelper(plotKwhElapsedSmart(),plotKwhElapsed())
 multiplotHelper(plotEffectiveChargingHourElapsedSmart(),plotEffectiveChargingHourElapsed())
