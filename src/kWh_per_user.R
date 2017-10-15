@@ -31,7 +31,7 @@ getKwhPerUserStartTime <- function() {
 }
 
 # Per user total amount charged kwh at the end of a hour timeframe
-getKwhPerUserEndtime <- function() {
+getKwhPerUserEndTime <- function() {
   df %>%
     filter(!is.na(charged_kwh), !is.na(end_date)) %>%
     mutate(end_timeframe = paste(
@@ -46,7 +46,7 @@ getKwhPerUserEndtime <- function() {
 
 #Returns a plot with the total amount charged started per hour and group by user
 plotKwhPerUserStartTime <- function() {
-  p <- ggplot(getKwhPerUserStarttime(), aes(y = total_charged, x = start_timeframe)) +
+  p <- ggplot(getKwhPerUserStartTime(), aes(y = total_charged, x = start_timeframe)) +
     geom_boxplot(alpha = 0.5) +
     geom_smooth() +
     labs(y = "Total kwh charged", x = "Start Timeframe") +
@@ -57,7 +57,7 @@ plotKwhPerUserStartTime <- function() {
 
 #Returns a plot with the total amount charged ended per hour and group by user 
 plotKwhPerUserEndTime <- function() {
-  p <- ggplot(getKwhPerUserEndtime(), aes(y = total_charged, x = end_timeframe)) + 
+  p <- ggplot(getKwhPerUserEndTime(), aes(y = total_charged, x = end_timeframe)) + 
     geom_boxplot(alpha = 0.5) + 
     geom_smooth() +
     labs(y = "Total kWh charged", x = "End Timeframe") +
