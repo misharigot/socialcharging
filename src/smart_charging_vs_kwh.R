@@ -36,14 +36,16 @@ getIsNotSmart <- function() {
 getAvgCharigngPercentageDf <- function() {
   totalSmartCharging <- sum(getIsSmart()$percentage_charging, na.rm = T)
   avgSmartPercentage <- round(totalSmartCharging/nrow(getIsSmart()), digits = 2)
+  avgSmartChargeTime <- round(sum(getIsSmart()$hours_elapsed, na.rm = T)/nrow(getIsSmart()), digits = 2)
   
   totalNonSmartCharging <- sum(getIsNotSmart()$percentage_charging, na.rm = T)
-  avgNonSmartPercentage <- round(totalNonSmartCharging/nrow(getIsNotSmart()), digits = 2)
+  avgNonSmartChargePercentage <- round(totalNonSmartCharging/nrow(getIsNotSmart()), digits = 2)
+  avgNonSmartChargeTime <- round(sum(getIsNotSmart()$hours_elapsed, na.rm = T)/nrow(getIsNotSmart()), digits = 2)
   
-  df <- data.frame("smart_charging" = c("Yes","No"),
+  tempDf <- data.frame("smart_charging" = c("Yes","No"),
                           "number_of_usage" = c(nrow(getIsSmart()), nrow(getIsNotSmart())),
-                          "average_charging_percentage" = c(avgSmartPercentage,avgNonSmartPercentage))
-  return(df)
+                          "average_charging_percentage" = c(avgSmartPercentage,avgNonSmartChargePercentage))
+  return(tempDf)
 }
 
 
@@ -51,22 +53,19 @@ getAvgCharigngPercentageDf <- function() {
 
 plotPieChart <- function() {
   transformPlot <- ggplot(getAvgCharigngPercentageDf()) + 
-    geom_bar(aes(x = smart_charging, y = number_of_usage),stat="identity") +
+    geom_bar(aes(x = smart_charging, y = number_of_usage,  fill = smart_charging),stat="identity") +
     labs(x = "Smart charging station", y = "number of usage") +
     ggtitle("Number of usages over charging stations") +
     coord_polar()
   
   p <- transformPlot + coord_polar("y", start=0)
-  return(p)
+  return(transformPlot)
 }
 
 # checking the amount of usages on the smart- and non smart chargers
 plotBarSmart <- function() {
-  reshaped <- melt(getRemovedNa(), id.vars = "smart_charging")
-  p <- ggplot(getRemovedNa(), aes(x = factor(smart_charging), fill = factor(smart_charging))) + 
-    geom_bar(width = 1) +
-    geom_text(stat = 'count', aes(label = ..count..), vjust = -1) + 
-    labs(x = "smart charging")
+  p <- ggplot(getRemovedNa(), aes(x = smart_charging, fill = smart_charging)) + 
+    geom_bar(width = 1) 
   return(p)
 }
 
@@ -118,7 +117,12 @@ plotKwhElapsedSmart()
 plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()
 plotEffectiveChargingHourElapsed()
+
 plotPieChart()
+
+plotTest()
 
 multiplotHelper(plotKwhElapsedSmart(),plotKwhElapsed())
 multiplotHelper(plotEffectiveChargingHourElapsedSmart(),plotEffectiveChargingHourElapsed())
+
+
