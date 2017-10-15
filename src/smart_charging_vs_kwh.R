@@ -32,42 +32,73 @@ getIsNotSmart <- function() {
     filter(smart_charging == 'No')
 }
 
-# AVG percentage of usage
-getAvgCharigngPercentageDf <- function() {
-  totalSmartCharging <- sum(getIsSmart()$percentage_charging, na.rm = T)
-  avgSmartPercentage <- round(totalSmartCharging/nrow(getIsSmart()), digits = 2)
+# Creates a simple dataframe with AVG percentage of usage
+getAvgChargingPercentageDf <- function() {
+  avgSmartPercentage <- round(sum(getIsSmart()$percentage_charging, na.rm = T)
+                              /nrow(getIsSmart()), digits = 2)
   avgSmartChargeTime <- round(sum(getIsSmart()$hours_elapsed, na.rm = T)/nrow(getIsSmart()), digits = 2)
   
-  totalNonSmartCharging <- sum(getIsNotSmart()$percentage_charging, na.rm = T)
-  avgNonSmartChargePercentage <- round(totalNonSmartCharging/nrow(getIsNotSmart()), digits = 2)
+  avgNonSmartChargePercentage <- round(sum(getIsNotSmart()$percentage_charging, na.rm = T)
+                                       /nrow(getIsNotSmart()), digits = 2)
   avgNonSmartChargeTime <- round(sum(getIsNotSmart()$hours_elapsed, na.rm = T)/nrow(getIsNotSmart()), digits = 2)
   
   tempDf <- data.frame("smart_charging" = c("Yes","No"),
                           "number_of_usage" = c(nrow(getIsSmart()), nrow(getIsNotSmart())),
-                          "average_charging_percentage" = c(avgSmartPercentage,avgNonSmartChargePercentage))
+                          "average_charging_percentage" = c(avgSmartPercentage,avgNonSmartChargePercentage),
+                          "average_charging_time" = c(avgSmartChargeTime, avgNonSmartChargeTime))
   return(tempDf)
 }
 
 
 # Plot functions ----------------------------------------------------------
 
-plotPieChart <- function() {
-  transformPlot <- ggplot(getAvgCharigngPercentageDf()) + 
-    geom_bar(aes(x = smart_charging, y = number_of_usage,  fill = smart_charging),stat="identity") +
-    labs(x = "Smart charging station", y = "number of usage") +
-    ggtitle("Number of usages over charging stations") +
-    coord_polar()
-  
-  p <- transformPlot + coord_polar("y", start=0)
-  return(transformPlot)
-}
-
-# checking the amount of usages on the smart- and non smart chargers
+# Simple bar chart displaying smart- and non smart usages
 plotBarSmart <- function() {
-  p <- ggplot(getRemovedNa(), aes(x = smart_charging, fill = smart_charging)) + 
-    geom_bar(width = 1) 
+  p <- ggplot(getRemovedNa(), aes(x = factor(1), fill = factor(smart_charging))) + 
+    geom_bar(width = 0.3) + 
+    geom_text(stat = 'count' ,aes(label = ..count..), position = position_stack(vjust = 0.5)) +
+    theme_void() +
+    guides(fill=guide_legend(title="Smart charging"))
   return(p)
 }
+
+# Simple pie chart displaying smart- and non smart usages
+# width of 1 creates a pie chart, anything less creates a donut chart
+plotPieChart <- function() {
+  p <- ggplot(getRemovedNa(), aes(x = factor(1), fill = factor(smart_charging))) + 
+    geom_bar(width = 0.3) +
+    labs(y = "smart charging") +
+    geom_text(stat = 'count' ,aes(label = ..count..), position = position_stack(vjust = 0.5)) +
+    coord_polar("y", start = 0, direction = -1) +
+    theme_void() +
+    guides(fill= FALSE)
+  return(p)
+}
+
+# plotChargeTime a bar plot displaying the avg charge time
+plotChargeTime <- function() {
+  p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_time,
+                                                fill = factor(smart_charging))) + 
+    geom_bar(stat="identity", width = 1) +
+    geom_text(data = getAvgChargingPercentageDf() ,aes(label = average_charging_time), 
+              position = position_stack(vjust = 0.5)) +
+    labs(x = NULL , y = "Average charging time in hours") +
+    guides(fill= FALSE)
+  return(p)
+}
+
+# plotChargePercentage a bar plot displaying the avg charging percentage
+plotChargePercentage <- function() {
+  p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_percentage,
+                                                fill = factor(smart_charging))) + 
+    geom_bar(stat="identity", width = 1) +
+    geom_text(data = getAvgChargingPercentageDf() ,aes(label = average_charging_percentage), 
+              position = position_stack(vjust = 0.5)) +
+    labs(x = NULL , y = "Average % battery charged") +
+    guides(fill= FALSE)
+  return(p)
+}
+
 
 # IsSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
 plotKwhElapsedSmart <- function() {
@@ -75,7 +106,7 @@ plotKwhElapsedSmart <- function() {
     geom_point(alpha = 0.3) + 
     geom_smooth(alpha = 0.2, size = 1) +
     labs(x = "session time in hours", y = "kWh charged") +
-    ggtitle("Smart charging station")
+    ggtitle("Smart charging station") 
   return(p)
 }
 
@@ -112,17 +143,9 @@ plotEffectiveChargingHourElapsed <- function() {
 }
 
 # Calls -------------------------------------------------------------------
-plotBarSmart()
 plotKwhElapsedSmart()
 plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()
 plotEffectiveChargingHourElapsed()
 
-plotPieChart()
-
-plotTest()
-
-multiplotHelper(plotKwhElapsedSmart(),plotKwhElapsed())
-multiplotHelper(plotEffectiveChargingHourElapsedSmart(),plotEffectiveChargingHourElapsed())
-
-
+multiplotHelper(plotBarSmart(),plotPieChart(),plotChargeTime(),plotChargePercentage(), cols =2)
