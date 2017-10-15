@@ -2,10 +2,10 @@
 library(ggplot2)
 library(config)
 library(readr)
-library(reshape2)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
+
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
 
@@ -143,6 +143,7 @@ plotEffectiveChargingHourElapsed <- function() {
 }
 
 # Calls -------------------------------------------------------------------
+
 plotKwhElapsedSmart()
 plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()

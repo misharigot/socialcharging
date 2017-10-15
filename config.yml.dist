@@ -2,3 +2,4 @@ default:
   scDataset: "path_to_csv"
   baseClean: "/absolute_path_to/base_clean.R" # Absolute path to base_clean.R
   multiplotHelper: "/absolute_path_to/multiplotHelper.R" # Absolute path to multiplotHelper.R
+
