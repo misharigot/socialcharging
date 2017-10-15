@@ -17,19 +17,17 @@ df <- cleanDataframe(df)
 #compare hour_elapsed
 compareHourElapsed <- function(){
   df %>%
-  group_by(smart_charging) %>%
-  select(smart_charging,hours_elapsed)
+  group_by(smart_charging) %>% 
+  filter(!is.na(hours_elapsed))
 }
 
 #compare charged_kwh per hour_elapsed
-compareChargedperHour <- function(){
+compareChargedPerHour <- function(){
   df %>% 
   group_by(smart_charging) %>% 
   mutate(real_charging_hours = charged_kwh/hours_elapsed ) %>% 
-  filter(real_charging_hours < 38) %>% 
-  select(smart_charging,real_charging_hours)
+  filter(real_charging_hours < 38)
 }
-
 
 #compare the gap between real_charging_hours and effective_charging_hours
 
@@ -37,8 +35,7 @@ compareGapRealandEffective <- function(){
   df %>% 
   group_by(smart_charging) %>% 
   filter(charged_kwh/hours_elapsed <38) %>% 
-  mutate(comparegap = charged_kwh/hours_elapsed - effective_charging_hours) %>% 
-  select(smart_charging,comparegap)
+  mutate(comparegap = charged_kwh/hours_elapsed - effective_charging_hours)
 }
 
 
@@ -46,31 +43,39 @@ compareGapRealandEffective <- function(){
 
 #plot to compare hour_elapsed
 
-plotcompareHourElapsed <- function(){
+plotCompareHourElapsed <- function(){
   
-  ggplot(compareHourElapsed(), aes(x= smart_charging, y= hours_elapsed)) + 
+  ggplot(compareHourElapsed(), aes(x = smart_charging, y = hours_elapsed)) + 
   geom_point(alpha = 0.1, aes(color = smart_charging)) +
   ggtitle("Compare Houre_Elapsed")
 }
 
 #plot to compare charged_kwh per hour_elapsed
 
-plotcompareChargedperHour <- function(){
-  ggplot(compareChargedperHour(), aes(x = smart_charging, y=real_charging_hours)) +
+plotCompareChargedperHour <- function(){
+  ggplot(compareChargedPerHour(), aes(x = smart_charging, y = real_charging_hours)) +
   geom_point(alpha = 0.1, aes(color = smart_charging)) +
   ggtitle("Compare Charged_kwh per hour")
 }
 
 #plot to compare the gap between real_charging_hours and effective_charging_hours
 
-plotcompareGapRealandEffiective <- function(){
-  ggplot(compareGapRealandEffective(),aes(x = smart_charging, y=comparegap)) +
+plotCompareGapRealandEffiective <- function(){
+  ggplot(compareGapRealandEffective(),aes(x = smart_charging, y = comparegap)) +
   geom_point(alpha = 0.1, aes(color = smart_charging)) +
   ggtitle("Compare Gap between real_charging_hours and effective_charging_hours")
 }
 
+#plot to compare effective_charging_hours and real_charging_hours
+plotCompareEffectiveAndReal_charging_hours <- function(){
+  ggplot(compareChargedPerHour(),aes(y=real_charging_hours, x = effective_charging_hours)) +
+  geom_point(alpha = 0.4 , aes(color = smart_charging)) +
+  ggtitle("Compare Effective_charging_hour and Real_charging_hours")
+}
+
 
 # Calls -------------------------------------------------------------------
-plotcompareHourElapsed()
-plotcompareChargedperHour()
-plotcompareGapRealandEffiective()
+plotCompareHourElapsed()
+plotCompareChargedperHour()
+plotCompareGapRealandEffiective()
+plotCompareEffectiveAndReal_charging_hours()
