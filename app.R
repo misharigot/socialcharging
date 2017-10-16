@@ -77,16 +77,16 @@ server <- function(input, output) {
 
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
-  
+
   output$table1 <- DT::renderDataTable({
     df
   })
-  
+
   output$plot1 <- renderPlot({
     source("time_vs_kwh.R")
     CreatePlotTimeKwh()
   })
-  
+
   output$plot2 <- renderPlot({
     source("smart_charging_vs_kwh.R")
     if(input$SmartVsNotSmart == "smart"){
@@ -102,27 +102,27 @@ server <- function(input, output) {
     }
 
   })
-  
+
   output$plot3 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
-  
+
   output$plot4 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
-  
+
   output$plot5 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
