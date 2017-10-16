@@ -58,48 +58,48 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output) {
-  options(shiny.maxRequestSize=30*1024^2)
+  options(shiny.maxRequestSize = 30 * 1024 ^ 2)
 
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
-  
+
   output$table1 <- renderTable({
     df
   })
-  
+
   output$plot1 <- renderPlot({
     source("src/time_vs_kwh.R")
     plotTimeKwh()
   })
-  
+
   output$plot2 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
-  
+
   output$plot3 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
-  
+
   output$plot4 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
-  
+
   output$plot5 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
