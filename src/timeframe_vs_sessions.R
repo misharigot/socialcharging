@@ -4,6 +4,7 @@ library(dplyr)
 library(ggplot2)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
+source(config$multiplotHelper)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
@@ -55,6 +56,11 @@ plotEndTimeframe <- function() {
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     ggtitle("Num of sessions ending within timeframe")
   return (p)
+}
+
+# Returns two plots side by side
+multiplotTimeframes <- function() {
+  return(multiplotHelper(plotStartTimeframe(), plotEndTimeframe(), cols = 2))
 }
 
 # Calls -------------------------------------------------------------------
