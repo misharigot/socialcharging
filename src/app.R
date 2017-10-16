@@ -2,6 +2,20 @@ library(shiny)
 library(readr)
 library(shinydashboard)
 library(config)
+
+library(leaflet)
+library(RColorBrewer)
+library(scales)
+library(lattice)
+
+vars <- c(
+  "Is SuperZIP?" = "superzip",
+  "Centile score" = "centile",
+  "College education" = "college",
+  "Median income" = "income",
+  "Population" = "adultpop"
+)
+
 config <- config::get(file = "../config.yml")
 source(config$baseClean)
 
@@ -13,7 +27,7 @@ ui <- dashboardPage(
     menuItem("Charts", tabName = "raw", icon = icon("bar-chart"),
              menuSubItem("Time vs KWH", tabName = "chart1"),
              menuSubItem("Smart vs not Smart", tabName = "chart2"),
-             menuSubItem("lorem", tabName = "chart3"),
+             menuSubItem("Interactive Map", tabName = "chart3"),
              menuSubItem("lorem", tabName = "chart4"),
              menuSubItem("lorem", tabName = "chart5")
              )
@@ -44,7 +58,7 @@ ui <- dashboardPage(
                 box(
                   title = "Controls", width = 4, solidHeader = TRUE, status = "primary",
                   selectInput("SmartVsNotSmart", "Smart/Not Smart:",
-                              c("Smart/not Smart" = "smart",
+                              choices = c("Smart/not Smart" = "smart",
                                 "Session/kWh Smart" = "sessionKwh",
                                 "Effective/Elapsed Smart" = "effectiveElapsed",
                                 "Session/kWh not Smart" = "sessionKwhNS",
@@ -53,8 +67,14 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "chart3",
-              fluidRow(
-                box(plotOutput("plot3"))
+              div(class="outer",
+                  tags$head(
+                    # Include our custom CSS
+                    includeCSS("styles.css"),
+                    includeScript("gomap.js")
+                  ),
+                  # If not using custom CSS, set height of leafletOutput to a number instead of percent
+                  leafletOutput("map", width="100%", height="100%")
               )
       ),
       tabItem(tabName = "chart4",
@@ -72,16 +92,20 @@ ui <- dashboardPage(
   )
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   options(shiny.maxRequestSize=30*1024^2)
 
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
   
+  source("location_vs_kwh.R")
+  colorData <- CreateDataForMapPlot()
+  
   output$table1 <- DT::renderDataTable({
     df
   })
   
+  #Time Plots
   output$plot1 <- renderPlot({
     source("time_vs_kwh.R")
     CreatePlotTimeKwh()
@@ -100,16 +124,32 @@ server <- function(input, output) {
     } else if (input$SmartVsNotSmart == "effectiveElapsedNS"){
       CreatePlotSmartKwh4()
     }
-
   })
   
-  output$plot3 <- renderPlot({
-    set.seed(122)
-    histdata <- rnorm(500)
+  #Map Plot
+  output$map <- renderLeaflet({
+    source("location_vs_kwh.R")
+    colorData <- CreateDataForMapPlot()
     
-    data <- histdata
-    hist(data)
+    radius <- colorData$total / max(colorData$total) * 300
+    pal <- colorBin("plasma", colorData$total, 7, pretty = FALSE)
+    
+    leaflet() %>%
+      addTiles(
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      ) %>%
+      setView(lng = 4.32, lat = 52.05, zoom = 12) %>% 
+      addCircles(
+        lng = colorData$longitude,
+        lat = colorData$latitude,
+        radius = radius, stroke=FALSE, 
+        fillOpacity=0.8, color = "#03f",
+        fillColor=pal(colorData$total)) %>%
+      addLegend("bottomleft", pal=pal, values=colorData$total, title="Total Charged kWh",
+                layerId="colorLegend")
   })
+  
   
   output$plot4 <- renderPlot({
     set.seed(122)
