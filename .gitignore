@@ -28,3 +28,4 @@ vignettes/*.pdf
 config.yml
 .Rproj.user
 packrat/lib*/
+packrat/src/

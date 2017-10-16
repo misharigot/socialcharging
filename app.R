@@ -8,15 +8,7 @@ library(RColorBrewer)
 library(scales)
 library(lattice)
 
-vars <- c(
-  "Is SuperZIP?" = "superzip",
-  "Centile score" = "centile",
-  "College education" = "college",
-  "Median income" = "income",
-  "Population" = "adultpop"
-)
-
-config <- config::get(file = "../config.yml")
+config <- config::get(file = "config.yml")
 source(config$baseClean)
 
 ui <- dashboardPage(
@@ -70,8 +62,8 @@ ui <- dashboardPage(
               div(class="outer",
                   tags$head(
                     # Include our custom CSS
-                    includeCSS("styles.css"),
-                    includeScript("gomap.js")
+                    includeCSS("src/styles.css"),
+                    includeScript("src/gomap.js")
                   ),
                   # If not using custom CSS, set height of leafletOutput to a number instead of percent
                   leafletOutput("map", width="100%", height="100%")
@@ -98,21 +90,20 @@ server <- function(input, output, session) {
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
   
-  source("location_vs_kwh.R")
+  source("src/location_vs_kwh.R")
   colorData <- CreateDataForMapPlot()
   
   output$table1 <- DT::renderDataTable({
     df
   })
-  
-  #Time Plots
+
   output$plot1 <- renderPlot({
-    source("time_vs_kwh.R")
-    CreatePlotTimeKwh()
+    source("src/time_vs_kwh.R")
+    plotTimeKwh()
   })
-  
+
   output$plot2 <- renderPlot({
-    source("smart_charging_vs_kwh.R")
+    source("src/smart_charging_vs_kwh.R")
     if(input$SmartVsNotSmart == "smart"){
       CreateBarPlotSmartKwh()
     } else if (input$SmartVsNotSmart == "sessionKwh"){
@@ -128,8 +119,6 @@ server <- function(input, output, session) {
   
   #Map Plot
   output$map <- renderLeaflet({
-    source("location_vs_kwh.R")
-    colorData <- CreateDataForMapPlot()
     
     radius <- colorData$total / max(colorData$total) * 300
     pal <- colorBin("plasma", colorData$total, 7, pretty = FALSE)
@@ -149,20 +138,27 @@ server <- function(input, output, session) {
       addLegend("bottomleft", pal=pal, values=colorData$total, title="Total Charged kWh",
                 layerId="colorLegend")
   })
-  
-  
-  output$plot4 <- renderPlot({
+
+  output$plot3 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })
-  
+
+  output$plot4 <- renderPlot({
+    set.seed(122)
+    histdata <- rnorm(500)
+
+    data <- histdata
+    hist(data)
+  })
+
   output$plot5 <- renderPlot({
     set.seed(122)
     histdata <- rnorm(500)
-    
+
     data <- histdata
     hist(data)
   })

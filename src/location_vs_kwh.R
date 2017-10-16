@@ -4,7 +4,7 @@ library(config)
 library(readr)
 library(dplyr)
 
-config <- config::get(file = "../config.yml")
+config <- config::get(file = "config.yml")
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
