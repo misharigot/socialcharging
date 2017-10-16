@@ -2,7 +2,7 @@
 library(config)
 library(dplyr)
 library(ggplot2)
-config <- config::get(file = "../config.yml")
+config <- config::get(file = "config.yml")
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
