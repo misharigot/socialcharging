@@ -8,27 +8,23 @@ source(config$multiplotHelper)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
+df <- df %>%
+  filter(!is.na(end_date), !is.na(charged_kwh)) %>%
+  mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
+    round(x, digits = 2)
+  }))
 
 # Table functions ---------------------------------------------------------
 
-# Returns table with na values removed on end_date and charged_kwh
-getRemovedNa <- function() {
-  df %>%
-    filter(!is.na(end_date), !is.na(charged_kwh)) %>%
-    mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
-      round(x, digits = 2)
-    }))
-}
-
 # Returns table with smart rows
 getIsSmart <- function() {
-  getRemovedNa() %>%
+  df %>%
     filter(smart_charging == "Yes")
 }
 
 # Returns table with not-smart rows
 getIsNotSmart <- function() {
-  getRemovedNa() %>%
+  df %>%
     filter(smart_charging == "No")
 }
 
@@ -50,7 +46,7 @@ getAvgChargingPercentageDf <- function() {
 
 # Simple bar chart displaying smart- and non smart usages
 plotBarSmart <- function() {
-  p <- ggplot(getRemovedNa(), aes(x = factor(1), fill = factor(smart_charging))) +
+  p <- ggplot(df, aes(x = factor(1), fill = factor(smart_charging))) +
     geom_bar( width = 0.3 ) +
     geom_text(stat = "count", aes(label = ..count..), position = position_stack( vjust = 0.5 )) +
     theme_void() +
@@ -64,7 +60,7 @@ plotBarSmart <- function() {
 # Simple pie chart displaying smart- and non smart usages
 # width of 1 creates a pie chart, anything less creates a donut chart
 plotPieChart <- function() {
-  p <- ggplot(getRemovedNa(), aes(x = factor(1), fill = factor(smart_charging))) +
+  p <- ggplot(df, aes(x = factor(1), fill = factor(smart_charging))) +
     geom_bar(width = 0.3) +
     labs(y = "smart charging") +
     geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) +
