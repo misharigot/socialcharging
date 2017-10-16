@@ -106,7 +106,7 @@ plotKwhElapsedSmart <- function() {
     geom_point(alpha = 0.3) + 
     geom_smooth(alpha = 0.2, size = 1) +
     labs(x = "session time in hours", y = "kWh charged") +
-    ggtitle("Smart charging station") 
+    ggtitle("Charging time vs hours elapsed for smart chargers") 
   return(p)
 }
 
@@ -117,7 +117,7 @@ plotEffectiveChargingHourElapsedSmart <- function() {
     geom_smooth(alpha = 0.2, size = 1) +
     labs(x = "elapsed time in hours", y = "effective charging time in hours") +
     #xlim(0,40) +
-    ggtitle("Smart charging station")
+    ggtitle("Effective charging time vs hours elapsed for smart chargers")
   return(p)
 }
 
@@ -127,7 +127,7 @@ plotKwhElapsed <- function() {
     geom_point(alpha = 0.3) + 
     geom_smooth(alpha = 0.2, size = 1) +
     labs(x = "session time in hours", y = "kWh charged") +
-    ggtitle("Normal charging station")
+    ggtitle("Charging time vs hours elapsed for non-smart chargers")
   return(p)
 }
 
@@ -138,7 +138,7 @@ plotEffectiveChargingHourElapsed <- function() {
     geom_smooth(alpha = 0.2, size = 1) +
     labs(x = "elapsed time in hours", y = "effective charging time in hours") +
     #xlim(0,40) +
-    ggtitle("Normal charging station")
+    ggtitle("Effective charging time vs hours elapsed for non-smart chargers")
   return(p)
 }
 
