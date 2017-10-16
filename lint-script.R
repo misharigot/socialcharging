@@ -1,5 +1,5 @@
 # File to lint
-fileToLint <- "src/smart_charging_vs_kwh.R"
+fileToLint <- "src/.."
 
 # Custom lint rules
 linters <- with_defaults(
