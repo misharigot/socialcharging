@@ -58,7 +58,10 @@ plotBarSmart <- function() {
     geom_bar(width = 0.3) + 
     geom_text(stat = 'count' ,aes(label = ..count..), position = position_stack(vjust = 0.5)) +
     theme_void() +
-    guides(fill=guide_legend(title="Smart charging"))
+    guides(fill = guide_legend(title="Smart charging")) +
+    theme(legend.justification = c(1, 0), legend.position = c(1, 0)) +
+    ggtitle("Usage of non smart- and smart stations (barchart)") +
+    theme(plot.title = element_text(hjust = 0.5))
   return(p)
 }
 
@@ -71,7 +74,9 @@ plotPieChart <- function() {
     geom_text(stat = 'count' ,aes(label = ..count..), position = position_stack(vjust = 0.5)) +
     coord_polar("y", start = 0, direction = -1) +
     theme_void() +
-    guides(fill= FALSE)
+    ggtitle("Usage of non smart- and smart stations (piechart)") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    guides(fill = FALSE)
   return(p)
 }
 
@@ -79,11 +84,13 @@ plotPieChart <- function() {
 plotChargeTime <- function() {
   p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_time,
                                                 fill = factor(smart_charging))) + 
-    geom_bar(stat="identity", width = 1) +
+    geom_bar(stat = "identity", width = 1) +
     geom_text(data = getAvgChargingPercentageDf() ,aes(label = average_charging_time), 
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL , y = "Average charging time in hours") +
-    guides(fill= FALSE)
+    ggtitle("Average chargetime") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    guides(fill = FALSE)
   return(p)
 }
 
@@ -95,7 +102,9 @@ plotChargePercentage <- function() {
     geom_text(data = getAvgChargingPercentageDf() ,aes(label = average_charging_percentage), 
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL , y = "Average % battery charged") +
-    guides(fill= FALSE)
+    ggtitle("Average battery charged ") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    guides(fill = FALSE)
   return(p)
 }
 
@@ -149,4 +158,6 @@ plotEffectiveChargingHourElapsedSmart()
 plotKwhElapsed()
 plotEffectiveChargingHourElapsed()
 
-multiplotHelper(plotBarSmart(),plotPieChart(),plotChargeTime(),plotChargePercentage(), cols =2)
+plotBarSmart()
+
+multiplotHelper(plotBarSmart(),plotPieChart(),plotChargeTime(),plotChargePercentage(), cols = 2)
