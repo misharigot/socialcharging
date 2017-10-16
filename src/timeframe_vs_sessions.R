@@ -15,8 +15,8 @@ getStartTimeframe <- function() {
   df %>%
     filter(!is.na(end_date), !is.na(charged_kwh)) %>%
     mutate(start_timeframe = paste(
-      paste(hour(floor_date(start_date, "hour")), "00", sep = ":"), 
-      paste(hour(floor_date(start_date, "hour")) + 1, "00", sep = ":") 
+      paste(hour(floor_date(start_date, "hour")), "00", sep = ":"),
+      paste(hour(floor_date(start_date, "hour")) + 1, "00", sep = ":")
     )) %>%
     group_by(start_timeframe) %>%
     summarise(count = n())
@@ -27,8 +27,8 @@ getEndTimeframe <- function() {
   df %>%
     filter(!is.na(end_date), !is.na(charged_kwh)) %>%
     mutate(end_timeframe = paste(
-      paste(hour(floor_date(end_date, "hour")), "00", sep = ":"), 
-      paste(hour(floor_date(end_date, "hour")) + 1, "00", sep = ":") 
+      paste(hour(floor_date(end_date, "hour")), "00", sep = ":"),
+      paste(hour(floor_date(end_date, "hour")) + 1, "00", sep = ":")
     )) %>%
     group_by(end_timeframe) %>%
     summarise(count = n())
@@ -48,7 +48,7 @@ plotStartTimeframe <- function() {
 }
 
 # Returns a plot with amount of sessions ended at timeframe of 1 hour
-plotEndTimeframe <- function() { 
+plotEndTimeframe <- function() {
   p <- ggplot(getEndTimeframe(), aes(y = count, x = end_timeframe)) +
     geom_point() +
     labs(x = "1 hour timeframe", y = "number of ended sessions") +

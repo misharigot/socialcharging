@@ -23,11 +23,12 @@ getRemovedNa <- function() {
 # Returns table with smart rows
 getIsSmart <- function() {
   getRemovedNa() %>%
-    filter(smart_charging == 'Yes')
+    filter(smart_charging == "Yes")
 }
 
 # Returns table with not-smart rows
 getIsNotSmart <- function() {
+
   getRemovedNa() %>% 
     filter(smart_charging == 'No')
 }
@@ -48,7 +49,6 @@ getAvgChargingPercentageDf <- function() {
                           "average_charging_time" = c(avgSmartChargeTime, avgNonSmartChargeTime))
   return(tempDf)
 }
-
 
 # Plot functions ----------------------------------------------------------
 
@@ -98,7 +98,6 @@ plotChargePercentage <- function() {
     guides(fill= FALSE)
   return(p)
 }
-
 
 # IsSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
 plotKwhElapsedSmart <- function() {
