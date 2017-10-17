@@ -28,7 +28,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart1",
               fluidRow(
-                box(plotOutput("plot1"), width = 12)
+                plotOutput("plot1", height = 400, 
+                    dblclick = "dblclick",
+                    brush = brushOpts(
+                      id = "brush",
+                      resetOnNew = TRUE
+                    ))
               )
       ),
       tabItem(tabName = "chart2",
@@ -49,7 +54,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart3",
               fluidRow(
-                box(plotOutput("plot3"), width = 12)
+                plotOutput("plot3", height = 400, 
+                           dblclick = "dblclick",
+                           brush = brushOpts(
+                             id = "brush",
+                             resetOnNew = TRUE
+                           ))
               )
       ),
       tabItem(tabName = "chart4",

@@ -52,7 +52,7 @@ plotBarSmart <- function() {
     theme_void() +
     guides( fill = guide_legend(title = "Smart charging")) +
     theme( legend.justification = c(1, 0), legend.position = c(1, 0)) +
-    ggtitle("Usage of non smart- and smart stations (barchart)") +
+    ggtitle("Started sessions of smart and non smart (barchart)") +
     theme(plot.title = element_text( hjust = 0.5 ))
   return(p)
 }
@@ -66,7 +66,7 @@ plotPieChart <- function() {
     geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) +
     coord_polar("y", start = 0, direction = -1) +
     theme_void() +
-    ggtitle("Usage of non smart- and smart stations (piechart)") +
+    ggtitle("Started sessions of smart and non smart (piechart)") +
     theme(plot.title = element_text(hjust = 0.5)) +
     guides(fill = FALSE)
   return(p)

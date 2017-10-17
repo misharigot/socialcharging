@@ -22,10 +22,29 @@ server <- function(input, output) {
   output$table1 <- renderDataTable({
     df
   })
+  
+  # Single zoomable plot 
+  ranges <- reactiveValues(x = NULL, y = NULL)
 
   output$plot1 <- renderPlot({
     source("src/time_vs_kwh.R")
-    plotTimeKwh()
+    return(plotTimeKwh() +
+      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+  })
+  
+  # needs a js to get a generic solution
+  # When a double-click happens, check if there's a brush on the plot.
+  # If so, zoom to the brush bounds; if not, reset the zoom.
+  observeEvent(input$dblclick, {
+    brush <- input$brush
+    if (!is.null(brush)) {
+      ranges$x <- c(brush$xmin, brush$xmax)
+      ranges$y <- c(brush$ymin, brush$ymax)
+      
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+    }
   })
 
   output$plot2 <- renderPlot({
@@ -45,7 +64,7 @@ server <- function(input, output) {
 
   output$plot3 <- renderPlot({
     source("src/kwh_vs_station.R")
-    plotKwhPerStationPerDay()
+    return(plotKwhPerStationPerDay())
   })
 
   output$plot4 <- renderPlot({
