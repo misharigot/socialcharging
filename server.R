@@ -75,4 +75,8 @@ server <- function(input, output) {
                 layerId="colorLegend")
   })
   
+  output$plot6 <- renderPlot({
+    source("src/stations_per_user.R")
+    return(plotUsersPerDifferentStations())
+  })
 }
