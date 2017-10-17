@@ -4,6 +4,7 @@ library(readr)
 library(dplyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
+source(config$multiplotHelper)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
@@ -66,8 +67,14 @@ plotKwhPerUserEndTime <- function() {
   return (p)
 }
 
+# Returns two plots side by side
+multiplotUserTimeframes <- function() {
+  return(multiplotHelper(plotKwhPerUserStartTime(), plotKwhPerUserEndTime(), cols = 2))
+}
+
 # Calls -------------------------------------------------------------------
 
 totalKwhPerUser <- getKwhPerUser()
 plotKwhPerUserStartTime()
 plotKwhPerUserEndTime()
+multiplotUserTimeframes()

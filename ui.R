@@ -12,7 +12,9 @@ ui <- dashboardPage(
              menuSubItem("kWh vs charging stations", tabName = "chart3"),
              menuSubItem("Timeframe vs charging sessions", tabName = "chart4"),
              menuSubItem("Total KwH per station in map", tabName="chart5"),
-             menuSubItem("How many users use how many stations", tabName="chart6")
+             menuSubItem("How many users use how many stations", tabName="chart6"),
+             menuSubItem("How many users use a type of car", tabName="chart7"),
+             menuSubItem("Total kwh charged per user by Timeframe", tabName="chart8")
     )
   ),
   dashboardBody(
@@ -73,6 +75,16 @@ ui <- dashboardPage(
       tabItem(tabName = "chart6",
               fluidRow(
                 box(plotOutput("plot6"), width = 12)
+              )
+      ),
+      tabItem(tabName = "chart7",
+              fluidRow(
+                box(plotOutput("plot7"), width = 12)
+              )
+      ),
+      tabItem(tabName = "chart8",
+              fluidRow(
+                box(plotOutput("plot8"), width = 12)
               )
       )
     )
