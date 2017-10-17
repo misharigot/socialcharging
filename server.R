@@ -9,16 +9,14 @@ library(lattice)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
+source("src/location_vs_kwh.R")
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
 
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
-
-  source("src/location_vs_kwh.R")
-  colorData <- CreateDataForMapPlot()
-
+  
   output$table1 <- renderDataTable({
     df
   })
@@ -55,24 +53,48 @@ server <- function(input, output) {
 
   #map plot
   output$plot5 <- renderLeaflet({
-
-    radius <- colorData$total / max(colorData$total) * 300
-    pal <- colorBin("plasma", colorData$total, 7, pretty = FALSE)
-
     leaflet() %>%
       addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png"
       ) %>%
-      setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
-      addCircles(
-        lng = colorData$longitude,
-        lat = colorData$latitude,
-        radius = radius, stroke=FALSE,
-        fillOpacity=0.8, color = "#03f",
-        fillColor=pal(colorData$total)) %>%
-      addLegend("bottomleft", pal=pal, values=colorData$total, title="Total Charged kWh",
-                layerId="colorLegend")
+      setView(lng = 4.32, lat = 52.05, zoom = 12)
+      
   })
   
+  observe({
+    categorySelected <- input$category
+    mapData <- displayKwhData()
+    
+    if(categorySelected == "kwh"){
+      mapData <- displayKwhData()
+      radius <- mapData$total_charged / max(mapData$total_charged) * 300
+      pal <- colorBin("plasma", mapData$total_charged, 7, pretty = TRUE)
+    } 
+    
+    if(categorySelected == "Popularity"){
+      mapData <- mostLeastPopular()
+      radius <- mapData$total_sessions / max(mapData$total_sessions) * 300
+      pal <- colorBin("plasma", mapData$total_charged, 7, pretty = TRUE)
+    } 
+    
+    if(categorySelected == "Efficiency"){
+      mapData <- mostLeastEfficient() 
+      radius <- mapData$total_hours_elapsed / max(mapData$total_hours_elapsed) * 300
+      pal <- colorBin("plasma", mapData$total_charged, 7, pretty = TRUE)
+    }
+
+    leafletProxy("plot5", data = mapData) %>%
+      clearShapes() %>%
+      addCircles(
+        lng = mapData$longitude,
+        lat = mapData$latitude,
+        radius = radius, stroke=FALSE,
+        fillOpacity = 0.8, color = "#03f",
+        fillColor = pal(mapData$total_charged)) %>%
+      addLegend("bottomleft", 
+        pal=pal, 
+        values=mapData$total_charged, 
+        title="Total Charged kWh",
+        layerId="colorLegend")
+  })
 }
