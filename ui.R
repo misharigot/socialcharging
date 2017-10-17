@@ -1,5 +1,6 @@
 library(shiny)
 library(shinydashboard)
+library(leaflet)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Social Charging"),
