@@ -4,6 +4,7 @@ library(dplyr)
 library(ggplot2)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
+source(config$multiplotHelper)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
