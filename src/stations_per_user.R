@@ -1,20 +1,16 @@
-#How many users use more than one charging station? If so how far are those charging stations apart?
+#How many users use more than one charging station?If so how far are those charging stations apart?
 library(readr)
 library(ggplot2)
 library(config)
 library(dplyr)
-library(geosphere)
-        
+
 config <- config::get()
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
 
-
-
 # Table functions ---------------------------------------------------------
-
 
 #Select the amount of unique sessions per user per charging station 
 uniqueUsersPerStation <- function(){ 
@@ -36,7 +32,6 @@ countOfUsersPerAmountOfStationsUsed <- function(){
 
 # Plot functions ----------------------------------------------------------
 
-
 #Plot countOfStationsUsed as bar graph
 plotUsersPerDifferentStations <- function(){
     ggplot(data=countOfUsersPerAmountOfStationsUsed(),aes(x=charging_stations_used, y=user_amount)) + 
@@ -46,4 +41,6 @@ plotUsersPerDifferentStations <- function(){
 }
 
 # Calls -------------------------------------------------------------------
+
+#ggplot bargraph
 plotUsersPerDifferentStations()
