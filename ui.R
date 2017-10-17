@@ -1,5 +1,6 @@
 library(shiny)
 library(shinydashboard)
+library(leaflet)
 
 ui <- dashboardPage(
   dashboardHeader(title = "Social Charging"),
@@ -9,7 +10,8 @@ ui <- dashboardPage(
              menuSubItem("Time elapsed vs kWh charged", tabName = "chart1"),
              menuSubItem("Smart vs non-smart charging", tabName = "chart2"),
              menuSubItem("kWh vs charging stations", tabName = "chart3"),
-             menuSubItem("Timeframe vs charging sessions", tabName = "chart4")
+             menuSubItem("Timeframe vs charging sessions", tabName = "chart4"),
+             menuSubItem("Total KwH per station in map", tabName="chart5")
     )
   ),
   dashboardBody(
@@ -55,7 +57,18 @@ ui <- dashboardPage(
                   box(plotOutput("plot4"), width = 12)
                 )
               )
-      )
+      ),
+      tabItem(tabName = "chart5",
+              div(class="outer",
+                  tags$head(
+                    # Include our custom CSS
+                    includeCSS("src/styles.css"),
+                    includeScript("src/gomap.js")
+                  ),
+                  # If not using custom CSS, set height of leafletOutput to a number instead of percent
+                  leafletOutput("plot5", width="100%", height="100%")
+                )
+              )
     )
   )
 )

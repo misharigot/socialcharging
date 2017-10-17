@@ -1,6 +1,12 @@
 library(shiny)
 library(readr)
 library(config)
+
+library(leaflet)
+library(RColorBrewer)
+library(scales)
+library(lattice)
+
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
@@ -9,6 +15,9 @@ server <- function(input, output) {
 
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
+
+  source("src/location_vs_kwh.R")
+  colorData <- CreateDataForMapPlot()
 
   output$table1 <- renderDataTable({
     df
@@ -43,4 +52,27 @@ server <- function(input, output) {
     source("src/timeframe_vs_sessions.R")
     return(multiplotTimeframes())
   })
+
+  #map plot
+  output$plot5 <- renderLeaflet({
+
+    radius <- colorData$total / max(colorData$total) * 300
+    pal <- colorBin("plasma", colorData$total, 7, pretty = FALSE)
+
+    leaflet() %>%
+      addTiles(
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      ) %>%
+      setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
+      addCircles(
+        lng = colorData$longitude,
+        lat = colorData$latitude,
+        radius = radius, stroke=FALSE,
+        fillOpacity=0.8, color = "#03f",
+        fillColor=pal(colorData$total)) %>%
+      addLegend("bottomleft", pal=pal, values=colorData$total, title="Total Charged kWh",
+                layerId="colorLegend")
+  })
+  
 }

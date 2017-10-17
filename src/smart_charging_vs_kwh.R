@@ -110,6 +110,7 @@ plotKwhElapsedSmart <- function() {
   return(p)
 }
 
+
 # IsSmart scatterplot displaying a possible relation between the effective charging time and session time
 plotEffectiveChargingHoursElapsedSmart <- function() {
   p <- ggplot(getIsSmart(), aes(x = hours_elapsed, y = effective_charging_hours)) +
@@ -131,6 +132,7 @@ plotKwhElapsed <- function() {
   return(p)
 }
 
+
 # NotSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
 plotEffectiveChargingHoursElapsed <- function() {
   p <- ggplot(getIsNotSmart(), aes(x = hours_elapsed, y = effective_charging_hours)) +
@@ -148,7 +150,6 @@ plotMultiple <- function() {
 }
 
 # Calls -------------------------------------------------------------------
-
 plotKwhElapsedSmart()
 plotEffectiveChargingHoursElapsedSmart()
 plotKwhElapsed()
