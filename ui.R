@@ -70,15 +70,24 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "chart5",
-              div(class = "outer",
-                  tags$head(
-                    # Include our custom CSS
-                    includeCSS("src/styles.css"),
-                    includeScript("src/gomap.js")
-                  ),
-                  # If not using custom CSS, set height of leafletOutput to a number instead of percent
-                  leafletOutput("plot5", width = "100%", height = "100%")
-                )
+        div(class="outer",
+            tags$head(
+              # Include our custom CSS
+              includeCSS("src/styles.css"),
+              includeScript("src/gomap.js")
+            ),
+            # If not using custom CSS, set height of leafletOutput to a number instead of percent
+            leafletOutput("plot5", width="100%", height="100%"),
+            absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                          draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
+                          width = 330, height = "auto",
+                          
+                          h2("Data Explorer"),
+                          
+                          selectInput("category", "Category", 
+                                      c("kwh", "Popularity", "Efficiency"))
+          )
+        )
       ),
       tabItem(tabName = "chart6",
               fluidRow(
