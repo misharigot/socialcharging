@@ -51,7 +51,8 @@ server <- function(input, output, session) {
     return(multiplotTimeframes())
   })
 
-  #map plot
+  #Plot5: Map of data ----
+  
   output$plot5 <- renderLeaflet({
     leaflet() %>%
       addTiles(
@@ -60,6 +61,7 @@ server <- function(input, output, session) {
       setView(lng = 4.32, lat = 52.05, zoom = 12)
   })
   
+  #Eventhandler for changing the data for the map
   observe({
     categorySelected <- input$category
     mapData <- displayKwhData()
@@ -71,7 +73,7 @@ server <- function(input, output, session) {
     } 
     
     if(categorySelected == "Popularity"){
-      mapData <- mostLeastPopular()
+      mapData <- displayKwhData()
       radius <- mapData$total_sessions / max(mapData$total_sessions) * 300
       pal <- colorBin("plasma", mapData$total_charged, 7, pretty = TRUE)
     } 
@@ -98,9 +100,11 @@ server <- function(input, output, session) {
         layerId="colorLegend")
   })
   
+  #Eventhandler for Popups when clicking on circle
   observe({
     leafletProxy("plot5") %>% clearPopups()
-    event <- input$map_shape_click
+    event <- input$plot5_shape_click
+    print(event)
     if (is.null(event))
       return()
     isolate({
