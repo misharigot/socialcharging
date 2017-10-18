@@ -4,7 +4,7 @@ library(ggplot2)
 library(config)
 library(readr)
 
-config <- config::get(file = "../config.yml")
+config <- config::get(file = "config.yml")
 source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
@@ -40,7 +40,7 @@ realtotalChargingPerCar<- function(){
   mutate(realChargingPerHour = totalChargedKwh/totalHoursElapsed, car = factor(car,levels = car[order(realChargingPerHour)]))
 }
 
-        
+aa<-realtotalChargingPerCar()
 
 # plot function -----------------------------------------------------------
 
