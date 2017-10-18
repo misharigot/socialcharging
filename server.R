@@ -1,0 +1,115 @@
+library(shiny)
+library(readr)
+library(config)
+
+library(leaflet)
+library(RColorBrewer)
+library(scales)
+library(lattice)
+
+config <- config::get(file = "config.yml")
+source(config$baseClean)
+
+server <- function(input, output) {
+  options(shiny.maxRequestSize = 30 * 1024 ^ 2)
+
+  df <- read_csv2(config$scDataset)
+  df <- cleanDataframe(df)
+
+  source("src/location_vs_kwh.R")
+  colorData <- CreateDataForMapPlot()
+
+  output$table1 <- renderDataTable({
+    df
+  })
+
+  # maybe a javascript to reset the ranges variable on active view change?
+  # Single zoomable plot
+  ranges <- reactiveValues(x = NULL, y = NULL)
+
+  output$plot1 <- renderPlot({
+    source("src/time_vs_kwh.R")
+    return(plotTimeKwh() +
+      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+  })
+
+  # When a double-click happens, check if there's a brush on the plot.
+  # If so, zoom to the brush bounds; if not, reset the zoom.
+  observeEvent(input$dblclick, {
+    brush <- input$brush
+    if (!is.null(brush)) {
+      print(input)
+      ranges$x <- c(brush$xmin, brush$xmax)
+      ranges$y <- c(brush$ymin, brush$ymax)
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+    }
+  })
+
+  observeEvent(input$reset_input, {
+    ranges$x <- NULL
+    ranges$y <- NULL
+  })
+
+  observeEvent(input$reset_input_1, {
+    ranges$x <- NULL
+    ranges$y <- NULL
+  })
+
+  output$plot2 <- renderPlot({
+    source("src/smart_charging_vs_kwh.R")
+    if (input$plot2Input == "0") {
+      return(plotMultiple())
+    } else if (input$plot2Input == "1") {
+      return(plotKwhElapsedSmart() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+    } else if (input$plot2Input == "2") {
+      return(plotEffectiveChargingHoursElapsedSmart() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+    } else if (input$plot2Input == "3") {
+      return(plotKwhElapsed() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+    } else if (input$plot2Input == "4") {
+      return(plotEffectiveChargingHoursElapsed() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+    }
+  })
+
+  output$plot3 <- renderPlot({
+    source("src/kwh_vs_station.R")
+    return(plotKwhPerStationPerDay())
+  })
+
+  output$plot4 <- renderPlot({
+    source("src/timeframe_vs_sessions.R")
+    return(multiplotTimeframes())
+  })
+
+  #map plot
+  output$plot5 <- renderLeaflet({
+
+    radius <- colorData$total / max(colorData$total) * 300
+    pal <- colorBin("plasma", colorData$total, 7, pretty = FALSE)
+
+    leaflet() %>%
+      addTiles(
+        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
+      ) %>%
+      setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
+      addCircles(
+        lng = colorData$longitude,
+        lat = colorData$latitude,
+        radius = radius, stroke = FALSE,
+        fillOpacity = 0.8, color = "#03f",
+        fillColor = pal(colorData$total)) %>%
+      addLegend("bottomleft", pal = pal, values = colorData$total, title = "Total Charged kWh",
+                layerId = "colorLegend")
+  })
+
+  output$plot6 <- renderPlot({
+    source("src/stations_per_user.R")
+    return(plotUsersPerDifferentStations())
+  })
+}
