@@ -67,7 +67,7 @@ plotHoursElapsedPerUserEndTime <- function() {
   return (p)
 }
 
-Returns two plots side by side
+#Returns two plots side by side
 multiplotUserTimeframes <- function() {
   return(multiplotHelper(plotKwhPerUserStartTime(), plotHoursElapsedPerUserEndTime(), cols = 2))
 }

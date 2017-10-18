@@ -14,7 +14,7 @@ ui <- dashboardPage(
              menuSubItem("Total KwH per station in map", tabName="chart5"),
              menuSubItem("How many users use how many stations", tabName="chart6"),
              menuSubItem("How many users use a type of car", tabName="chart7"),
-             menuSubItem("Total kwh charged per user by Timeframe", tabName="chart8")
+             menuSubItem("Timeframe vs users", tabName="chart8")
     )
   ),
   dashboardBody(

@@ -81,12 +81,12 @@ server <- function(input, output) {
   })
   
   output$plot7 <- renderPlot({
-    source("src/cars_per_cardid.R")
+    source("src/cars_per_user.R")
     return(plotCarAmount())
   })
   
   output$plot8 <- renderPlot({
-    source("src/kWh_per_user.R")
+    source("src/timeframe_vs_users.R")
     return(multiplotUserTimeframes())
   })
 }
