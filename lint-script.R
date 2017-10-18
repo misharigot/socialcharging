@@ -1,3 +1,6 @@
+# This script enables you to lint your R scripts, to check on styling errors.
+library(lintr)
+
 # File to lint
 fileToLint <- "src/.."
 
@@ -9,6 +12,5 @@ linters <- with_defaults(
   object_length_linter(40)
 )
 
-library(lintr)
 lintr::clear_cache(file = NULL)
 lintr::lint(filename = fileToLint, linters = linters)
