@@ -41,10 +41,11 @@ getEndTimeframe <- function() {
 plotStartTimeframe <- function() {
   p <- ggplot(getStartTimeframe(), aes(y = count, x = start_timeframe)) +
     geom_point() +
-    geom_smooth() +
-    labs(x = "1 hour timeframe", y = "number of started sessions") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    ggtitle("Num of sessions starting within timeframe")
+    labs(title = "Charging sessions",
+         subtitle = "Starting in timeframe",
+         x = "1 hour timeframe", 
+         y = "started sessions") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
   return (p)
 }
 
@@ -52,10 +53,12 @@ plotStartTimeframe <- function() {
 plotEndTimeframe <- function() {
   p <- ggplot(getEndTimeframe(), aes(y = count, x = end_timeframe)) +
     geom_point() +
-    labs(x = "1 hour timeframe", y = "number of ended sessions") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    ggtitle("Num of sessions ending within timeframe")
-  return (p)
+    labs(title = "Charging sessions",
+         subtitle = "Ending in timeframe",
+         x = "1 hour timeframe",
+         y = "ended sessions") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  return(p)
 }
 
 # Returns two plots side by side
