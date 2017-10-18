@@ -70,4 +70,9 @@ server <- function(input, output) {
   observe({
     handlePopupCreation(input$plot5_shape_click, input$category)
   })
+
+  output$plot6 <- renderPlot({
+    source("src/stations_per_user.R")
+    return(plotUsersPerDifferentStations())
+  })
 }
