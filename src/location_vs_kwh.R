@@ -71,7 +71,9 @@ mostLeastEfficient <- function() {
     filter(!is.na(hours_elapsed)) %>%
     group_by(longitude, latitude) %>%
     summarise(total_charged = sum(charged_kwh),
-              total_hours_elapsed = sum(hours_elapsed))
+              total_hours_elapsed = sum(hours_elapsed)) %>%
+    mutate(score = total_charged/total_hours_elapsed) %>%
+    arrange(desc(score))
   
   df$total_hours_elapsed <- as.numeric(df$total_hours_elapsed)
   df$total_charged <- as.numeric(df$total_charged)
@@ -81,3 +83,35 @@ mostLeastEfficient <- function() {
 table1 <- displayKwhData()
 table2 <- mostLeastPopular()
 table3 <- mostLeastEfficient()
+
+chargingStationPopup <- function(id, lat, lng, cat) {
+  if(cat == "kwh"){
+    selectedChargingPole <- table1[table1$longitude == lng & table1$latitude == lat]
+    content <- as.character(tagList(
+      tags$h4("Location: %s", as.integer(lat), ", %s", as.integer(lng)),
+      sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br()
+    ))
+    leafletProxy("plot5") %>% 
+      addPopups(lng, lat, content, layerId = id)
+  }
+  
+  if(cat == "Popularity"){
+    selectedChargingPole <- table2[table2$longitude == lng & table2$latitude == lat]
+    content <- as.character(tagList(
+      tags$h4("Location: %s", as.integer(lat), ", %s", as.integer(lng)),
+      sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br()
+    ))
+    leafletProxy("plot5") %>% 
+      addPopups(lng, lat, content, layerId = id)
+  }
+  
+  if(cat == "Efficiency"){
+    selectedChargingPole <- table3[table3$longitude == lng & table3$latitude == lat]
+    content <- as.character(tagList(
+      tags$h4("Location: %s", as.integer(lat), ", %s", as.integer(lng)),
+      sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br()
+    ))
+    leafletProxy("plot5") %>% 
+      addPopups(lng, lat, content, layerId = id)
+  }
+}

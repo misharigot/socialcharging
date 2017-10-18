@@ -58,7 +58,6 @@ server <- function(input, output, session) {
         urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png"
       ) %>%
       setView(lng = 4.32, lat = 52.05, zoom = 12)
-      
   })
   
   observe({
@@ -90,6 +89,7 @@ server <- function(input, output, session) {
         lat = mapData$latitude,
         radius = radius, stroke=FALSE,
         fillOpacity = 0.8, color = "#03f",
+        layerId = which(mapData$longitude == mapData$longitude & mapData$latitude == mapData$latitude),
         fillColor = pal(mapData$total_charged)) %>%
       addLegend("bottomleft", 
         pal=pal, 
@@ -97,4 +97,15 @@ server <- function(input, output, session) {
         title="Total Charged kWh",
         layerId="colorLegend")
   })
+  
+  observe({
+    leafletProxy("plot5") %>% clearPopups()
+    event <- input$map_shape_click
+    if (is.null(event))
+      return()
+    isolate({
+      chargingStationPopup(event$id, event$lat, event$lng, input$category)
+    })
+  })
+  
 }
