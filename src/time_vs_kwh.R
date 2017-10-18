@@ -28,7 +28,6 @@ plotTimeKwh <- function() {
          subtitle = "kWh charged and time elapsed",
          x = "session time in hours",
          y = "kWh charged")
-
   return(p)
 }
 
