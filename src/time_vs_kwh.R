@@ -22,9 +22,13 @@ getDfHoursElapsed <- function() {
 
 plotTimeKwh <- function() {
   p <- ggplot(getDfHoursElapsed(), aes(y = charged_kwh, x = hours_elapsed)) +
-    geom_point(alpha = 0.3) +
+    geom_jitter(colour = alpha("black", 0.2)) +
     geom_smooth() +
-    labs(x = "session time in hours", y = "kWh charged")
+    labs(title = "Charging sessions",
+         subtitle = "kWh charged and time elapsed",
+         x = "session time in hours",
+         y = "kWh charged")
+
   return(p)
 }
 
