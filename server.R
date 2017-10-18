@@ -22,9 +22,9 @@ server <- function(input, output) {
   output$table1 <- renderDataTable({
     df
   })
-  
+
   # maybe a javascript to reset the ranges variable on active view change?
-  # Single zoomable plot 
+  # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
 
   output$plot1 <- renderPlot({
@@ -32,7 +32,7 @@ server <- function(input, output) {
     return(plotTimeKwh() +
       coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
   })
-  
+
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
   observeEvent(input$dblclick, {
@@ -46,12 +46,12 @@ server <- function(input, output) {
       ranges$y <- NULL
     }
   })
-  
+
   observeEvent(input$reset_input, {
     ranges$x <- NULL
     ranges$y <- NULL
   })
-  
+
   observeEvent(input$reset_input_1, {
     ranges$x <- NULL
     ranges$y <- NULL
@@ -101,13 +101,13 @@ server <- function(input, output) {
       addCircles(
         lng = colorData$longitude,
         lat = colorData$latitude,
-        radius = radius, stroke=FALSE,
-        fillOpacity=0.8, color = "#03f",
-        fillColor=pal(colorData$total)) %>%
-      addLegend("bottomleft", pal=pal, values=colorData$total, title="Total Charged kWh",
-                layerId="colorLegend")
+        radius = radius, stroke = FALSE,
+        fillOpacity = 0.8, color = "#03f",
+        fillColor = pal(colorData$total)) %>%
+      addLegend("bottomleft", pal = pal, values = colorData$total, title = "Total Charged kWh",
+                layerId = "colorLegend")
   })
-  
+
   output$plot6 <- renderPlot({
     source("src/stations_per_user.R")
     return(plotUsersPerDifferentStations())
