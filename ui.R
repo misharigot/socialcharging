@@ -11,8 +11,8 @@ ui <- dashboardPage(
              menuSubItem("Smart vs non-smart charging", tabName = "chart2"),
              menuSubItem("kWh vs charging stations", tabName = "chart3"),
              menuSubItem("Timeframe vs charging sessions", tabName = "chart4"),
-             menuSubItem("Total KwH per station in map", tabName="chart5"),
-             menuSubItem("How many users use how many stations", tabName="chart6")
+             menuSubItem("Total KwH per station in map", tabName = "chart5"),
+             menuSubItem("How many users use how many stations", tabName = "chart6")
     )
   ),
   dashboardBody(
@@ -27,9 +27,13 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "chart1",
-              fluidRow(
-                box(plotOutput("plot1"), width = 12)
-              )
+              fluidRow(box(plotOutput("plot1", height = 400,
+                                      dblclick = "dblclick",
+                                      brush = brushOpts(
+                                        id = "brush",
+                                        resetOnNew = TRUE
+                                      )), width = 12)),
+              actionButton("reset_input", "Reset")
       ),
       tabItem(tabName = "chart2",
               fluidRow(
@@ -45,7 +49,13 @@ ui <- dashboardPage(
                               ))
                 )
               ),
-              fluidRow(box(plotOutput("plot2"), title = "Smart charging ", width = 12))
+              fluidRow(box(plotOutput("plot2", height = 400,
+                                      dblclick = "dblclick",
+                                      brush = brushOpts(
+                                        id = "brush",
+                                        resetOnNew = TRUE
+                                      )), title = "Smart charging ", width = 12)),
+              actionButton("reset_input_1", "Reset")
       ),
       tabItem(tabName = "chart3",
               fluidRow(

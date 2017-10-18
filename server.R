@@ -21,29 +21,62 @@ server <- function(input, output) {
     df
   })
 
+  # maybe a javascript to reset the ranges variable on active view change?
+  # Single zoomable plot
+  ranges <- reactiveValues(x = NULL, y = NULL)
+
   output$plot1 <- renderPlot({
     source("src/time_vs_kwh.R")
-    plotTimeKwh()
+    return(plotTimeKwh() +
+      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+  })
+
+  # When a double-click happens, check if there's a brush on the plot.
+  # If so, zoom to the brush bounds; if not, reset the zoom.
+  observeEvent(input$dblclick, {
+    brush <- input$brush
+    if (!is.null(brush)) {
+      print(input)
+      ranges$x <- c(brush$xmin, brush$xmax)
+      ranges$y <- c(brush$ymin, brush$ymax)
+    } else {
+      ranges$x <- NULL
+      ranges$y <- NULL
+    }
+  })
+
+  observeEvent(input$reset_input, {
+    ranges$x <- NULL
+    ranges$y <- NULL
+  })
+
+  observeEvent(input$reset_input_1, {
+    ranges$x <- NULL
+    ranges$y <- NULL
   })
 
   output$plot2 <- renderPlot({
     source("src/smart_charging_vs_kwh.R")
     if (input$plot2Input == "0") {
-      plotMultiple()
+      return(plotMultiple())
     } else if (input$plot2Input == "1") {
-      plotKwhElapsedSmart()
+      return(plotKwhElapsedSmart() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
     } else if (input$plot2Input == "2") {
-      plotEffectiveChargingHoursElapsedSmart()
+      return(plotEffectiveChargingHoursElapsedSmart() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
     } else if (input$plot2Input == "3") {
-      plotKwhElapsed()
+      return(plotKwhElapsed() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
     } else if (input$plot2Input == "4") {
-      plotEffectiveChargingHoursElapsed()
+      return(plotEffectiveChargingHoursElapsed() +
+        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
     }
   })
 
   output$plot3 <- renderPlot({
     source("src/kwh_vs_station.R")
-    plotKwhPerStationPerDay()
+    return(plotKwhPerStationPerDay())
   })
 
   output$plot4 <- renderPlot({
