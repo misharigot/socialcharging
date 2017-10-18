@@ -27,14 +27,13 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "chart1",
-              fluidRow(
-                plotOutput("plot1", height = 400, 
-                    dblclick = "dblclick",
-                    brush = brushOpts(
-                      id = "brush",
-                      resetOnNew = TRUE
-                    ))
-              )
+              fluidRow(box(plotOutput("plot1", height = 400, 
+                                      dblclick = "dblclick",
+                                      brush = brushOpts(
+                                        id = "brush",
+                                        resetOnNew = TRUE
+                                      )), width = 12)),
+              actionButton("reset_input", "Reset")
       ),
       tabItem(tabName = "chart2",
               fluidRow(
@@ -50,16 +49,17 @@ ui <- dashboardPage(
                               ))
                 )
               ),
-              fluidRow(box(plotOutput("plot2"), title = "Smart charging ", width = 12))
+              fluidRow(box(plotOutput("plot2", height = 400, 
+                                      dblclick = "dblclick",
+                                      brush = brushOpts(
+                                        id = "brush",
+                                        resetOnNew = TRUE
+                                      )), title = "Smart charging ", width = 12)),
+              actionButton("reset_input_1", "Reset")
       ),
       tabItem(tabName = "chart3",
               fluidRow(
-                plotOutput("plot3", height = 400, 
-                           dblclick = "dblclick",
-                           brush = brushOpts(
-                             id = "brush",
-                             resetOnNew = TRUE
-                           ))
+                box(plotOutput("plot3"), width = 12)
               )
       ),
       tabItem(tabName = "chart4",
