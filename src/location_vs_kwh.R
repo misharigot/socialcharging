@@ -10,10 +10,9 @@ source(config$baseClean)
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
 
-
-# Basic data cleaning ----
+# Data cleaning ---------------------------------------------------------
 df <- df %>%
-  filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh))
+  filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
 
 split_str_by_index <- function(target, index) {
   index <- sort(index)
@@ -42,14 +41,22 @@ df$longitude <- sapply(df$longitude, function(x){
 
 df$latitude <- as.numeric(df$latitude)
 df$longitude <- as.numeric(df$longitude)
-  
 
-#Advanced data cleaning ----
-displayKwhData <- function() {
+totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
+
+# Advanced data cleaning ----------------------------------------------------------
+cleanMapData <- function() {
   df <- df %>%
     group_by(longitude, latitude) %>%
-    summarise(total_charged = sum(charged_kwh),
-              total_sessions = n())
+    summarise(address = first(address),
+              outlets = first(outlets),
+              total_sessions = n(),
+              total_charged = sum(charged_kwh),
+              total_hours_elapsed = sum(hours_elapsed)) %>%
+    mutate(efficiency_score = round((total_charged / total_hours_elapsed) * 100, digits = 0),
+           popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
+                                     / outlets) * 100 + 1, digits = 0)) %>%
+    arrange(desc(efficiency_score))
 
   df$total_sessions <- as.numeric(df$total_sessions)
   df$total_charged <- as.numeric(df$total_charged)
@@ -57,56 +64,4 @@ displayKwhData <- function() {
   return(df)
 }
 
-mostLeastEfficient <- function() {
-  df <- df %>%
-    filter(!is.na(hours_elapsed)) %>%
-    group_by(longitude, latitude) %>%
-    summarise(total_charged = sum(charged_kwh),
-              total_hours_elapsed = sum(hours_elapsed)) %>%
-    mutate(score = round((total_charged / total_hours_elapsed) * 10, digits = 2)) %>%
-    arrange(desc(score))
-
-  df$total_hours_elapsed <- as.numeric(df$total_hours_elapsed)
-  df$total_charged <- as.numeric(df$total_charged)
-  return(df)
-}
-
-#This method handles the Popup when clicking a circle.
-chargingStationPopup <- function(id, lat, lng, cat) {
-  dfKwhSession <- displayKwhData()
-  dfKwhHours <- mostLeastEfficient()
-  
-  if (cat == "kwh") {
-    selectedChargingPole <- dfKwhSession[id,]
-    content <- as.character(tagList(
-      tags$h4("Location: ", lat, ", ", lng),
-      sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br(),
-      sprintf("Total sessions: %s", selectedChargingPole$total_sessions)
-    ))
-    leafletProxy("plot5") %>%  
-      addPopups(lng, lat, content, layerId = id)
-  }
-  
-  if (cat == "Popularity") {
-    selectedChargingPole <- dfKwhSession[id,]
-    content <- as.character(tagList(
-      tags$h4("Location: ", lat, ", ", lng),
-      sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br(),
-      sprintf("Total sessions: %s", selectedChargingPole$total_sessions)
-    ))
-    leafletProxy("plot5") %>% 
-      addPopups(lng, lat, content, layerId = id)
-  }
-  
-  if (cat == "Efficiency") {
-    selectedChargingPole <- dfKwhHours[id,]
-    content <- as.character(tagList(
-      tags$h4("Location: ", lat, ", ", lng),
-      sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br(),
-      sprintf("Total elapsed hours: %s", selectedChargingPole$total_hours_elapsed), tags$br(),
-      sprintf("Score: %s", selectedChargingPole$score)
-    ))
-    leafletProxy("plot5") %>%  
-      addPopups(lng, lat, content, layerId = id)
-  }
-}
+newDataFram <- cleanMapData()
