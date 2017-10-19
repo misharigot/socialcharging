@@ -54,9 +54,10 @@ plotBarSmart <- function() {
               position = position_stack( vjust = 0.5 )) +
     theme_void() +
     guides( fill = guide_legend(title = "Smart charging")) +
-    theme( legend.justification = c(1, 0), legend.position = c(1, 0)) +
+    theme( legend.justification = c(1, 0), legend.position = c(1, 0), legend.text = element_text(size = 18),
+           legend.title = element_text(size = 20)) +
     ggtitle("Started sessions of smart and non smart (barchart)") +
-    theme(plot.title = element_text( hjust = 0.5 ))
+    theme(plot.title = element_text( hjust = 0.5, size = 20))
   return(p)
 }
 
@@ -85,7 +86,8 @@ plotChargeTime <- function() {
     labs(x = NULL, y = "Average charging time in hours") +
     ggtitle("Average chargetime") +
     theme_light() +
-    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 20), axis.title = element_text(size = 20),
+          axis.text = element_text(size = 18)) +
     guides(fill = FALSE)
   return(p)
 }
@@ -100,7 +102,8 @@ plotChargePercentage <- function() {
     labs(x = NULL, y = "Effective % of total time car charging") +
     ggtitle("Effective time battery charged ") +
     theme_light() +
-    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 20), axis.title = element_text(size = 20),
+          axis.text = element_text(size = 18)) +
     guides(fill = FALSE)
   return(p)
 }
