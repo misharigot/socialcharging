@@ -23,12 +23,14 @@ kindofcar <- function(){
 }
 
 # it show the totalchaing per car
-totalChargingPerCar <- function(){
+averageChargingPerCar <- function(){
   df %>% 
-  group_by(car) %>% 
-  summarise(totalCharged = sum(charged_kwh,na.rm=TRUE)) %>% 
-  filter(totalCharged > 0.00) %>% 
-  mutate(car = factor(car, levels = car[order(totalCharged)]))
+    group_by(car) %>% 
+    filter(!is.na(charged_kwh)) %>% 
+    summarise(number = n(), totalCharged = sum(charged_kwh)) %>% 
+    filter(totalCharged > 0.00) %>% 
+    mutate(chargingpercar = totalCharged/number)%>% 
+    mutate(car = factor(car, levels = car[order(chargingpercar)]))  
 }
 
 # plot function -----------------------------------------------------------
@@ -37,7 +39,7 @@ totalChargingPerCar <- function(){
 
 plotPersantagePerCar <- function(){
   ggplot(kindofcar(),aes(x=car,y=per)) +
-  geom_bar(position= "dodge",stat= "identity") +
+  geom_bar(position= "dodge",stat= "identity",fill ="#66bb6a") +
   coord_flip() +
   labs(x="car",y="percentage")+
   ggtitle("Percentage per car")
@@ -45,19 +47,19 @@ plotPersantagePerCar <- function(){
 
 
 
-# plot charging rank by car
+# plot average charged kwh per car in january
 
-plotTotaltotalChargingPerCar <- function(){
-  ggplot(totalChargingPerCar(),aes(x=car,y=totalCharged))+
-  geom_bar(position = "dodge", stat = "identity") +
-  coord_flip() +
-  labs(x = "car", y="Total Charging") +
-  ggtitle("Total Charging per car")
+plotAverageChargedKwhPerCar <- function(){
+  ggplot(averageChargingPerCar(),aes(x=car,y=chargingpercar))+
+    geom_bar(position = "dodge", stat = "identity",fill ="#66bb6a") +
+    coord_flip() +
+    labs(x = "car", y="Total Charging") +
+    ggtitle("average Charged kwh per car in January")
 }
 
 
 # calls -------------------------------------------------------------------
 
 plotPersantagePerCar()
-plotTotaltotalChargingPerCar()
+plotAverageChargedKwhPerCar()
 
