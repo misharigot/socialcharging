@@ -2,7 +2,6 @@ library(ggplot2)
 library(config)
 library(readr)
 library(dplyr)
-library(tidyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
