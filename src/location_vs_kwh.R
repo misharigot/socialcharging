@@ -51,16 +51,17 @@ cleanMapData <- function() {
     summarise(address = first(address),
               outlets = first(outlets),
               total_sessions = n(),
+              total_users = n_distinct(user_id),
               total_charged = sum(charged_kwh),
-              total_hours_elapsed = sum(hours_elapsed)) %>%
-    mutate(efficiency_score = round((total_charged / total_hours_elapsed) * 100, digits = 0),
+              total_hours_elapsed = sum(hours_elapsed),
+              total_effective_charging = sum(effective_charging_hours)) %>%
+    mutate(efficiency_score = round((total_effective_charging / total_hours_elapsed) * 100 + 10, digits = 0),
            popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
-                                     / outlets) * 100 + 1, digits = 0)) %>%
-    arrange(desc(efficiency_score))
-
+                                     / outlets) * 100 + 10, digits = 0))
+  
   df$total_sessions <- as.numeric(df$total_sessions)
   df$total_charged <- as.numeric(df$total_charged)
-
+  
   return(df)
 }
 
