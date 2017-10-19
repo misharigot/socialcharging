@@ -16,7 +16,7 @@ server <- function(input, output) {
 
   df <- read_csv2(config$scDataset)
   df <- cleanDataframe(df)
-  
+
   output$table1 <- renderDataTable({
     df
   })
@@ -85,17 +85,17 @@ server <- function(input, output) {
   })
 
   source("map/map_renderer.R")
-  
+
   #Load Default values in map
   output$plot5 <- renderLeaflet({
     handleDefaultMapCreation()
   })
-  
+
   #Eventhandler for changing the data for the map
   observe({
     handleMapCreation(input$category)
   })
-  
+
   #Eventhandler for Popups when clicking on circle
   observe({
     handlePopupCreation(input$plot5_shape_click)
@@ -105,14 +105,18 @@ server <- function(input, output) {
     source("src/stations_per_user.R")
     return(plotUsersPerDifferentStations())
   })
-  
+
   output$plot7 <- renderPlot({
     source("src/carPlot.R")
     if (input$plot7Input == "0") {
       plotPersantagePerCar()
     } else if (input$plot7Input == "1") {
       plotTotaltotalChargingPerCar()
-    } 
-    
+    }
+  })
+
+  output$plot8 <- renderPlot({
+    source("src/timeframe_vs_users.R")
+    return(multiplotUserTimeframes())
   })
 }

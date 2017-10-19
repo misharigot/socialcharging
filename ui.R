@@ -14,9 +14,10 @@ ui <- dashboardPage(
              menuSubItem("Timeframe vs charging sessions", tabName = "chart4"),
              menuSubItem("Charging stations visualised on map", tabName = "chart5"),
              menuSubItem("How many users use how many stations", tabName="chart6"),
-             menuSubItem("Analyzing per Car", tabName = "chart7")
+             menuSubItem("Analyzing per Car", tabName = "chart7"),
+             menuSubItem("Timeframe vs users", tabName="chart8")
     )
-  ),    
+  ),
   dashboardBody(
     tabItems(
       tabItem(tabName = "dash",
@@ -91,13 +92,13 @@ ui <- dashboardPage(
             absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                           draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
                           width = 330, height = "auto",
-                          
+
                           h2("Plot that SHIT"),
-                          
-                          selectInput("category", "Category", 
+
+                          selectInput("category", "Category",
                                       c("Charged kWh per station", "Occupation percentage",
                                         "Efficiency percentage", "Users per station")),
-                          
+
                           h5("The category determines the size of the circles")
           )
         )
@@ -118,8 +119,20 @@ ui <- dashboardPage(
                               ))
                 )
               ),
-              fluidRow(box(plotOutput("plot7"), title = "Analyzing per car ", width = 12))
+              fluidRow(
+                box(
+                  plotOutput("plot7"), 
+                  title = "Analyzing per car ", 
+                  width = 12)
+              )
+      ),
+      tabItem(tabName = "chart8",
+              fluidRow(
+                box(plotOutput("plot8"), width = 12)
+              )
       )
     )
   )
 )
+
+  
