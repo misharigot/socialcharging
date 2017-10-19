@@ -84,15 +84,12 @@ server <- function(input, output) {
     return(multiplotTimeframes())
   })
 
-  output$plot5 <- renderLeaflet({
-    leaflet() %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png"
-      ) %>%
-      setView(lng = 4.32, lat = 52.05, zoom = 12)
-  })
-  
   source("map/map_renderer.R")
+  
+  #Load Default values in map
+  output$plot5 <- renderLeaflet({
+    handleDefaultMapCreation()
+  })
   
   #Eventhandler for changing the data for the map
   observe({
@@ -101,7 +98,7 @@ server <- function(input, output) {
   
   #Eventhandler for Popups when clicking on circle
   observe({
-    handlePopupCreation(input$plot5_shape_click, input$category)
+    handlePopupCreation(input$plot5_shape_click)
   })
 
   output$plot6 <- renderPlot({
