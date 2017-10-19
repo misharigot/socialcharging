@@ -35,21 +35,13 @@ plotCarAmount <- function() {
     geom_smooth() +
     labs(x = "Cars", y = "User amount") +
     ggtitle("Amount of users for each car") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    coord_flip() +
+    theme_light()
   return(p)
 }
 
-# plotCarPerUser <- function() {
-#   p <- ggplot(getCarPerUser(), aes(x = car, y = user_id)) +
-#     geom_point(alpha = 0.5) +
-#     geom_smooth() +
-#     labs(x = "cars", y = "user id") +
-#     theme(axis.text.x = element_text(angle = 90, hjust = 1))
-#   return(p)
-# }
 # Calls -------------------------------------------------------------------
 
 carPerUser <- getCarPerUser()
 carSummarise <- getCarAmount()
-#plotCarPerUser()
 plotCarAmount()
