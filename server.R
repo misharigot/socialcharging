@@ -86,8 +86,7 @@ server <- function(input, output) {
       plotPersantagePerCar()
     } else if (input$plot7Input == "1") {
       plotTotaltotalChargingPerCar()
-    } else if (input$plot7Input == "2") {
-      plotRealtotalChargingPerCar()
     } 
+    
   })
 }

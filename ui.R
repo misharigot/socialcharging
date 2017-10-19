@@ -83,8 +83,7 @@ ui <- dashboardPage(
                   selectInput(inputId = "plot7Input",
                               label = "Select a chart",
                               choices = c("PersantagePerCar" = "0",
-                                          "TotaltotalChargingPerCar" = "1",
-                                          "RealtotalChargingPerCar" = "2"
+                                          "TotaltotalChargingPerCar" = "1"
                               ))
                 )
               ),

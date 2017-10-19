@@ -30,17 +30,6 @@ totalChargingPerCar <- function(){
   filter(totalCharged > 0.00) %>% 
   mutate(car = factor(car, levels = car[order(totalCharged)]))
 }
-# each car's gap between effective and real charging per hour
-
-realtotalChargingPerCar<- function(){
-  df %>%
-  filter(!is.na(charged_kwh),!is.na(hours_elapsed),!is.na(kw_charge_point_speed),!is.na(car)) %>%
-  group_by(car) %>% 
-  summarise(totalChargedKwh = sum(charged_kwh, na.rm = TRUE), totalHoursElapsed = sum(hours_elapsed,na.rm = TRUE)) %>% 
-  mutate(realChargingPerHour = totalChargedKwh/totalHoursElapsed, car = factor(car,levels = car[order(realChargingPerHour)]))
-}
-
-aa<-realtotalChargingPerCar()
 
 # plot function -----------------------------------------------------------
 
@@ -63,22 +52,12 @@ plotTotaltotalChargingPerCar <- function(){
   geom_bar(position = "dodge", stat = "identity") +
   coord_flip() +
   labs(x = "car", y="Total Charging") +
-  ggtitle("Total Charging by car")
+  ggtitle("Total Charging per car")
 }
 
-
-# plot list realCharging Per car
-
-plotRealtotalChargingPerCar <- function(){
-  ggplot(realtotalChargingPerCar(),aes(x=car,y=realChargingPerHour)) +
-  geom_bar(position="dodge",stat ="identity")+
-  labs(x= "Real Charging per Hour", y= "Car") +
-  ggtitle("Real Charging Per Car") +
-  coord_flip()
-}
 
 # calls -------------------------------------------------------------------
 
 plotPersantagePerCar()
 plotTotaltotalChargingPerCar()
-plotRealtotalChargingPerCar()
+
