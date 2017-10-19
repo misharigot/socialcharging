@@ -14,7 +14,7 @@ df <- cleanDataframe(df)
 # table -------------------------------------------------------------------
 
 
-# try to figure out the persentage
+# try to figure out the percentage
 kindofcar <- function(){
   df %>% 
   group_by(car) %>% 
@@ -33,14 +33,14 @@ totalChargingPerCar <- function(){
 
 # plot function -----------------------------------------------------------
 
-# plot persantage per car
+# plot percentage per car
 
 plotPersantagePerCar <- function(){
   ggplot(kindofcar(),aes(x=car,y=per)) +
   geom_bar(position= "dodge",stat= "identity") +
   coord_flip() +
-  labs(x="car",y="persentage")+
-  ggtitle("Persantage per car")
+  labs(x="car",y="percentage")+
+  ggtitle("Percentage per car")
 }
 
 
