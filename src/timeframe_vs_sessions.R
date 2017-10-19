@@ -8,7 +8,31 @@ source(config$multiplotHelper)
 
 df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
-
+timeframeLevels <- c("6:00 7:00",
+                     "7:00 8:00",
+                     "8:00 9:00",
+                     "9:00 10:00",
+                     "10:00 11:00",
+                     "11:00 12:00",
+                     "12:00 13:00",
+                     "13:00 14:00",
+                     "14:00 15:00",
+                     "15:00 16:00",
+                     "16:00 17:00",
+                     "17:00 18:00",
+                     "18:00 19:00",
+                     "19:00 20:00",
+                     "20:00 21:00",
+                     "21:00 22:00",
+                     "22:00 23:00",
+                     "23:00 24:00",
+                     "0:00 1:00",
+                     "1:00 2:00",
+                     "2:00 3:00",
+                     "3:00 4:00",
+                     "4:00 5:00",
+                     "5:00 6:00"
+                     )
 # Table functions ---------------------------------------------------------
 
 # Returns a table with amount of sessions started at timeframe of 1 hour
@@ -19,7 +43,9 @@ getStartTimeframe <- function() {
       paste(hour(floor_date(start_date, "hour")), "00", sep = ":"),
       paste(hour(floor_date(start_date, "hour")) + 1, "00", sep = ":")
     )) %>%
+    mutate(start_timeframe = factor(start_timeframe, levels = timeframeLevels)) %>%
     group_by(start_timeframe) %>%
+    arrange(start_timeframe) %>%
     summarise(count = n())
 }
 
@@ -31,7 +57,9 @@ getEndTimeframe <- function() {
       paste(hour(floor_date(end_date, "hour")), "00", sep = ":"),
       paste(hour(floor_date(end_date, "hour")) + 1, "00", sep = ":")
     )) %>%
+    mutate(start_timeframe = factor(end_timeframe, levels = timeframeLevels)) %>%
     group_by(end_timeframe) %>%
+    arrange(end_timeframe) %>%
     summarise(count = n())
 }
 
@@ -40,22 +68,29 @@ getEndTimeframe <- function() {
 # Returns a plot with amount of sessions started at timeframe of 1 hour
 plotStartTimeframe <- function() {
   p <- ggplot(getStartTimeframe(), aes(y = count, x = start_timeframe)) +
-    geom_point() +
-    geom_smooth() +
-    labs(x = "1 hour timeframe", y = "number of started sessions") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    ggtitle("Num of sessions starting within timeframe")
-  return (p)
+    geom_bar(stat = "identity", fill = "#66bb6a") +
+    coord_flip() +
+    labs(title = "Charging sessions",
+         subtitle = "Starting in timeframe",
+         x = "1 hour timeframe",
+         y = "started sessions") +
+    scale_x_discrete(limits = c(timeframeLevels)) +
+    theme_light()
+  return(p)
 }
 
 # Returns a plot with amount of sessions ended at timeframe of 1 hour
 plotEndTimeframe <- function() {
   p <- ggplot(getEndTimeframe(), aes(y = count, x = end_timeframe)) +
-    geom_point() +
-    labs(x = "1 hour timeframe", y = "number of ended sessions") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    ggtitle("Num of sessions ending within timeframe")
-  return (p)
+    geom_bar(stat = "identity", fill = "#66bb6a") +
+    coord_flip() +
+    labs(title = "Charging sessions",
+         subtitle = "Ending in timeframe",
+         x = "1 hour timeframe",
+         y = "ended sessions") +
+    scale_x_discrete(limits = c(timeframeLevels)) +
+    theme_light()
+  return(p)
 }
 
 # Returns two plots side by side
@@ -64,6 +99,5 @@ multiplotTimeframes <- function() {
 }
 
 # Calls -------------------------------------------------------------------
-
 plotStartTimeframe()
 plotEndTimeframe()
