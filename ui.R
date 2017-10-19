@@ -28,9 +28,13 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "chart1",
-              fluidRow(
-                box(plotOutput("plot1"), width = 12)
-              )
+              fluidRow(box(plotOutput("plot1", height = 400,
+                                      dblclick = "dblclick",
+                                      brush = brushOpts(
+                                        id = "brush",
+                                        resetOnNew = TRUE
+                                      )), width = 12)),
+              actionButton("reset_input", "Reset")
       ),
       tabItem(tabName = "chart2",
               fluidRow(
@@ -46,7 +50,13 @@ ui <- dashboardPage(
                               ))
                 )
               ),
-              fluidRow(box(plotOutput("plot2"), title = "Smart charging ", width = 12))
+              fluidRow(box(plotOutput("plot2", height = 400,
+                                      dblclick = "dblclick",
+                                      brush = brushOpts(
+                                        id = "brush",
+                                        resetOnNew = TRUE
+                                      )), title = "Smart charging ", width = 12)),
+              actionButton("reset_input_1", "Reset")
       ),
       tabItem(tabName = "chart3",
               fluidRow(
@@ -61,15 +71,24 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "chart5",
-              div(class="outer",
-                  tags$head(
-                    # Include our custom CSS
-                    includeCSS("src/styles.css"),
-                    includeScript("src/gomap.js")
-                  ),
-                  # If not using custom CSS, set height of leafletOutput to a number instead of percent
-                  leafletOutput("plot5", width="100%", height="100%")
-                )
+        div(class="outer",
+            tags$head(
+              # Include our custom CSS
+              includeCSS("src/styles.css"),
+              includeScript("src/gomap.js")
+            ),
+            # If not using custom CSS, set height of leafletOutput to a number instead of percent
+            leafletOutput("plot5", width="100%", height="100%"),
+            absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                          draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
+                          width = 330, height = "auto",
+                          
+                          h2("Data Explorer"),
+                          
+                          selectInput("category", "Category", 
+                                      c("kwh", "Popularity", "Efficiency"))
+          )
+        )
       ),
       tabItem(tabName = "chart6",
               fluidRow(
@@ -92,4 +111,3 @@ ui <- dashboardPage(
     )
   )
 )
-
