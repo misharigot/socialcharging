@@ -5,8 +5,9 @@ library(leaflet)
 ui <- dashboardPage(
   dashboardHeader(title = "Social Charging"),
   dashboardSidebar(
+    menuItem("Dashboard", tabName = "dash", selected = TRUE, icon = icon("dashboard")),
     menuItem("Raw data", tabName = "raw", icon = icon("th")),
-    menuItem("Charts", tabName = "raw", icon = icon("bar-chart"),
+    menuItem("Charts", tabName = "charts", icon = icon("bar-chart"),
              menuSubItem("Time elapsed vs kWh charged", tabName = "chart1"),
              menuSubItem("Smart vs non-smart charging", tabName = "chart2"),
              menuSubItem("kWh vs charging stations", tabName = "chart3"),
@@ -14,15 +15,17 @@ ui <- dashboardPage(
              menuSubItem("Charging stations visualised on map", tabName = "chart5"),
              menuSubItem("How many users use how many stations", tabName = "chart6")
     )
-  ),
+  ),    
   dashboardBody(
-    fluidRow(
-      box(width = 6, align="center",
-        h2("Welcome to our presentation"),
-        img(src='Social-Charging-sheet-smaller.jpg', width = "100%", height = "100%")
-      )
-    ),
     tabItems(
+      tabItem(tabName = "dash",
+        fluidRow(
+          box(width = 6, align="center",
+              h2("Welcome to our presentation"),
+              img(src='Social-Charging-sheet-smaller.jpg', width = "100%", height = "100%")
+          )
+        )
+      ),
       tabItem(
         tabName = "raw",
         fluidRow(
