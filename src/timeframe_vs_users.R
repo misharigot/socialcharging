@@ -65,8 +65,8 @@ getHoursElapsedPerUserStartTime <- function() {
   df %>%
     filter(!is.na(charged_kwh), !is.na(end_date)) %>%
     mutate(start_timeframe = paste(
-      paste(hour(floor_date(start_date, "hour")), "00", sep = ":"), 
-      paste(hour(floor_date(start_date, "hour")) + 1, "00", sep = ":") 
+      paste(hour(floor_date(start_date, "hour")), "00", sep = ":"),
+      paste(hour(floor_date(start_date, "hour")) + 1, "00", sep = ":")
     )) %>%
     mutate(start_timeframe = factor(start_timeframe, levels = timeframeLevels)) %>%
     group_by(user_id, start_timeframe) %>%
@@ -80,7 +80,7 @@ getHoursElapsedPerUserStartTime <- function() {
 #
 plotKwhPerUserStartTime <- function() {
   p <- ggplot(getKwhPerUserStartTime(), aes(y = m_kwh, x = start_timeframe)) +
-    geom_bar(stat = "identity", alpha = 0.5) +
+    geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     scale_x_discrete(limits = c(timeframeLevels)) +
     labs(y = "Average kwh charged", x = "Start Timeframe") +
@@ -93,7 +93,7 @@ plotKwhPerUserStartTime <- function() {
 #
 plotHoursElapsedPerUserEndTime <- function() {
   p <- ggplot(getHoursElapsedPerUserStartTime(), aes(y = m_hours, x = start_timeframe)) +
-    geom_bar(stat = "identity", alpha = 0.5) +
+    geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     scale_x_discrete(limits = c(timeframeLevels)) +
     labs(y = "Average hours elapsed", x = "Start Timeframe") +
