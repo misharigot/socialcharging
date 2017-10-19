@@ -57,21 +57,7 @@ server <- function(input, output) {
 
   output$plot2 <- renderPlot({
     source("src/smart_charging_vs_kwh.R")
-    if (input$plot2Input == "0") {
       return(plotMultiple())
-    } else if (input$plot2Input == "1") {
-      return(plotKwhElapsedSmart() +
-        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
-    } else if (input$plot2Input == "2") {
-      return(plotEffectiveChargingHoursElapsedSmart() +
-        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
-    } else if (input$plot2Input == "3") {
-      return(plotKwhElapsed() +
-        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
-    } else if (input$plot2Input == "4") {
-      return(plotEffectiveChargingHoursElapsed() +
-        coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
-    }
   })
 
   output$plot3 <- renderPlot({

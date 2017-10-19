@@ -48,25 +48,8 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart2",
               fluidRow(
-                box(
-                  title = "Controls", width = 5, solidHeader = TRUE, status = "primary",
-                  selectInput(inputId = "plot2Input",
-                              label = "Select a chart",
-                              choices = c("Multiple plots" = "0",
-                                          "kWh elapsed - smart" = "1",
-                                          "Effective charging hours - smart" = "2",
-                                          "kWh elapsed - non-smart" = "3",
-                                          "Effective charging hours - non-smart" = "4"
-                              ))
-                )
-              ),
-              fluidRow(box(plotOutput("plot2", height = 400,
-                                      dblclick = "dblclick",
-                                      brush = brushOpts(
-                                        id = "brush",
-                                        resetOnNew = TRUE
-                                      )), title = "Smart charging ", width = 12)),
-              actionButton("reset_input_1", "Reset")
+                box(plotOutput("plot2", height = 750), width = 12, height = 800)
+              )
       ),
       tabItem(tabName = "chart3",
               fluidRow(
