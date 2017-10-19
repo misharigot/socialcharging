@@ -25,7 +25,7 @@ getKwhPerStationPerDay <- function() {
     filter(!is.na(end_date), !is.na(charged_kwh)) %>%
     mutate(endDate = floor_date(end_date, "day"), dayOfTheWeek = wday(end_date, label = TRUE)) %>%
     group_by(address, endDate, dayOfTheWeek) %>%
-    summarise(sum_kwh = sum(charged_kwh))
+    summarise(sum_kwh = sum(charged_kwh) / n())
 }
 
 # Plot functions ----------------------------------------------------------
@@ -33,11 +33,10 @@ getKwhPerStationPerDay <- function() {
 # Returns a plot with total kWh, per day of the week, grouped by station
 plotKwhPerStationPerDay <- function() {
   p <- ggplot(getKwhPerStationPerDay(), aes(y = sum_kwh, x = dayOfTheWeek)) +
-    geom_boxplot(alpha = 0.5) +
-    geom_smooth() +
+    geom_bar(stat = "identity") +
     labs(x = "day of the week", y = "total kWh charged") +
     ggtitle("kWh charged per day per station")
-  return (p)
+  return(p)
 }
 
 # Calls -------------------------------------------------------------------
