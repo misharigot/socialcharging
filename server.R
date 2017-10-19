@@ -108,4 +108,14 @@ server <- function(input, output) {
     source("src/stations_per_user.R")
     return(plotUsersPerDifferentStations())
   })
+  
+  output$plot7 <- renderPlot({
+    source("src/carPlot.R")
+    if (input$plot7Input == "0") {
+      plotPersantagePerCar()
+    } else if (input$plot7Input == "1") {
+      plotTotaltotalChargingPerCar()
+    } 
+    
+  })
 }
