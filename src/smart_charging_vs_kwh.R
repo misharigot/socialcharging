@@ -30,25 +30,28 @@ getIsNotSmart <- function() {
 
 # Creates a simple dataframe with AVG percentage of usage
 getAvgChargingPercentageDf <- function() {
-  avgSmartPercentage <- round(sum(getIsSmart()$percentage_charging, na.rm = T) / nrow(getIsSmart()), digits = 2)
-  avgSmartChargeTime <- round(sum(getIsSmart()$hours_elapsed, na.rm = T) / nrow(getIsSmart()), digits = 2)
-  avgNonSmartChargePercentage <- round(sum(getIsNotSmart()$percentage_charging, na.rm = T)
-                                       / nrow(getIsNotSmart()), digits = 2)
-  avgNonSmartChargeTime <- round(sum(getIsNotSmart()$hours_elapsed, na.rm = T) / nrow(getIsNotSmart()), digits = 2)
+  avgSmartPercentage <- round(mean(getIsSmart()$percentage_charging, na.rm = T), digits = 2)
+  avgSmartChargeTime <- round(mean(getIsSmart()$hours_elapsed, na.rm = T), digits = 2)
+  avgNonSmartChargePercentage <- round(mean(getIsNotSmart()$percentage_charging, na.rm = T), digits = 2)
+  avgNonSmartChargeTime <- round(mean(getIsNotSmart()$hours_elapsed, na.rm = T), digits = 2)
+  avgSmartEffTime <- round(mean(getIsSmart()$effective_charging_hours, na.rm = T), digits = 2)
+  avgNonSmartEffTime <- round(mean(getIsNotSmart()$effective_charging_hours, na.rm = T), digits = 2)
   tempDf <- data.frame( "smart_charging" = c("Yes", "No"),
                         "number_of_usage" = c(nrow(getIsSmart()), nrow( getIsNotSmart())),
                         "average_charging_percentage" = c(avgSmartPercentage, avgNonSmartChargePercentage),
-                        "average_charging_time" = c(avgSmartChargeTime, avgNonSmartChargeTime))
+                        "average_charging_time" = c(avgSmartChargeTime, avgNonSmartChargeTime),
+                        "average_eff_charge_time" = c(avgSmartEffTime, avgNonSmartEffTime))
   return(tempDf)
 }
-
+a <- getAvgChargingPercentageDf()
 # Plot functions ----------------------------------------------------------
 
 # Simple bar chart displaying smart- and non smart usages
 plotBarSmart <- function() {
   p <- ggplot(df, aes(x = factor(1), fill = factor(smart_charging))) +
-    geom_bar( width = 0.3 ) +
-    geom_text(stat = "count", aes(label = ..count..), position = position_stack( vjust = 0.5 )) +
+    geom_bar(width = 0.2) +
+    geom_text(stat = "count", aes(label = paste0(round((..count..)/sum(..count..) * 100),'%')),
+              position = position_stack( vjust = 0.5 )) +
     theme_void() +
     guides( fill = guide_legend(title = "Smart charging")) +
     theme( legend.justification = c(1, 0), legend.position = c(1, 0)) +
@@ -76,11 +79,12 @@ plotPieChart <- function() {
 plotChargeTime <- function() {
   p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_time,
                                                 fill = factor(smart_charging))) +
-    geom_bar(stat = "identity", width = 1) +
-    geom_text(data = getAvgChargingPercentageDf(), aes(label = average_charging_time),
+    geom_bar(stat = "identity", width = 0.5) +
+    geom_text(data = getAvgChargingPercentageDf(), aes(label = paste0(average_charging_time,'h')),
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL, y = "Average charging time in hours") +
     ggtitle("Average chargetime") +
+    theme_light() +
     theme(plot.title = element_text(hjust = 0.5)) +
     guides(fill = FALSE)
   return(p)
@@ -90,11 +94,12 @@ plotChargeTime <- function() {
 plotChargePercentage <- function() {
   p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_percentage,
                                                 fill = factor(smart_charging))) +
-    geom_bar(stat = "identity", width = 1) +
-    geom_text(data = getAvgChargingPercentageDf(), aes(label = average_charging_percentage),
+    geom_bar(stat = "identity", width = 0.5) +
+    geom_text(data = getAvgChargingPercentageDf(), aes(label = paste0(average_charging_percentage,'%')),
               position = position_stack(vjust = 0.5)) +
-    labs(x = NULL, y = "Average % battery charged") +
-    ggtitle("Average battery charged ") +
+    labs(x = NULL, y = "Effective % of total time car charging") +
+    ggtitle("Effective time battery charged ") +
+    theme_light() +
     theme(plot.title = element_text(hjust = 0.5)) +
     guides(fill = FALSE)
   return(p)
@@ -146,7 +151,7 @@ plotEffectiveChargingHoursElapsed <- function() {
 
 # Plots multiple plots side by side
 plotMultiple <- function() {
-  return(multiplotHelper(plotBarSmart(), plotPieChart(), plotChargeTime(), plotChargePercentage(), cols = 2))
+  return(multiplotHelper(plotChargeTime(), plotChargePercentage(), plotBarSmart(), cols = 2))
 }
 
 # Calls -------------------------------------------------------------------
