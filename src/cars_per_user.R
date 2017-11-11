@@ -9,6 +9,7 @@ df <- read_csv2(config$scDataset)
 df <- cleanDataframe(df)
 
 # Table functions ---------------------------------------------------------
+
 # Returns a table that counts the amount of user per car
 getCarAmount <- function() {
   df %>%
@@ -27,6 +28,7 @@ getCarPerUser <- function() {
 }
 
 # Plot functions ----------------------------------------------------------
+
 # Returns a plot that shows how many users use a type of car
 plotCarAmount <- function() {
   p <- ggplot(getCarAmount(), aes(x = car, y = count)) +
