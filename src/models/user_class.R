@@ -8,17 +8,25 @@ config <- config::get(file = "config.yml")
 source(config$baseClean)
 set.seed(100)
 
+# Constants
+minUserSessions <- 10
+
+contains <- 
+
 df <- read_csv2(config$scDataset)
 df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
 
-# Select only relevant rows/columns
+# Users ids that have sessions >= minUserSessions
+users_with_enough_sessions <- df %>% group_by(user_id) %>% summarise(count = n()) %>% filter(count >= minUserSessions) %>% select(user_id)
+
+# Filter and select only relevant rows/columns
 df <- df %>%
-  filter(!is.na(hours_elapsed), hours_elapsed > 0.00, !is.na(start_date), !is.na(end_date)) %>%
+  filter(!is.na(hours_elapsed), hours_elapsed > 0.00, !is.na(start_date), !is.na(end_date), user_id %in% users_with_enough_sessions$user_id) %>%
   select(session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed)
 
-# Returns the bucket a time belongs to
+# Returns the bucket a POSIXct datetime belongs to
 classify_tf <- function(datetime) {
   datetime <- hour(datetime)
   if (datetime >= 12 & datetime < 18) {
@@ -32,7 +40,7 @@ classify_tf <- function(datetime) {
   }
 }
 
-# Boolean checks --------------------------------------------------------------------------------------------------
+# Boolean checks
 
 isMorning <- function(x) {
   return(x == "06-12")
@@ -50,7 +58,7 @@ isNight <- function(x) {
   return(x == "00-06")
 }
 
-# Returns the classification a session belongs to
+## Returns the classification a session belongs to
 # stf = start_tf
 # etf = end_tf
 # hrs = hours_elapsed
@@ -101,7 +109,7 @@ getSessionClass <- function(stf, etf, hrs) {
   return(-1) # Greater than 24 hours elapsed
 }
 
-# Assign timeframes columns to sessions
+# Assign timeframe columns to sessions
 sessions <- df %>%
   mutate(start_tf = map(start_date, classify_tf), end_tf = map(end_date, classify_tf)) %>%
   mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf))) %>%
@@ -125,7 +133,7 @@ class_distribution <- sessions %>%
   summarise(n = n())
 
 # Barchart: count for each timeframe
-plotBarTfSumm <- function() {
+plotClassCount <- function() {
   p <- ggplot(class_distribution, aes(x = class, y = n)) +
     geom_bar(stat = "identity") +
     geom_smooth() +
@@ -136,9 +144,9 @@ plotBarTfSumm <- function() {
   return(p)
 }
 
-plotBarTfSumm()
+plotClassCount()
 
-# Clustering ------------------------------------------------------------------------------------------------------
+# Clustering for exploration purposes -----------------------------------------------------------------------------
 
 # Returns a scree plot of the data (aim for centers under a 0.2 ratio)
 scree_plot <- function(data) {
