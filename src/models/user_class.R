@@ -11,23 +11,21 @@ set.seed(100)
 # Constants
 minUserSessions <- 10
 
-contains <- 
-
 df <- read_csv2(config$scDataset)
 df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
 
 # Users ids that have sessions >= minUserSessions
-users_with_enough_sessions <- df %>% group_by(user_id) %>% summarise(count = n()) %>% filter(count >= minUserSessions) %>% select(user_id)
+usersWithEnoughSessions <- df %>% group_by(user_id) %>% summarise(count = n()) %>% filter(count >= minUserSessions) %>% select(user_id)
 
 # Filter and select only relevant rows/columns
 df <- df %>%
-  filter(!is.na(hours_elapsed), hours_elapsed > 0.00, !is.na(start_date), !is.na(end_date), user_id %in% users_with_enough_sessions$user_id) %>%
+  filter(!is.na(hours_elapsed), hours_elapsed > 0.00, !is.na(start_date), !is.na(end_date), user_id %in% usersWithEnoughSessions$user_id) %>%
   select(session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed)
 
 # Returns the bucket a POSIXct datetime belongs to
-classify_tf <- function(datetime) {
+classifyTf <- function(datetime) {
   datetime <- hour(datetime)
   if (datetime >= 12 & datetime < 18) {
     return("12-18")
@@ -109,23 +107,23 @@ getSessionClass <- function(stf, etf, hrs) {
   return(-1) # Greater than 24 hours elapsed
 }
 
-# Assign timeframe columns to sessions
-sessions <- df %>%
-  mutate(start_tf = map(start_date, classify_tf), end_tf = map(end_date, classify_tf)) %>%
+# Classify sessions on timeframes
+sessionClassifications <- df %>%
+  mutate(start_tf = map(start_date, classifyTf), end_tf = map(end_date, classifyTf)) %>%
   mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf))) %>%
   rowwise() %>%
   mutate(class = getSessionClass(start_tf, end_tf, hours_elapsed))
 
-sessions$class <- as.factor(sessions$class)
+sessionClassifications$class <- as.factor(sessionClassifications$class)
 
 # Classify users by their most dominant timeframe
-user_classifications <- sessions %>%
+userClassifications <- sessionClassifications %>%
   count(user_id, class) %>%
   group_by(user_id) %>%
   slice(which.max(n))
 
 # Summarise count for each timeframe
-class_distribution <- sessions %>%
+classDistribution <- sessionClassifications %>%
   count(user_id, class) %>%
   group_by(user_id) %>%
   slice(which.max(n)) %>%
@@ -134,7 +132,7 @@ class_distribution <- sessions %>%
 
 # Barchart: count for each timeframe
 plotClassCount <- function() {
-  p <- ggplot(class_distribution, aes(x = class, y = n)) +
+  p <- ggplot(classDistribution, aes(x = class, y = n)) +
     geom_bar(stat = "identity") +
     geom_smooth() +
     labs(x = "class", y = "amount") +
@@ -149,7 +147,7 @@ plotClassCount()
 # Clustering for exploration purposes -----------------------------------------------------------------------------
 
 # Returns a scree plot of the data (aim for centers under a 0.2 ratio)
-scree_plot <- function(data) {
+screePlot <- function(data) {
   ratio_ss <- rep(0, 7)
   for (k in 1:10) {
     km_model <- kmeans(data, centers = k, nstart = 20)
