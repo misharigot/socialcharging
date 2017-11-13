@@ -19,3 +19,19 @@ cleanDataframe <- function(df) {
       round(x, digits = 2)
     }))
 }
+
+# Returns a cleaned second social charging df (27502 rows)
+cleanSecondDf <- function(df) {
+  df %>%
+    rename(charged_kwh = `charged_kwh`, kw_charge_point_speed = `kw  charge point speed)`) %>%
+    mutate(start_date = ymd_hms(start_date),
+           end_date = ymd_hms(end_date),
+           charged_kwh = as.numeric(charged_kwh),
+           kw_charge_point_speed = kw_charge_point_speed*0.01) %>%
+    mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
+      round(x / 3600, 2)
+    })) %>% 
+    mutate(effective_charging_hours = sapply(charged_kwh / kw_charge_point_speed, function(x) {
+      round(x, digits = 2)
+    }))
+}
