@@ -22,8 +22,11 @@ cleanDataframe <- function(df) {
 
 # Returns a cleaned second social charging df (27502 rows)
 cleanSecondDf <- function(df) {
+  colnames(df) <- unlist(strsplit("session_id;user_id;smart_charging;start_date;end_date;ev_provider;
+                      car;corporate;evse_id;latitude;longitude;address;kw_charge_point_speed;
+                      outlets;charged_kwh",
+                      ";"))
   df %>%
-    rename(charged_kwh = `charged_kwh,`, kw_charge_point_speed = `kw  charge point speed)`) %>%
     mutate(start_date = ymd_hms(start_date),
            end_date = ymd_hms(end_date),
            charged_kwh = as.numeric(charged_kwh)) %>%

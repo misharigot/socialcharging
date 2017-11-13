@@ -11,17 +11,25 @@ set.seed(100)
 # Constants
 minUserSessions <- 10
 
-df <- read_csv2(config$scDataset)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
 
 # Users ids that have sessions >= minUserSessions
-usersWithEnoughSessions <- df %>% group_by(user_id) %>% summarise(count = n()) %>% filter(count >= minUserSessions) %>% select(user_id)
+usersWithEnoughSessions <- df %>%
+  group_by(user_id) %>%
+  summarise(count = n()) %>%
+  filter(count >= minUserSessions) %>%
+  select(user_id)
 
 # Filter and select only relevant rows/columns
 df <- df %>%
-  filter(!is.na(hours_elapsed), hours_elapsed > 0.00, !is.na(start_date), !is.na(end_date), user_id %in% usersWithEnoughSessions$user_id) %>%
+  filter(!is.na(hours_elapsed),
+         hours_elapsed > 0.00,
+         !is.na(start_date),
+         !is.na(end_date),
+         user_id %in% usersWithEnoughSessions$user_id) %>%
   select(session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed)
 
 # Returns the bucket a POSIXct datetime belongs to
@@ -57,11 +65,11 @@ isNight <- function(x) {
 }
 
 ## Returns the classification a session belongs to
-# stf = start_tf
-# etf = end_tf
-# hrs = hours_elapsed
+# stf: start_tf
+# etf: end_tf
+# hrs: hours_elapsed
 getSessionClass <- function(stf, etf, hrs) {
-  # stf = Morning
+  # stf: Morning
   if (isMorning(stf) & isMorning(etf) & hrs < 24) {
     return(1)
   } else if (isMorning(stf) & isAfternoon(etf) & hrs < 24) {
@@ -71,8 +79,8 @@ getSessionClass <- function(stf, etf, hrs) {
   } else if (isMorning(stf) & isNight(etf) & hrs < 24) {
     return(4)
   }
-  
-  # stf = Afternoon
+
+  # stf: Afternoon
   if (isAfternoon(stf) & isMorning(etf) & hrs < 24) {
     return(5)
   } else if (isAfternoon(stf) & isAfternoon(etf) & hrs < 24) {
@@ -82,8 +90,8 @@ getSessionClass <- function(stf, etf, hrs) {
   } else if (isAfternoon(stf) & isNight(etf) & hrs < 24) {
     return(8)
   }
-  
-  # stf = Evening
+
+  # stf: Evening
   if (isEvening(stf) & isMorning(etf) & hrs < 24) {
     return(9)
   } else if (isEvening(stf) & isAfternoon(etf) & hrs < 24) {
@@ -93,8 +101,8 @@ getSessionClass <- function(stf, etf, hrs) {
   } else if (isEvening(stf) & isNight(etf) & hrs < 24) {
     return(12)
   }
-  
-  # stf = Night
+
+  # stf: Night
   if (isNight(stf) & isMorning(etf) & hrs < 24) {
     return(13)
   } else if (isNight(stf) & isAfternoon(etf) & hrs < 24) {
@@ -148,7 +156,7 @@ plotClassCount()
 
 # Returns a scree plot of the data (aim for centers under a 0.2 ratio)
 screePlot <- function(data) {
-  ratio_ss <- rep(0, 7)
+  ratio_ss <- rep(0, 10)
   for (k in 1:10) {
     km_model <- kmeans(data, centers = k, nstart = 20)
     ratio_ss[k] <- km_model$tot.withinss / km_model$totss
@@ -164,13 +172,14 @@ as.numeric.factor <- function(x) {
 }
 
 doClustering <- function() {
-  cluster_tf <- sessions %>% select(start_tf, end_tf, hours_elapsed) %>% filter(hours_elapsed < 30)
-  ctf <- sessions %>% filter(hours_elapsed < 30) %>% mutate(hr = hour(start_date))
+  cluster_tf <- sessionClassifications %>% select(start_tf, end_tf, hours_elapsed) %>% filter(hours_elapsed < 30)
+  ctf <- sessionClassifications %>% filter(hours_elapsed < 30) %>% mutate(hr = hour(start_date))
   cluster_tf$start_tf <- map(cluster_tf$start_tf, as.numeric.factor)
   cluster_tf$end_tf <- map(cluster_tf$end_tf, as.numeric.factor)
-  
-  scree_plot(cluster_tf)
+
+  screePlot(cluster_tf)
   sc_km <- kmeans(cluster_tf, centers = 3, nstart = 20)
-  
-  plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster)
+
+  plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster,
+       xlab = "start timeframe (hour)", ylab = "hours elapsed in session")
 }
