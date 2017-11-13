@@ -38,8 +38,8 @@ cleanSecondDf <- function(df) {
 }
 
 cleanSecondDataframe <- function(df) {
+  colnames(df) <- getScColnames()
   df %>%
-    rename(charged_kwh = `charged_kwh,`, kw_charge_point_speed = `kw  charge point speed)`) %>%
     mutate(start_date = ymd_hms(start_date),
            end_date = ymd_hms(end_date),
            charged_kwh = as.numeric(charged_kwh)) %>%
