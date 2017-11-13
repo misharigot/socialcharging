@@ -6,10 +6,10 @@ config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
 
-df <- read_csv2(config$scDataset)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanDataframe(df)
 df <- df %>%
-  filter(!is.na(end_date), !is.na(charged_kwh)) %>%
+  filter(!is.na(end_date), !is.na(charged_kwh), hours_elapsed > 0) %>%
   mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
     round(x, digits = 2)
   }))
@@ -43,7 +43,7 @@ getAvgChargingPercentageDf <- function() {
                         "average_eff_charge_time" = c(avgSmartEffTime, avgNonSmartEffTime))
   return(tempDf)
 }
-a <- getAvgChargingPercentageDf()
+
 # Plot functions ----------------------------------------------------------
 
 # Simple bar chart displaying smart- and non smart usages
@@ -61,22 +61,7 @@ plotBarSmart <- function() {
   return(p)
 }
 
-# Simple pie chart displaying smart- and non smart usages
-# width of 1 creates a pie chart, anything less creates a donut chart
-plotPieChart <- function() {
-  p <- ggplot(df, aes(x = factor(1), fill = factor(smart_charging))) +
-    geom_bar(width = 0.3) +
-    labs(y = "smart charging") +
-    geom_text(stat = "count", aes(label = ..count..), position = position_stack(vjust = 0.5)) +
-    coord_polar("y", start = 0, direction = -1) +
-    theme_void() +
-    ggtitle("Started sessions of smart and non smart (piechart)") +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    guides(fill = FALSE)
-  return(p)
-}
-
-# plotChargeTime a bar plot displaying the avg charge time
+# Returns a bar plot displaying the avg charge time
 plotChargeTime <- function() {
   p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_time,
                                                 fill = factor(smart_charging))) +
@@ -92,7 +77,7 @@ plotChargeTime <- function() {
   return(p)
 }
 
-# plotChargePercentage a bar plot displaying the avg charging percentage
+#  Returns a bar plot displaying the avg charging percentage
 plotChargePercentage <- function() {
   p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_percentage,
                                                 fill = factor(smart_charging))) +
@@ -108,59 +93,11 @@ plotChargePercentage <- function() {
   return(p)
 }
 
-# IsSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
-plotKwhElapsedSmart <- function() {
-  p <-  ggplot(getIsSmart(), aes(x = hours_elapsed, y = charged_kwh)) +
-    geom_point(alpha = 0.3) +
-    geom_smooth(alpha = 0.2, size = 1) +
-    labs(x = "session time in hours", y = "kWh charged") +
-    ggtitle("Charging time vs hours elapsed for smart chargers")
-  return(p)
-}
-
-
-# IsSmart scatterplot displaying a possible relation between the effective charging time and session time
-plotEffectiveChargingHoursElapsedSmart <- function() {
-  p <- ggplot(getIsSmart(), aes(x = hours_elapsed, y = effective_charging_hours)) +
-    geom_point(alpha = 0.3) +
-    geom_smooth(alpha = 0.2, size = 1) +
-    labs(x = "elapsed time in hours", y = "effective charging time in hours") +
-    #xlim(0,40) +
-    ggtitle("Effective charging time vs hours elapsed for smart chargers")
-  return(p)
-}
-
-# NotSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
-plotKwhElapsed <- function() {
-  p <- ggplot(getIsNotSmart(), aes(x = hours_elapsed, y = charged_kwh)) +
-    geom_point(alpha = 0.3) +
-    geom_smooth(alpha = 0.2, size = 1) +
-    labs(x = "session time in hours", y = "kWh charged") +
-    ggtitle("Charging time vs hours elapsed for non-smart chargers")
-  return(p)
-}
-
-
-# NotSmart scatterplot displaying a possible relation between the amount of charged kwh and session time
-plotEffectiveChargingHoursElapsed <- function() {
-  p <- ggplot(getIsNotSmart(), aes(x = hours_elapsed, y = effective_charging_hours)) +
-    geom_point(alpha = 0.3) +
-    geom_smooth(alpha = 0.2, size = 1) +
-    labs(x = "elapsed time in hours", y = "effective charging time in hours") +
-    #xlim(0,40) +
-    ggtitle("Effective charging time vs hours elapsed for non-smart chargers")
-  return(p)
-}
-
 # Plots multiple plots side by side
 plotMultiple <- function() {
   return(multiplotHelper(plotChargeTime(), plotChargePercentage(), plotBarSmart(), cols = 2))
 }
 
 # Calls -------------------------------------------------------------------
-plotKwhElapsedSmart()
-plotEffectiveChargingHoursElapsedSmart()
-plotKwhElapsed()
-plotEffectiveChargingHoursElapsed()
 
 plotMultiple()
