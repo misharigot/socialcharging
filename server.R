@@ -20,7 +20,7 @@ server <- function(input, output) {
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
 
-# Output ----------------------------------------------------------------------------------------------------------
+  # Output ----------------------------------------------------------------------------------------------------------
 
   output$table1 <- renderDataTable({
     df
@@ -29,12 +29,12 @@ server <- function(input, output) {
   output$plot1 <- renderPlot({
     source("src/time_vs_kwh.R")
     return(plotTimeKwh() +
-      coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
+             coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
   })
 
   output$plot2 <- renderPlot({
     source("src/smart_charging_vs_kwh.R")
-      return(plotMultiple())
+    return(plotMultiple())
   })
 
   output$plot3 <- renderPlot({
@@ -46,12 +46,7 @@ server <- function(input, output) {
     source("src/timeframe_vs_sessions.R")
     return(multiplotTimeframes())
   })
-
-  output$map <- renderLeaflet({
-    source("src/location_vs_kwh.R")
-    handleDefaultMapCreation()
-  })
-
+  
   output$plot7 <- renderPlot({
     source("src/cars.R")
     if (input$plot7Input == "0") {
@@ -65,9 +60,14 @@ server <- function(input, output) {
     source("src/timeframe_vs_users.R")
     return(multiplotUserTimeframes())
   })
-  
+
+  output$map <- renderLeaflet({
+    source("src/location_vs_kwh.R")
+    handleDefaultMapCreation()
+  })
+
   # Observers -------------------------------------------------------------------------------------------------------
-  
+
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
   observeEvent(input$dblclick, {
@@ -99,6 +99,6 @@ server <- function(input, output) {
 
   #Eventhandler for Popups when clicking on circle
   observe({
-    handlePopupCreation(input$plot5_shape_click)
+    handlePopupCreation(input$map_shape_click)
   })
 }

@@ -3,7 +3,7 @@ library(shinydashboard)
 library(leaflet)
 
 ui <- dashboardPage(
-  skin=("green"),
+  skin = ("green"),
   dashboardHeader(title = "Social Charging"),
   dashboardSidebar(
     sidebarMenu(
@@ -15,7 +15,7 @@ ui <- dashboardPage(
                menuSubItem("kWh vs Stations", tabName = "chart3"),
                menuSubItem("Timeframe vs Sessions", tabName = "chart4"),
                menuSubItem("Analyzing per Car", tabName = "chart7"),
-               menuSubItem("Timeframe vs users", tabName="chart8")
+               menuSubItem("Timeframe vs users", tabName = "chart8")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
@@ -23,12 +23,12 @@ ui <- dashboardPage(
   dashboardBody(
     tabItems(
       tabItem(tabName = "dash",
-        fluidRow(
-          box(width = 6, align="center",
-              h2("Welcome to our presentation"),
-              img(src='Social-Charging-sheet-smaller.jpg', width = "100%", height = "100%")
-          )
-        )
+              fluidRow(
+                box(width = 6, align = "center",
+                    h2("Welcome to our presentation"),
+                    img(src = "Social-Charging-sheet-smaller.jpg", width = "100%", height = "100%")
+                )
+              )
       ),
       tabItem(
         tabName = "raw",
@@ -73,13 +73,14 @@ ui <- dashboardPage(
                               label = "Select a chart",
                               choices = c("PersantagePerCar" = "0",
                                           "AverageChargedKwhPerCar" = "1"
-                              ))
+                              )
+                  )
                 )
               ),
               fluidRow(
                 box(
-                  plotOutput("plot7"), 
-                  title = "Analyzing per car ", 
+                  plotOutput("plot7"),
+                  title = "Analyzing per car ",
                   width = 12)
               )
       ),
@@ -89,24 +90,30 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "mapTab",
-              div(class="outer",
+              div(class = "outer",
                   tags$head(
                     # Include our custom CSS
                     includeCSS("src/styles.css"),
                     includeScript("src/gomap.js")
                   ),
                   # If not using custom CSS, set height of leafletOutput to a number instead of percent
-                  leafletOutput("map", width="100%", height="100%"),
-                  absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
-                                width = 330, height = "auto",
-                                
+                  leafletOutput("map", width = "100%", height = "100%"),
+                  absolutePanel(id = "controls",
+                                class = "panel panel-default",
+                                fixed = TRUE,
+                                draggable = TRUE,
+                                top = 60,
+                                left = "auto",
+                                right = 20,
+                                bottom = "auto",
+                                width = 330,
+                                height = "auto",
                                 h2("Filter controls"),
-                                
-                                selectInput("category", "Category",
+                                selectInput("category",
+                                            "Category",
                                             c("Charged kWh per station", "Occupation percentage",
-                                              "Efficiency percentage", "Users per station")),
-                                
+                                              "Efficiency percentage", "Users per station")
+                                ),
                                 h5("The category determines the size of the circles")
                   )
               )
@@ -114,5 +121,3 @@ ui <- dashboardPage(
     )
   )
 )
-
-  

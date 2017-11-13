@@ -1,13 +1,15 @@
 # This scripts handles all information for the map plot
 source("src/location_vs_kwh.R")
 
+mapId <- "map"
+
 # This method handles the default content of the map like circles and legends.
 handleDefaultMapCreation <- function(userInput) {
   mapData <- cleanMapData()
-  
+
   radius <- mapData$total_charged / max(mapData$total_charged) * 300
   pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
-  
+
   leaflet() %>%
     addTiles(
       urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png"
@@ -24,7 +26,8 @@ handleDefaultMapCreation <- function(userInput) {
               pal = pal,
               values = mapData$total_charged,
               title = "Total Charged kWh",
-              layerId = "colorLegend") 
+              layerId = "colorLegend"
+              )
 }
 
 
@@ -33,24 +36,24 @@ handleMapCreation <- function(userInput) {
   categorySelected <- userInput
   mapData <- cleanMapData()
 
-  if(!(categorySelected == "Users per station")) {
-    
-    if(categorySelected == "Charged kWh per station") {
+  if (!(categorySelected == "Users per station")) {
+
+    if (categorySelected == "Charged kWh per station") {
       radius <- mapData$total_charged / max(mapData$total_charged) * 300
       pal <-  colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
     }
-  
-    if(categorySelected == "Occupation percentage") {
+
+    if (categorySelected == "Occupation percentage") {
       radius <- mapData$popularity_score / max(mapData$popularity_score) * 300
       pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
     }
-  
-    if(categorySelected == "Efficiency percentage") {
+
+    if (categorySelected == "Efficiency percentage") {
       radius <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
       pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
     }
-    
-    leafletProxy("plot5", data = mapData) %>%
+
+    leafletProxy(mapId, data = mapData) %>%
       clearShapes() %>%
       addCircles(
         lng = mapData$longitude,
@@ -63,11 +66,12 @@ handleMapCreation <- function(userInput) {
                 pal = pal,
                 values = mapData$total_charged,
                 title = "Total Charged kWh",
-                layerId = "colorLegend")
+                layerId = "colorLegend"
+                )
   } else {
     radius <- mapData$total_users / max(mapData$total_users) * 300
-    
-    leafletProxy("plot5", data = mapData) %>%
+
+    leafletProxy(mapId, data = mapData) %>%
       clearShapes() %>%
       addCircles(
         lng = mapData$longitude,
@@ -79,7 +83,7 @@ handleMapCreation <- function(userInput) {
   }
 }
 
-geom_text(stat = "count", aes(label = as.character(round((..count..)/sum(..count..) * 100), digits = 2), "%"), 
+geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
           position = position_stack( vjust = 0.5 ))
 
 # This method handles the content of the popup when circles are clicked on the map.
@@ -96,15 +100,14 @@ chargingStationPopup <- function(id, lat, lng) {
     sprintf("Total sessions: %s", selectedChargingPole$total_sessions), tags$br(),
     sprintf("Total users: %s", selectedChargingPole$total_users)
   ))
-  
-  leafletProxy("plot5") %>%
+
+  leafletProxy(mapId) %>%
     addPopups(lng, lat, content, layerId = id)
 }
 
 # This method handles the popup event
 handlePopupCreation <- function(event) {
-  leafletProxy("plot5") %>% clearPopups()
-  print(event)
+  leafletProxy(mapId) %>% clearPopups()
   if (is.null(event))
     return()
   isolate({
