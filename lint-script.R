@@ -1,8 +1,7 @@
 # This script enables you to lint your R scripts, to check on styling errors.
 library(lintr)
-
-# File to lint
-fileToLint <- "map/map_renderer.R"
+library(config)
+config <- config::get(file = "config.yml")
 
 # Custom lint rules
 linters <- with_defaults(
@@ -14,4 +13,4 @@ linters <- with_defaults(
 )
 
 lintr::clear_cache(file = NULL)
-lintr::lint(filename = fileToLint, linters = linters)
+lintr::lint(filename = config$fileToLint, linters = linters)
