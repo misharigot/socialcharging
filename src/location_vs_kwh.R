@@ -7,7 +7,7 @@ library(dplyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
-df <- read_csv2(config$scDataset)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanDataframe(df)
 
 # Data cleaning ---------------------------------------------------------
@@ -58,10 +58,10 @@ cleanMapData <- function() {
     mutate(efficiency_score = round((total_effective_charging / total_hours_elapsed) * 100 + 10, digits = 0),
            popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
                                      / outlets) * 100 + 10, digits = 0))
-  
+
   df$total_sessions <- as.numeric(df$total_sessions)
   df$total_charged <- as.numeric(df$total_charged)
-  
+
   return(df)
 }
 

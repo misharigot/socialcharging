@@ -7,7 +7,7 @@ library(readr)
 config <- config::get(file = "../config.yml")
 source(config$baseClean)
 
-df <- read_csv2(config$scDataset)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanDataframe(df)
 
 
@@ -118,8 +118,8 @@ devidedbycar$car <-factor(devidedbycar$car, levels = devidedbycar$car[order(devi
 plotPersantagePerCar <- ggplot(devidedbycar,aes(x=car,y=per)) +
   geom_bar(position= "dodge",stat= "identity") +
   coord_flip() +
-  labs(x="car",y="persentage")+
-  ggtitle("Persantage per car")
+  labs(x="car", y="percentage")+
+  ggtitle("Percentage per car")
 
 plotPersantagePerCar
 

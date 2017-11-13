@@ -6,7 +6,7 @@ config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
 
-df <- read_csv2(config$scDataset)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanDataframe(df)
 
 # Table functions ---------------------------------------------------------

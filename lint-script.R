@@ -9,7 +9,8 @@ linters <- with_defaults(
   line_length_linter(120),
   multiple_dots_linter = NULL,
   object_length_linter(40),
-  spaces_left_parentheses_linter = NULL
+  spaces_left_parentheses_linter = NULL,
+  trailing_whitespace_linter = NULL
 )
 
 lintr::clear_cache(file = NULL)
