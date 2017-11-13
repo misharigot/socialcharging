@@ -30,3 +30,4 @@ config.yml
 packrat/lib*/
 packrat/src/
 data
+lint-script.R
