@@ -73,8 +73,21 @@ clusterDf <- cleanedDf %>%
 # Clustering --------------------------------------------------------------------------------------------------
 charging_km <- kmeans(clusterDf, 5, nstart = 20)
 
-# Tableing ----------------------------------------------------------------------------------------------------
-table(charging_km$cluster, cleanedDf$total_charged)
+# Performance measures ----------------------------------------------------------------------------------------
+# Dunn's Index
+dunn_km <- dunn(clusters = charging_km$cluster, Data = clusterDf)
+dunn_km
+
+# Scree Plot
+ratio_ss <- rep(0, 15)
+
+for (k in 1:10) {
+  charging_km_test <- kmeans(clusterDf, k, nstart = 20)
+  
+  ratio_ss[k] <- charging_km_test$tot.withinss / charging_km_test$totss
+}
+
+plot(ratio_ss, type = "b", xlab = "k")
 
 # Plotering ---------------------------------------------------------------------------------------------------
 plot(total_charged ~ total_hours_elapsed, data = clusterDf, col = charging_km$cluster)
@@ -90,6 +103,3 @@ p <- plot_ly(clusterDf, x = ~total_hours_elapsed, y = ~total_charged,
                       yaxis = list(title = 'total charged kwh'),
                       zaxis = list(title = 'total sessions')))
 p
-
-dunn_km <- dunn(clusters = charging_km$cluster, Data = clusterDf)
-dunn_km
