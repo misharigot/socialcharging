@@ -93,8 +93,8 @@ ui <- dashboardPage(
               div(class = "outer",
                   tags$head(
                     # Include our custom CSS
-                    includeCSS("src/styles.css"),
-                    includeScript("src/gomap.js")
+                    includeCSS("src/map/styles.css"),
+                    includeScript("src/map/gomap.js")
                   ),
                   # If not using custom CSS, set height of leafletOutput to a number instead of percent
                   leafletOutput("map", width = "100%", height = "100%"),

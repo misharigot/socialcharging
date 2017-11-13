@@ -10,6 +10,7 @@ getScColnames <- function() {
 
 # Returns the social charging dataframe given, with general cleaning executed on the data set.
 cleanDataframe <- function(df) {
+  warning("\n\n\ncleanDataframe called.\n\n\n")
   colnames(df) <- getScColnames()
   df %>%
   mutate(start_date = ymd_hms(start_date),

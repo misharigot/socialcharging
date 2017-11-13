@@ -1,11 +1,12 @@
 # This scripts handles all information for the map plot
-source("src/location_vs_kwh.R")
+source("src/map/map_data.R")
 
+# Id for ui.R
 mapId <- "map"
 
 # This method handles the default content of the map like circles and legends.
-handleDefaultMapCreation <- function(userInput) {
-  mapData <- cleanMapData()
+handleDefaultMapCreation <- function(userInput, scData) {
+  mapData <- getMapData(scData)
 
   radius <- mapData$total_charged / max(mapData$total_charged) * 300
   pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
@@ -30,12 +31,11 @@ handleDefaultMapCreation <- function(userInput) {
               )
 }
 
-
 # This method handles the content of the map like circles and legends.
-handleMapCreation <- function(userInput) {
+handleMapCreation <- function(userInput, scData) {
   categorySelected <- userInput
-  mapData <- cleanMapData()
-
+  mapData <- getMapData(scData)
+  print("map data cleaned")
   if (!(categorySelected == "Users per station")) {
 
     if (categorySelected == "Charged kWh per station") {
@@ -84,11 +84,11 @@ handleMapCreation <- function(userInput) {
 }
 
 geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
-          position = position_stack( vjust = 0.5 ))
+          position = position_stack(vjust = 0.5))
 
 # This method handles the content of the popup when circles are clicked on the map.
-chargingStationPopup <- function(id, lat, lng) {
-  cleanedMapData <- cleanMapData()
+chargingStationPopup <- function(id, lat, lng, scData) {
+  cleanedMapData <- getMapData(scData)
 
   selectedChargingPole <- cleanedMapData[id, ]
   content <- as.character(tagList(
@@ -106,11 +106,11 @@ chargingStationPopup <- function(id, lat, lng) {
 }
 
 # This method handles the popup event
-handlePopupCreation <- function(event) {
+handlePopupCreation <- function(event, scData) {
   leafletProxy(mapId) %>% clearPopups()
   if (is.null(event))
     return()
   isolate({
-    chargingStationPopup(event$id, event$lat, event$lng)
+    chargingStationPopup(event$id, event$lat, event$lng, scData)
   })
 }

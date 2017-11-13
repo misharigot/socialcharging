@@ -7,13 +7,6 @@ library(dplyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanDataframe(df)
-
-# Data cleaning ---------------------------------------------------------
-df <- df %>%
-  filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
-
 split_str_by_index <- function(target, index) {
   index <- sort(index)
   substr(rep(target, length(index) + 1),
@@ -27,26 +20,30 @@ interleave <- function(v1, v2) {
   c(v1, v2)[order(c(ord1, ord2))]
 }
 
-df$latitude <- sapply(df$latitude, function(x){
-  insert <- "."[order(3)]
-  index <- sort(3)
-  paste(interleave(split_str_by_index(x, 3), "."), collapse = "")
-})
-
-df$longitude <- sapply(df$longitude, function(x){
-  insert <- "."[order(2)]
-  index <- sort(2)
-  paste(interleave(split_str_by_index(x, 2), "."), collapse = "")
-})
-
-df$latitude <- as.numeric(df$latitude)
-df$longitude <- as.numeric(df$longitude)
-
-totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
-
 # Advanced data cleaning ----------------------------------------------------------
-cleanMapData <- function() {
-  df <- df %>%
+getMapData <- function(scData) {
+  print("cleaning map data")
+  mapDf <- scData %>%
+    filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
+  
+  mapDf$latitude <- sapply(mapDf$latitude, function(x){
+    insert <- "."[order(3)]
+    index <- sort(3)
+    paste(interleave(split_str_by_index(x, 3), "."), collapse = "")
+  })
+  
+  mapDf$longitude <- sapply(mapDf$longitude, function(x){
+    insert <- "."[order(2)]
+    index <- sort(2)
+    paste(interleave(split_str_by_index(x, 2), "."), collapse = "")
+  })
+  
+  mapDf$latitude <- as.numeric(mapDf$latitude)
+  mapDf$longitude <- as.numeric(mapDf$longitude)
+  
+  totalHours <- interval(min(mapDf$start_date), max(mapDf$end_date)) / 3600
+  
+  mapDf <- mapDf %>%
     group_by(longitude, latitude) %>%
     summarise(address = first(address),
               outlets = first(outlets),
@@ -59,10 +56,8 @@ cleanMapData <- function() {
            popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
                                      / outlets) * 100 + 10, digits = 0))
 
-  df$total_sessions <- as.numeric(df$total_sessions)
-  df$total_charged <- as.numeric(df$total_charged)
+  mapDf$total_sessions <- as.numeric(mapDf$total_sessions)
+  mapDf$total_charged <- as.numeric(mapDf$total_charged)
 
-  return(df)
+  return(mapDf)
 }
-
-newDataFram <- cleanMapData()
