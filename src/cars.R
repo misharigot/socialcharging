@@ -6,7 +6,7 @@ library(readr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
-df <- read_csv2(config$scDataset)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanDataframe(df)
 
 # Table functions ---------------------------------------------------------
@@ -52,5 +52,5 @@ plotAverageChargedKwhPerCar <- function(){
 
 # Calls -------------------------------------------------------------------
 
-plotPersantagePerCar()
+plotPercentagePerCar()
 plotAverageChargedKwhPerCar()
