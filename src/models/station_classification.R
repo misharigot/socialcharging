@@ -123,9 +123,8 @@ classifyStation <- function(){
 }
 
 df$stationClass <- classifyStation()
-###
 
-##
+
 
 # tree --------------------------------------------------------------------
 
