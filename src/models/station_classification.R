@@ -41,9 +41,6 @@ df <- df %>%
                                    / outlets) * 100 + 10, digits = 0))
 
 
-intrain <- createDataPartition(y=df$stationClass, p = 0.7, list = FALSE)
-train <- df[intrain, ]
-test <- df[-intrain, ]
 
 # classification ----------------------------------------------------------
 
@@ -54,7 +51,7 @@ classifyKwh <- function(x){
   fst <- kwhSummary[2]
   med <- kwhSummary[3]
   trd <- kwhSummary[5]
-  ifelse(x > trd,4,
+  ifelse(x > trd, 4,
          ifelse(x>med,3,
                 ifelse(x>fst,2,1)
                        )
@@ -123,6 +120,10 @@ classifyStation <- function(){
 }
 
 df$stationClass <- classifyStation()
+
+intrain <- createDataPartition(y=df$stationClass, p = 0.7, list = FALSE)
+train <- df[intrain, ]
+test <- df[-intrain, ]
 
 
 

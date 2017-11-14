@@ -2,7 +2,7 @@
 library(lintr)
 
 # File to lint
-fileToLint <- "map/map_renderer.R"
+fileToLint <- "src/models/station_classification.R"
 
 # Custom lint rules
 linters <- with_defaults(
