@@ -51,9 +51,9 @@ classifyKwh <- function(x){
   fst <- kwhSummary[2]
   med <- kwhSummary[3]
   trd <- kwhSummary[5]
-  ifelse(x > trd, 4,
-         ifelse(x>med,3,
-                ifelse(x>fst,2,1)
+  ifelse (x > trd, 4,
+         ifelse (x > med, 3,
+                ifelse (x > fst, 2, 1)
                        )
          )
 }
@@ -64,9 +64,9 @@ classifyOccu <- function(x){
   fst <- occuSummary[2]
   med <- occuSummary[3]
   trd <- occuSummary[5]
-  ifelse(x > trd,4,
-         ifelse(x>med,3,
-                ifelse(x>fst,2,1)
+  ifelse(x > trd, 4,
+         ifelse(x > med, 3,
+                ifelse(x > fst, 2, 1)
          )
   )
 }
@@ -77,9 +77,9 @@ classifyEff <- function(x){
   fst <- effSummary[2]
   med <- effSummary[3]
   trd <- effSummary[5]
-  ifelse(x > trd,4,
-         ifelse(x>med,3,
-                ifelse(x>fst,2,1)
+  ifelse (x > trd, 4,
+         ifelse (x > med, 3,
+                ifelse (x > fst, 2, 1)
          )
   )
 }
@@ -90,9 +90,9 @@ classifyUser <- function(x){
   fst <- userSummary[2]
   med <- userSummary[3]
   trd <- userSummary[5]
-  ifelse(x > trd,4,
-         ifelse(x>med,3,
-                ifelse(x>fst,2,1)
+  ifelse (x > trd, 4,
+         ifelse (x > med, 3,
+                ifelse (x > fst, 2, 1)
          )
   )
 }
@@ -100,10 +100,7 @@ classifyUser <- function(x){
 
 
 # sum the results
-#kwhS = kwh score per station 
-#occuS = occupation score per station
-#effS = efficiency scroe per sation
-#userS = user score per station
+# and classify the station A to D
 
 classifyStation <- function(){
   result <- classifyKwh(df$total_charged) + classifyOccu(df$total_hours_elapsed) +
@@ -112,16 +109,16 @@ classifyStation <- function(){
   fst <- stationSummary[2]
   med <- stationSummary[3]
   trd <- stationSummary[5]
-  ifelse(result > trd,"A",
-         ifelse(result>med,"B",
-                ifelse(result>fst,"C","D")
+  ifelse (result > trd, "A",
+         ifelse (result > med, "B",
+                ifelse (result > fst, "C", "D")
          )
   )
 }
 
 df$stationClass <- classifyStation()
 
-intrain <- createDataPartition(y=df$stationClass, p = 0.7, list = FALSE)
+intrain <- createDataPartition(y = df$stationClass, p = 0.7, list = FALSE)
 train <- df[intrain, ]
 test <- df[-intrain, ]
 
@@ -139,14 +136,14 @@ text(rpartmod)
 printcp(rpartmod)
 plotcp(rpartmod)
 
-ptree <- prune(rpartmod, cp= rpartmod$cptable[which.min(rpartmod$cptable[,"xerror"]),"CP"])
+ptree <- prune(rpartmod, cp = rpartmod$cptable[which.min(rpartmod$cptable[, "xerror"]), "CP"])
 plot(ptree)
 text(ptree)
 
 #check accuracy by using test dataset
-rpartpred <- predict(ptree, test, type ="class")
-confusionMatrix(rpartpred,test$stationClass)
+rpartpred <- predict(ptree, test, type = "class")
+confusionMatrix(rpartpred, test$stationClass)
 
 
 # fancy plot
-fancyRpartPlot(ptree,tweak=2)
+fancyRpartPlot(ptree, tweak = 1)
