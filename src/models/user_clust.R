@@ -27,9 +27,9 @@ cleanDataTime <- function(){
     filter(!is.na(start_date), !is.na(end_date), !is.na(hours_elapsed)) %>%
     group_by(user_id) %>%
     summarise(total_charge_sessions = n(),
-              avg_hours_elapsed = sum(hours_elapsed)/total_charge_sessions,
-              start_time = mean(as.numeric(format(round(start_date, "hours"), format='%H'))),
-              end_time = mean(as.numeric(format(round(end_date, "hours"), format='%H'))))
+              avg_hours_elapsed = sum(hours_elapsed) / total_charge_sessions,
+              start_time = mean(as.numeric(format(round(start_date, "hours"), format = "%H"))),
+              end_time = mean(as.numeric(format(round(end_date, "hours"), format = "%H"))))
   
   return(df)
 }
@@ -89,27 +89,27 @@ screePlotTime <- function() {
 plotClusterDataCharged <- function() {
   p <- plot_ly(clusteredDfCharged, x = ~total_hours_elapsed, y = ~total_charged,
                z = ~total_charge_sessions, color = clusteredCharged_km$cluster, showscale = TRUE,
-               hoverinfo = 'text',
-               text = ~paste('</br> Hours elapsed: ', total_hours_elapsed,
-                             '</br> Charged kWh: ', total_charged,
-                             '</br> Sessions: ', total_charge_sessions,
-                             '</br> User id: ', rownames(clusteredDfCharged))) %>%
+               hoverinfo = "text",
+               text = ~paste("</br> Hours elapsed: ", total_hours_elapsed,
+                             "</br> Charged kWh: ", total_charged,
+                             "</br> Sessions: ", total_charge_sessions,
+                             "</br> User id: ", rownames(clusteredDfCharged))) %>%
     hide_colorbar() %>%
-    layout(scene = list(xaxis = list(title = 'total hours elapsed'),
-                        yaxis = list(title = 'total charged kwh'),
-                        zaxis = list(title = 'total sessions')))
+    layout(scene = list(xaxis = list(title = "total hours elapsed"),
+                        yaxis = list(title = "total charged kwh"),
+                        zaxis = list(title = "total sessions")))
   return(p)
 }
 
 plotClusterDataTime <- function() {
   p <- plot_ly(clusteredDfTime, x = ~start_time, y = ~end_time,
                z = ~avg_hours_elapsed, color = clusteredTime_km$cluster, showscale = TRUE,
-               hoverinfo = 'text',
-               text = ~paste('</br> User id: ', rownames(clusteredDfTime))) %>%
+               hoverinfo = "text",
+               text = ~paste("</br> User id: ", rownames(clusteredDfTime))) %>%
     hide_colorbar() %>%
-    layout(scene = list(xaxis = list(title = 'Avg start time'),
-                        yaxis = list(title = 'Avg end time'),
-                        zaxis = list(title = 'Avg hours elapsed')))
+    layout(scene = list(xaxis = list(title = "Avg start time"),
+                        yaxis = list(title = "Avg end time"),
+                        zaxis = list(title = "Avg hours elapsed")))
   return(p)
 }
 
