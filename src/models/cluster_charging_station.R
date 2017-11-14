@@ -15,6 +15,7 @@ set.seed(100)
 df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
+# Basic data cleaning --------------------------------------------------------------------------------------
 df <- df %>%
   filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
 
@@ -48,7 +49,7 @@ df$longitude <- as.numeric(df$longitude)
 
 totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
 
-# Advanced data cleaning -----------------------------------------------------------------------------------
+# Advanced data cleaning --------------------------------------------------------------------------------------
 cleanMapData <- function() {
   df <- df %>%
     group_by(longitude, latitude) %>%
@@ -65,42 +66,61 @@ cleanMapData <- function() {
   return(df)
 }
 
-cleanedDf <- cleanMapData()
-
-clusterDf <- cleanedDf %>%
-  select(total_charged, total_hours_elapsed, total_sessions)%>%
-  group_by(total_charged, total_hours_elapsed, total_sessions)
-
-# Clustering --------------------------------------------------------------------------------------------------
-charging_km <- kmeans(clusterDf, 5, nstart = 20)
-
-# Performance measures ----------------------------------------------------------------------------------------
-# Dunn's Index
-dunn_km <- dunn(clusters = charging_km$cluster, Data = clusterDf)
-dunn_km
-
-# Scree Plot
-ratio_ss <- rep(0, 15)
-
-for (k in 1:10) {
-  charging_km_test <- kmeans(clusterDf, k, nstart = 20)
+createClusterDataFrame <- function() {
+  cleanedDf <- cleanMapData()
+  clusterDf <- cleanedDf %>%
+    ungroup() %>%
+    select(total_charged, total_hours_elapsed, total_sessions)
   
-  ratio_ss[k] <- charging_km_test$tot.withinss / charging_km_test$totss
+  rownames(clusterDf) <- paste(cleanedDf$longitude, cleanedDf$latitude, sep=", ")
+  
+  return(clusterDf)
 }
 
-plot(ratio_ss, type = "b", xlab = "k")
+clusterDf <- createClusterDataFrame()
+
+# Clustering --------------------------------------------------------------------------------------------------
+charging_km <- kmeans(clusterDf, 4, nstart = 20)
+
+# Performance measures ----------------------------------------------------------------------------------------
+##Dunn's Index
+calculateDunnIndex <- function() {
+  dunn_km <- dunn(clusters = charging_km$cluster, Data = clusterDf)
+  return(dunn_km)
+}
+
+##Scree Plot
+createScreePlot <- function() {
+  
+  ratio_ss <- rep(0, 10)
+  
+  for (k in 1:10) {
+    charging_km_test <- kmeans(clusterDf, k, nstart = 20)
+    
+    dunn_km_test <- dunn(clusters = charging_km_test$cluster, Data = clusterDf)
+    
+    print(k)
+    ratio_ss[k] <- charging_km_test$tot.withinss / charging_km_test$totss
+  }
+  
+  plot(ratio_ss, type = "b", xlab = "k")
+}
 
 # Plotering ---------------------------------------------------------------------------------------------------
-plot(total_charged ~ total_hours_elapsed, data = clusterDf, col = charging_km$cluster)
+createStationClusterPlot <- function() {
+  p <- plot_ly(clusterDf, x = ~total_hours_elapsed, y = ~total_charged,
+               z = ~total_sessions, color = charging_km$cluster, showscale = TRUE,
+               hoverinfo = 'text',
+               text = ~paste('</br> Hours elapsed: ', total_hours_elapsed,
+                             '</br> Charged kWh: ', total_charged,
+                             '</br> Sessions: ', total_sessions)) %>%
+    hide_colorbar() %>%
+    layout(scene = list(xaxis = list(title = 'total hours elapsed'),
+                        yaxis = list(title = 'total charged kwh'),
+                        zaxis = list(title = 'total sessions')))
+  return(p)
+}
 
-p <- plot_ly(clusterDf, x = ~total_hours_elapsed, y = ~total_charged,
-             z = ~total_sessions, color = charging_km$cluster, showscale = TRUE,
-             hoverinfo = 'text',
-             text = ~paste('</br> Hours elapsed: ', total_hours_elapsed,
-                           '</br> Charged kWh: ', total_charged,
-                           '</br> Sessions: ', total_sessions)) %>%
-  hide_colorbar() %>%
-  layout(scene = list(xaxis = list(title = 'total hours elapsed'),
-                      yaxis = list(title = 'total charged kwh'),
-                      zaxis = list(title = 'total sessions')))
-p
+calculateDunnIndex()
+createScreePlot()
+createStationClusterPlot()
