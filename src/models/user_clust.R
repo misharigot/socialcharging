@@ -34,29 +34,68 @@ cleanDataTime <- function(){
   return(df)
 }
 
+cleanDataCarKwh <- function() {
+  df <- df %>%
+    filter(!is.na(hours_elapsed), !is.na(charged_kwh), !is.na(car)) %>%
+    group_by(car) %>%
+    summarise(total_charge_sessions = n(),
+              total_charged = sum(charged_kwh),
+              total_hours_elapsed = sum(hours_elapsed))
+  
+  return(df)
+}
+
 cleanedDfCharged <- cleanDataChargedKwh()
 cleanedDfTime <- cleanDataTime()
+cleanedDfCar <- cleanDataCarKwh()
 
 # select columns needed for clustering ------------------------------------------------------------------------
+# Select columns needed for charging behaviour
 clusteredDfCharged <- cleanedDfCharged %>%
   select(total_charge_sessions, total_charged, total_hours_elapsed)
 
 rownames(clusteredDfCharged) <- cleanedDfCharged$user_id
 
+# Select columns needed for time behaviour
 clusteredDfTime <- cleanedDfTime %>%
   select(avg_hours_elapsed, start_time, end_time)
 
-rownames(clusteredDfTime) <- clusteredDfTime$user_id
+rownames(clusteredDfTime) <- cleanedDfTime$user_id
 
-# Clustering --------------------------------------------------------------------------------------------------
+# Select columns needed for specific car behaviour
+clusteredDfCar <- cleanedDfCar %>%
+  select(total_charge_sessions, total_charged, total_hours_elapsed)
+
+rownames(clusteredDfCar) <- cleanedDfCar$car
+
+# Kmeans Clustering -------------------------------------------------------------------------------------------
 clusteredCharged_km <- kmeans(clusteredDfCharged, 5, nstart = 20)
 
 clusteredTime_km <- kmeans(clusteredDfTime, 5, nstart = 20)
 
+# Hierarchical Clustering -------------------------------------------------------------------------------------
+clusteredCar_sc <- as.data.frame(scale(clusteredDfCar))
+clusteredCar_km <- kmeans(clusteredCar_sc, 5, nstart = 20)
+clusteredCar_dist <- dist(clusteredCar_sc, method = "euclidean")
+clusteredCar_single <- hclust(clusteredCar_dist, method = "single")
+clusteredCar_memb_single <- cutree(clusteredCar_single, k = 5)
+
+clusteredCar_complete <- hclust(clusteredCar_dist, method = "complete")
+clusteredCar_memb_complete <- cutree(clusteredCar_complete, k = 5)
+
 # Dunn's Index ------------------------------------------------------------------------------------------------
 dunn_kmCharged <- dunn(clusters = clusteredCharged_km$cluster, Data = clusteredDfCharged)
 
-dunn_kmTime <- dunn(clusters = clustered_kmTime$cluster, Data = clusteredDfTime)
+dunn_kmTime <- dunn(clusters = clusteredTime_km$cluster, Data = clusteredDfTime)
+
+dunn_kmCar <- dunn(clusters = clusteredCar_km$cluster, Data = clusteredCar_sc)
+dunn_kmCar
+
+dunn_singleCar <- dunn(clusters = clusteredCar_memb_single, Data = clusteredCar_sc)
+dunn_singleCar
+
+dunn_completeCar <- dunn(clusters = clusteredCar_memb_complete, Data = clusteredCar_sc)
+dunn_completeCar
 
 # Screeplot ---------------------------------------------------------------------------------------------------
 screePlotCharged <- function() {
@@ -112,6 +151,13 @@ plotClusterDataTime <- function() {
                         zaxis = list(title = "Avg hours elapsed")))
   return(p)
 }
+
+plot(clusteredCar_single)
+rect.hclust(clusteredCar_single, k = 5, border = 2:6)
+
+plot(clusteredCar_complete)
+rect.hclust(clusteredCar_complete, k = 5, border = 2:6)
+ggplot(clusteredCar_complete, theme = theme_minimal())
 
 #Calls -------------------------------------------------------------------------------------------------------- 
 plotClusterDataCharged()
