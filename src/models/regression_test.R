@@ -22,7 +22,7 @@ usersWithEnoughSessions <- df %>%
   group_by(user_id) %>%
   summarise(count = n()) %>%
   filter(count >= minUserSessions) %>%
-  select(user_id)
+  select(user_id, count)
 
 # Gets the day of the week from the date
 df$dayOfWeek <- weekdays(as.Date(df$start_date))
@@ -59,7 +59,7 @@ testData  <- df[-trainingRowIndex, ]   # remaining test data
 
 # build linear model to predict end_date with the following parameters
 lm_df <-
-  lm(end_date ~ user_id + start_date + dayOfWeek, data = trainingData)
+  lm(end_date ~ start_date + dayOfWeek, data = trainingData)
 
 modelSummary <- summary(lm_df)
 modelCoeffs <- modelSummary$coefficients
@@ -81,6 +81,8 @@ plot(testData$start_date,
 points(testData$start_date[ranks],
        ChargingSessionPredict[ranks],
        col = "green")
+
+# abline(lm_df$coefficients, col = "red")
 
 plot(lm_df$fitted.values,
      lm_df$residuals,
@@ -125,3 +127,8 @@ resultsWithInRange <- actual_predicts %>%
   filter(difference <= acceptableTimeRange / 2 & difference >= -(acceptableTimeRange / 2))
 
 actualAccuracy <- 100 / nrow(actual_predicts) * nrow(resultsWithInRange)
+
+# actual_predicts$difference <-
+#   seconds_to_period(actual_predicts$actual - actual_predicts$predicted)
+# 
+# actual_predicts$difference <- gsub("\\..*", "S", as.character(actual_predicts$difference))
