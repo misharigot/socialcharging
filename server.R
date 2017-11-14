@@ -65,10 +65,10 @@ server <- function(input, output) {
     source("src/plots/timeframe_vs_users.R")
     return(multiplotUserTimeframes(scData()))
   })
-
-  output$map <- renderLeaflet({
-    handleDefaultMapCreation(input$category, scData = scData())
-  })
+# 
+#   output$map <- renderLeaflet({
+#     handleDefaultMapCreation(input$category, scData = scData())
+#   })
 
   # Observers -------------------------------------------------------------------------------------------------------
 

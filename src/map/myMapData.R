@@ -24,7 +24,7 @@ myMapDataUI <- function(id) {
                     width = 330,
                     height = "auto",
                     h2("Filter controls"),
-                    selectInput("category",
+                    selectInput(ns("category"),
                                 "Category",
                                 c("Charged kWh per station", "Occupation percentage",
                                   "Efficiency percentage", "Users per station")
@@ -41,20 +41,21 @@ source("src/map/map_renderer.R")
 
 myMapData <- function(input, output, session, data) {
   mapData <- reactive({
-    getMapData(data)
+   getMapData(data)
+  })
+  output$map <- renderLeaflet({
+    handleDefaultMapCreation(input$category, mapData = mapData())
   })
   
   #Eventhandler for changing the data for the map
-  # observe({
-  #   handleMapCreation(input$category, mapData = mapData())
-  # })
-  # 
-  # #Eventhandler for Popups when clicking on circle
-  # observe({
-  #   handlePopupCreation(input$map_shape_click, mapData = mapData())
-  # })
-  
-  return(mapData)
+  observeEvent(input$category, {
+    handleMapCreation(input$category, mapData = mapData())
+  })
+
+  #Eventhandler for Popups when clicking on circle
+  observeEvent(input$map_shape_click, {
+    handlePopupCreation(input$map_shape_click, mapData = mapData())
+  })
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
@@ -96,6 +97,7 @@ getMapData <- function(scData) {
   
   mapDf$total_sessions <- as.numeric(mapDf$total_sessions)
   mapDf$total_charged <- as.numeric(mapDf$total_charged)
+  return(mapDf)
 }
 
 split_str_by_index <- function(target, index) {
