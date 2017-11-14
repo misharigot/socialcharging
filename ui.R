@@ -2,6 +2,8 @@ library(shiny)
 library(shinydashboard)
 library(leaflet)
 
+source("src/map/myMapData.R")
+
 ui <- dashboardPage(
   skin = ("green"),
   dashboardHeader(title = "Social Charging"),
@@ -89,35 +91,10 @@ ui <- dashboardPage(
                 box(plotOutput("plot8"), width = 12)
               )
       ),
+      # map here pls
       tabItem(tabName = "mapTab",
-              div(class = "outer",
-                  tags$head(
-                    # Include our custom CSS
-                    includeCSS("src/map/styles.css"),
-                    includeScript("src/map/gomap.js")
-                  ),
-                  # If not using custom CSS, set height of leafletOutput to a number instead of percent
-                  leafletOutput("map", width = "100%", height = "100%"),
-                  absolutePanel(id = "controls",
-                                class = "panel panel-default",
-                                fixed = TRUE,
-                                draggable = TRUE,
-                                top = 60,
-                                left = "auto",
-                                right = 20,
-                                bottom = "auto",
-                                width = 330,
-                                height = "auto",
-                                h2("Filter controls"),
-                                selectInput("category",
-                                            "Category",
-                                            c("Charged kWh per station", "Occupation percentage",
-                                              "Efficiency percentage", "Users per station")
-                                ),
-                                h5("The category determines the size of the circles")
-                  )
+              myMapDataUI("map")
               )
-      )
     )
   )
 )

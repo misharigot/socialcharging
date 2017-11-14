@@ -18,6 +18,8 @@ server <- function(input, output) {
     df <- cleanDataframe(df)
     return(df)
   })
+
+  mapData <- callModule(myMapData, "map", scData())
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
@@ -92,14 +94,15 @@ server <- function(input, output) {
     ranges$x <- NULL
     ranges$y <- NULL
   })
-
-  #Eventhandler for changing the data for the map
-  observe({
-    handleMapCreation(input$category, scData = scData())
-  })
-
-  #Eventhandler for Popups when clicking on circle
-  observe({
-    handlePopupCreation(input$map_shape_click, scData = scData())
-  })
+# 
+#   #Eventhandler for changing the data for the map
+#   observe({
+#     handleMapCreation(input$category, scData = scData())
+#   })
+# 
+#   #Eventhandler for Popups when clicking on circle
+#   observe({
+#     handlePopupCreation(input$map_shape_click, scData = scData())
+#   })
 }
+
