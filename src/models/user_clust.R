@@ -11,7 +11,7 @@ df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
 # Data cleaning -----------------------------------------------------------------------------------------------
-cleanData <- function() {
+cleanDataChargedKwh <- function() {
   df <- df %>%
     filter(!is.na(hours_elapsed), !is.na(charged_kwh)) %>%
     group_by(user_id) %>%
@@ -22,43 +22,78 @@ cleanData <- function() {
   return(df)
 }
 
-cleanedDf <- cleanData()  
+cleanDataTime <- function(){
+  df <- df %>%
+    filter(!is.na(start_date), !is.na(end_date), !is.na(hours_elapsed)) %>%
+    group_by(user_id) %>%
+    summarise(total_charge_sessions = n(),
+              avg_hours_elapsed = sum(hours_elapsed)/total_charge_sessions,
+              start_time = mean(as.numeric(format(round(start_date, "hours"), format='%H'))),
+              end_time = mean(as.numeric(format(round(end_date, "hours"), format='%H'))))
+  
+  return(df)
+}
+
+cleanedDfCharged <- cleanDataChargedKwh()
+cleanedDfTime <- cleanDataTime()
 
 # select columns needed for clustering ------------------------------------------------------------------------
-clusteredDf <- cleanedDf %>%
-  select(total_charge_sessions, total_charged, total_hours_elapsed, user_id)
+clusteredDfCharged <- cleanedDfCharged %>%
+  select(total_charge_sessions, total_charged, total_hours_elapsed)
+
+rownames(clusteredDfCharged) <- cleanedDfCharged$user_id
+
+clusteredDfTime <- cleanedDfTime %>%
+  select(avg_hours_elapsed, start_time, end_time)
+
+rownames(clusteredDfTime) <- clusteredDfTime$user_id
 
 # Clustering --------------------------------------------------------------------------------------------------
-clustered_km <- kmeans(clusteredDf, 5, nstart = 20)
+clusteredCharged_km <- kmeans(clusteredDfCharged, 5, nstart = 20)
 
-# Tables ------------------------------------------------------------------------------------------------------
-table(clustered_km, cleanedDf$total_charged)
-
-
+clusteredTime_km <- kmeans(clusteredDfTime, 5, nstart = 20)
 
 # Dunn's Index ------------------------------------------------------------------------------------------------
-dunn_km <- dunn(clusters = clustered_km$cluster, Data = clusteredDf)
-dunn_km
+dunn_kmCharged <- dunn(clusters = clusteredCharged_km$cluster, Data = clusteredDfCharged)
+
+dunn_kmTime <- dunn(clusters = clustered_kmTime$cluster, Data = clusteredDfTime)
 
 # Screeplot ---------------------------------------------------------------------------------------------------
-ratio_ss <- rep(0, 10)
+screePlotCharged <- function() {
+  
+  ratio_ss <- rep(0, 10)
+  
+  for (k in 1:10) {
+    user_charging_km <- kmeans(clusteredDfCharged, k, nstart = 20)
+    ratio_ss[k] <- user_charging_km$tot.withinss / user_charging_km$totss
+  }
+  
+  plot(ratio_ss, type = "b", xlab = "k")
+  
+}
 
-for (k in 1:10) {
-  user_charging_km <- kmeans(clusteredDf, k, nstart = 20)
-  ratio_ss[k] <- user_charging_km$tot.withinss / user_charging_km$totss
+screePlotTime <- function() {
+  
+  ratio_ss <- rep(0, 10)
+  
+  for (k in 1:10) {
+    user_time_km <- kmeans(clusteredDfTime, k, nstart = 20)
+    ratio_ss[k] <- user_time_km$tot.withinss / user_time_km$totss
+  }
+  
+  plot(ratio_ss, type = "b", xlab = "k")
+  
 }
 
 # Plots -------------------------------------------------------------------------------------------------------
-plotClusterData <- function() {
-  plot(total_charged ~ total_hours_elapsed, data = clusteredDf, col = clustered_km$cluster)
-  
-  p <- plot_ly(clusteredDf, x = ~total_hours_elapsed, y = ~total_charged,
-               z = ~total_charge_sessions, color = clustered_km$cluster, showscale = TRUE,
+plotClusterDataCharged <- function() {
+  p <- plot_ly(clusteredDfCharged, x = ~total_hours_elapsed, y = ~total_charged,
+               z = ~total_charge_sessions, color = clusteredCharged_km$cluster, showscale = TRUE,
                hoverinfo = 'text',
                text = ~paste('</br> Hours elapsed: ', total_hours_elapsed,
                              '</br> Charged kWh: ', total_charged,
                              '</br> Sessions: ', total_charge_sessions,
-                             '</br> User id: ', user_id)) %>%
+                             '</br> User id: ', rownames(clusteredDfCharged))) %>%
     hide_colorbar() %>%
     layout(scene = list(xaxis = list(title = 'total hours elapsed'),
                         yaxis = list(title = 'total charged kwh'),
@@ -66,7 +101,20 @@ plotClusterData <- function() {
   return(p)
 }
 
-plotClusterData()
+plotClusterDataTime <- function() {
+  p <- plot_ly(clusteredDfTime, x = ~start_time, y = ~end_time,
+               z = ~avg_hours_elapsed, color = clusteredTime_km$cluster, showscale = TRUE,
+               hoverinfo = 'text',
+               text = ~paste('</br> User id: ', rownames(clusteredDfTime))) %>%
+    hide_colorbar() %>%
+    layout(scene = list(xaxis = list(title = 'Avg start time'),
+                        yaxis = list(title = 'Avg end time'),
+                        zaxis = list(title = 'Avg hours elapsed')))
+  return(p)
+}
 
-plot(ratio_ss, type = "b", xlab = "k")
-
+#Calls -------------------------------------------------------------------------------------------------------- 
+plotClusterDataCharged()
+plotClusterDataTime()
+screePlotCharged()
+screePlotTime()
