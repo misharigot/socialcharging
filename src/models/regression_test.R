@@ -1,5 +1,4 @@
-# Currently testing linear model with hours_elapsed and charged_kwh -------
-
+# Linear regression model
 library(ggplot2)
 library(config)
 library(readr)
@@ -11,58 +10,123 @@ source(config$multiplotHelper)
 
 df <- read_csv2(config$scBigDataset, col_names = FALSE)
 
-df <- cleanSecondDataframe(df)
-df <- df %>%
-  filter(!is.na(end_date), !is.na(charged_kwh), hours_elapsed > 0) %>%
-  mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
-    round(x, digits = 2)
-  }))
+df <- cleanSecondDf(df)
 
-# # random date ranges
+# # randomly selected date ranges
 # minDate <- ymd_hms("2017-05-05 00:00:00")
 # maxDate <- ymd_hms("2017-10-30 00:00:00")
 # emptyMaxDate <- ymd_hms("")
-# 
-# # simple test with specified date range
+#
 # if(is.null(emptyMaxDate) || is.na(emptyMaxDate)){
-#   test <- subset(df, start_date > minDate)
+#   df <- subset(df, start_date > minDate)
 # } else {
-#   test <- subset(df, start_date > minDate & start_date < emptyMaxDate)
+#   df <- subset(df, start_date > minDate & start_date < emptyMaxDate)
 # }
 
-test <- df
-toSeconds <- 3600
+hoursToSeconds <- 3600
+minUserSessions <- 5
 
-test$start_date <- as.numeric(test$start_date)
-test$end_date <- as.numeric(test$end_date)
-test$hours_elapsed <- test$hours_elapsed * toSeconds
+usersWithEnoughSessions <- df %>%
+  group_by(user_id) %>%
+  summarise(count = n()) %>%
+  filter(count >= minUserSessions) %>%
+  select(user_id)
+
+df$dayOfWeek <- weekdays(as.Date(df$start_date))
+
+df <- df %>%
+  filter(
+    !is.na(hours_elapsed),
+    hours_elapsed > 0.00,
+    !is.na(start_date),
+    !is.na(end_date),
+    user_id %in% usersWithEnoughSessions$user_id
+  ) %>%
+  select(session_id,
+         user_id,
+         start_date,
+         dayOfWeek,
+         end_date,
+         charged_kwh)
+
+temp <- df[df[, "user_id"] == 5, ]
+
+df$start_date <- as.numeric(df$start_date)
+df$end_date <- as.numeric(df$end_date)
 
 set.seed(100)
-trainingRowIndex <- sample(1:nrow(test), 0.8*nrow(test))
-trainingData <- test[trainingRowIndex, ]  # model training data 80% traning
-testData  <- test[-trainingRowIndex, ]   # test data 20% test
+trainingRowIndex <- sample(1:nrow(df), 0.8 * nrow(df))
+trainingData <-
+  df[trainingRowIndex, ]  # model training data 80% traning
+testData  <- df[-trainingRowIndex, ]   # test data 20% test
 
+# Testing linear model ----------------------------------------------------
 
-# Normal dataframe test ---------------------------------------------------
+lm_df <-
+  lm(end_date ~ user_id + start_date + dayOfWeek, data = trainingData)
 
-# as.numeric(trainingData$start_date[1])
-
-lm_df <- lm(end_date ~ start_date + hours_elapsed, data = trainingData)
-print(lm_df)
 modelSummary <- summary(lm_df)
 modelCoeffs <- modelSummary$coefficients
 rSquared <- modelSummary$r.squared
 adjRSquared <- modelSummary$adj.r.squared
 
-ChargingSessionPredict <- predict(lm_df, testData)
-AIC(lm_df)
+ranks <- order(testData$start_date)
 
-actual_predicts <- data.frame(cbind(actual = testData$end_date, 
+ChargingSessionPredict <- predict(lm_df, testData)
+
+actual_predicts <- data.frame(cbind(actual = testData$end_date,
                                     predicted = ChargingSessionPredict))
 
-correlation_acc <- cor(actual_predicts)
+plot(testData$start_date,
+     testData$end_date,
+     xlab = "Start date",
+     ylab = "End date")
+
+points(testData$start_date[ranks], ChargingSessionPredict[ranks], col = "red")
+
+lines(testData$start_date[ranks],
+      ChargingSessionPredict[ranks],
+      lwd = 2,
+      col = "green")
+
+# correlation_acc <- cor(actual_predicts)
+
+# plot(start_date ~ .,
+#      data = testData,
+#      xlab = "",
+#      ylab = "Start date in seconds")
+
+plot(lm_df$fitted.values,
+     lm_df$residuals,
+     xlab = "Fitted values",
+     ylab = "Residuals")
+
+qqnorm(lm_df$residuals, ylab = "Residual Quantiles")
+
+res_test <- ChargingSessionPredict - testData$end_date
+
+rmse_test <- sqrt(mean(res_test ^ 2))
+
+# oneliner version of rmse calculation above
+# sqrt(mean((ChargingSessionPredict - testData$end_date) ^2))
+
+rmse_train <- sqrt(mean(lm_df$residuals ^ 2))
+
+# Ratio of test RMSE over training RMSE
+rmse_test / rmse_train
 
 # converting seconds to datetime
-actual_predicts$actual <- as.POSIXct(as.numeric(actual_predicts$actual), origin = '1970-01-01', tzdb = 'GMT1')
-actual_predicts$predicted <- as.POSIXct(as.numeric(actual_predicts$predicted), origin = '1970-01-01', tzdb = 'GMT1')
+actual_predicts$actual <-
+  as.POSIXct(as.numeric(actual_predicts$actual),
+             origin = "1970-01-01",
+             tzdb = "GMT1")
 
+actual_predicts$predicted <-
+  as.POSIXct(as.numeric(actual_predicts$predicted),
+             origin = "1970-01-01",
+             tzdb = "GMT1")
+
+actual_predicts$difference <- NULL
+
+actual_predicts$difference <-
+  seconds_to_period(actual_predicts$actual - actual_predicts$predicted)
