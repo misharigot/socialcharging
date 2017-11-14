@@ -48,7 +48,7 @@ df$longitude <- as.numeric(df$longitude)
 
 totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
 
-# Advanced data cleaning ----------------------------------------------------------
+# Advanced data cleaning -----------------------------------------------------------------------------------
 cleanMapData <- function() {
   df <- df %>%
     group_by(longitude, latitude) %>%
@@ -68,7 +68,8 @@ cleanMapData <- function() {
 cleanedDf <- cleanMapData()
 
 clusterDf <- cleanedDf %>%
-  select(total_charged, total_hours_elapsed, total_sessions)
+  select(total_charged, total_hours_elapsed, total_sessions)%>%
+  group_by(total_charged, total_hours_elapsed, total_sessions)
 
 # Clustering --------------------------------------------------------------------------------------------------
 charging_km <- kmeans(clusterDf, 5, nstart = 20)
