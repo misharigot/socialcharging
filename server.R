@@ -18,35 +18,35 @@ server <- function(input, output) {
     df <- cleanDataframe(df)
     return(df)
   })
-
+  
   callModule(module = mapModule, id = "map", data = scData())
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
-
+  
   # Output ----------------------------------------------------------------------------------------------------------
-
+  
   output$table1 <- renderDataTable({
     scData()
   })
-
+  
   output$plot1 <- renderPlot({
     source("src/plots/time_vs_kwh.R")
     return(plotTimeKwh(scData()) +
              coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
   })
-
+  
   output$plot2 <- renderPlot({
     source("src/plots/smart_charging_vs_kwh.R")
     return(plotMultiple(scData()))
   })
-
+  
   output$plot3 <- renderPlot({
     source("src/plots/kwh_vs_station.R")
     return(plotKwhPerStationPerDay(scData()))
   })
-
+  
   output$plot4 <- renderPlot({
     source("src/plots/timeframe_vs_sessions.R")
     return(multiplotTimeframes(scData()))
@@ -60,14 +60,14 @@ server <- function(input, output) {
       plotAverageChargedKwhPerCar(scData())
     }
   })
-
+  
   output$plot8 <- renderPlot({
     source("src/plots/timeframe_vs_users.R")
     return(multiplotUserTimeframes(scData()))
   })
-
+  
   # Observers -------------------------------------------------------------------------------------------------------
-
+  
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
   observeEvent(input$dblclick, {
@@ -80,12 +80,12 @@ server <- function(input, output) {
       ranges$y <- NULL
     }
   })
-
+  
   observeEvent(input$reset_input, {
     ranges$x <- NULL
     ranges$y <- NULL
   })
-
+  
   observeEvent(input$reset_input_1, {
     ranges$x <- NULL
     ranges$y <- NULL

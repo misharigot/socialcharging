@@ -94,7 +94,7 @@ ui <- dashboardPage(
       # map here pls
       tabItem(tabName = "mapTab",
               mapModuleUI(id = "map")
-              )
+      )
     )
   )
 )
