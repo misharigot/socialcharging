@@ -15,6 +15,7 @@ formatCoordinate <- function(coordinate, type) {
   paste(interleave(split_str_by_index(coordinate, index), "."), collapse = "")
 }
 
+# Helper function
 split_str_by_index <- function(target, index) {
   index <- sort(index)
   substr(rep(target, length(index) + 1),
@@ -22,6 +23,7 @@ split_str_by_index <- function(target, index) {
          stop = c(index - 1, nchar(target)))
 }
 
+# Helper function
 interleave <- function(v1, v2) {
   ord1 <- 2 * (1:length(v1)) - 1
   ord2 <- 2 * (1:length(v2))
