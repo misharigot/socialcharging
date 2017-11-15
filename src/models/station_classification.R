@@ -43,58 +43,74 @@ cleanDataForStation <- function(x) {
 df <- cleanDataForStation(df)
 # classification ----------------------------------------------------------
 
-# using five number summary gice a point
+# using five number summary give the station a score (high or low)
 givePoint <- function(x) {
   kwhSummary <- summary(x)
-  fst <- kwhSummary[2]
   med <- kwhSummary[3]
-  trd <- kwhSummary[5]
-  ifelse (x > trd, 4,
-          ifelse (x > med, 3,
-                  ifelse (x > fst, 2, 1)
-          )
-  )
+  ifelse (x > med, "H", "L")
 }
 
-# sum the results and classify the station A to D
-classifyStation <- function(){
-  result <- givePoint(df$total_charged) + givePoint(df$total_hours_elapsed) +
-    givePoint(df$efficiency_score) + givePoint(df$total_users)
-  stationSummary <- summary(result)
-  fst <- stationSummary[2]
-  med <- stationSummary[3]
-  trd <- stationSummary[5]
-  ifelse (result > trd, "A",
-         ifelse (result > med, "B",
-                ifelse (result > fst, "C", "D")
-         )
+#make a station table
+stationPointTable <- function(x) {
+  df$charging <- givePoint(df$total_charged)
+  df$occupation <- givePoint(df$total_hours_elapsed)
+  df$user_amount <- givePoint(df$total_users)
+  df <- df %>%  select(latitude, address, occupation, user_amount, charging)
+}
+stationDf <- stationPointTable(df)
+
+# classify the station based on the scores of the features
+stationDf$stationClass <- paste(stationDf$occupation, stationDf$user_amount, stationDf$charging, sep = "")
+class(stationDf$stationClass)
+changeName <- function(x) {
+  ifelse (x == "HHH", "FacebookStar",
+          ifelse ( x == "HHL", "ParkingSpace",
+                   ifelse (x == "HLL", "MarriedToThisStation",
+                           ifelse (x == "HLH", "HomeStation",
+                                   ifelse(x == "LHH", "MostEfficient",
+                                          ifelse(x == "LLH", "HomeStation",
+                                                 ifelse(x == "LLL", "ForeverAlone", "HitandRun")
+                                                 )
+                                          )
+                                   )
+                           )
+                   )
   )
 }
-df$stationClass <- classifyStation()
+stationDf$stationClass <- changeName(stationDf$stationClass)
+df$stationClass <- stationDf$stationClass
 
+
+
+# distribution ------------------------------------------------------------
+
+# show the distribution of the station class
+stationClassDis <- function(){
+  stationDf %>%
+  group_by(stationClass) %>% 
+  summarise(num = n()) %>% 
+  mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
+}
+showDistribution <- function(){
+  ggplot(stationClassDis(), aes(x = stationClass, y = num)) +
+    geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
+    coord_flip() +
+    ggtitle("Show the station Class number")
+}
+showDistribution()
+
+
+
+# tree --------------------------------------------------------------------
 
 #divide data
 intrain <- createDataPartition(y = df$stationClass, p = 0.7, list = FALSE)
 train <- df[intrain, ]
 test <- df[-intrain, ]
 
-#make data frame to show station point and class
-stationPointTable <- function(x) {
-  df$chargePoint <- givePoint(df$total_charged)
-  df$occuPoint <- givePoint(df$total_hours_elapsed)
-  df$effPoint <- givePoint(df$efficiency_score)
-  df$userPoint <- givePoint(df$total_users)
-  df <- df %>%  select(latitude, address, chargePoint, occuPoint, effPoint, userPoint, stationClass)
-}
-
-stationDf <- stationPointTable(df)
-
-
-# tree --------------------------------------------------------------------
 
 #make tree
-rpartmod <- rpart(stationClass ~ total_charged + total_hours_elapsed + efficiency_score + total_users, 
-                data = train, method = "class")
+rpartmod <- rpart(stationClass ~ total_hours_elapsed + total_users + total_charged, data = train, method = "class")
 plot(rpartmod)
 text(rpartmod)
 
@@ -114,9 +130,11 @@ confusionMatrix(rpartpred, test$stationClass)
 fancyRpartPlot(ptree, tweak = 1.5)
 
 #predict buy using input data
-predictClass <- function(totCharged, totHourElapsed, effScore, totUser) {
-  pframe <- data.frame(total_charged = totCharged, total_hours_elapsed = totHourElapsed, efficiency_score = effScore, 
-                       total_users = totUser)
+predictClass <- function(totHourElapsed, totUser, totCharged ) {
+  pframe <- data.frame(total_hours_elapsed = totHourElapsed, total_users = totUser, total_charged = totCharged)
   test <- predict(ptree, pframe, type = "class")
   return(test)
 }
+
+
+predictClass(3.3, 1, 21)
