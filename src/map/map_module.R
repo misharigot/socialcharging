@@ -1,7 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(leaflet)
-source("src/helpers/coordinateHelper.R")
+source("src/helpers/coordinate_helper.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
 
@@ -124,22 +124,22 @@ handleMapCreation <- function(userInput, mapData) {
   
   if (categorySelected == "kwh_station") {
     radius <- mapData$total_charged / max(mapData$total_charged) * 300
-    color = pal(mapData$total_charged)
+    color <- pal(mapData$total_charged)
   }
   
   if (categorySelected == "occ_perc") {
     radius <- mapData$popularity_score / max(mapData$popularity_score) * 300
-    color = pal(mapData$total_charged)
+    color <- pal(mapData$total_charged)
   }
   
   if (categorySelected == "eff_perc") {
     radius <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
-    color = pal(mapData$total_charged)
+    color <- pal(mapData$total_charged)
   }
   
   if (categorySelected == "users_station") {
     radius <- mapData$total_users / max(mapData$total_users) * 300
-    color = "red"
+    color <- "red"
   }
   leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultCircles(mapData, radius, color)
 }
