@@ -9,6 +9,7 @@ library(plotly)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
+source("src/location_vs_kwh.R")
 set.seed(100)
 
 # Constants
@@ -18,19 +19,6 @@ df <- cleanSecondDf(df)
 # Basic data cleaning --------------------------------------------------------------------------------------
 df <- df %>%
   filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
-
-split_str_by_index <- function(target, index) {
-  index <- sort(index)
-  substr(rep(target, length(index) + 1),
-         start = c(1, index),
-         stop = c(index - 1, nchar(target)))
-}
-
-interleave <- function(v1, v2) {
-  ord1 <- 2 * (1:length(v1)) - 1
-  ord2 <- 2 * (1:length(v2))
-  c(v1, v2)[order(c(ord1, ord2))]
-}
 
 df$latitude <- sapply(df$latitude, function(x){
   insert <- "."[order(3)]
@@ -50,7 +38,7 @@ df$longitude <- as.numeric(df$longitude)
 totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
 
 # Advanced data cleaning --------------------------------------------------------------------------------------
-cleanMapData <- function() {
+cleanDataFrame <- function() {
   df <- df %>%
     group_by(longitude, latitude) %>%
     summarise(address = first(address),
@@ -67,7 +55,7 @@ cleanMapData <- function() {
 }
 
 createClusterDataFrame <- function() {
-  cleanedDf <- cleanMapData()
+  cleanedDf <- cleanDataFrame()
   clusterDf <- cleanedDf %>%
     ungroup() %>%
     select(total_charged, total_hours_elapsed, total_sessions)
