@@ -3,6 +3,7 @@ library(ggplot2)
 library(config)
 library(readr)
 library(lubridate)
+library(tidyr)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -13,9 +14,22 @@ df <- read_csv2(config$scBigDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
 # Minimum amount of sessions required in order to get the
-minUserSessions <- 5
+minUserSessions <- 10
 
 # Data preperation --------------------------------------------------------
+
+classifyTf <- function(datetime) {
+  datetime <- hour(datetime)
+  if (datetime >= 12 & datetime < 18) {
+    return("12-18")
+  } else if (datetime >= 18 & datetime < 24) {
+    return("18-00")
+  } else if (datetime >= 0 & datetime < 6) {
+    return("00-06")
+  } else if (datetime >= 6 & datetime < 12) {
+    return("06-12")
+  }
+}
 
 # Gets the user that met the minimum required sessions
 usersWithEnoughSessions <- df %>%
@@ -33,19 +47,25 @@ df <- df %>%
     hours_elapsed > 0.00,
     !is.na(start_date),
     !is.na(end_date),
+    !is.na(car),
+    hours_elapsed < 24,
     user_id %in% usersWithEnoughSessions$user_id
   ) %>%
-  select(session_id,
-         user_id,
-         start_date,
-         dayOfWeek,
-         end_date,
-         charged_kwh)
+  mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
+  mutate(start_tf = map(start_date, classifyTf), end_tf = map(end_date, classifyTf)) %>%
+  mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf)))
 
-# Converts the datetime to seconds
-df$start_date <- as.numeric(df$start_date)
-df$end_date <- as.numeric(df$end_date)
 
+# # test with user_id 1829, because it has a lower variance
+# df <- df %>%
+#   filter(
+#     user_id >= 0 & user_id <= 100
+#   )
+
+# # Converts the datetime to seconds
+# df$start_date <- as.numeric(df$start_date)
+# df$end_date <- as.numeric(df$end_date)
+# df$hours_elapsed <- df$hours_elapsed * 3600
 
 # Create train and test data from the data --------------------------------
 
@@ -59,7 +79,7 @@ testData  <- df[-trainingRowIndex, ]   # remaining test data
 
 # build linear model to predict end_date with the following parameters
 lm_df <-
-  lm(end_date ~ start_date + dayOfWeek, data = trainingData)
+  lm(hours_elapsed ~ car + dayOfWeek + kw_charge_point_speed + start_tf, data = trainingData)
 
 modelSummary <- summary(lm_df)
 modelCoeffs <- modelSummary$coefficients
@@ -70,13 +90,22 @@ ranks <- order(testData$start_date)
 
 ChargingSessionPredict <- predict(lm_df, testData)
 
-actual_predicts <- data.frame(cbind(actual = testData$end_date,
+actual_predicts <- data.frame(cbind(actual = testData$hours_elapsed,
                                     predicted = ChargingSessionPredict))
 
+actual_predicts <- actual_predicts %>%
+  filter(
+    !is.na(actual_predicts$predicted)
+  )
+
 plot(testData$start_date,
-     testData$end_date,
+     testData$hours_elapsed,
      xlab = "Start date",
-     ylab = "End date")
+     ylab = "Hours elapsed")
+
+# plot(testData$hours_elapsed ~.,
+#      xlab = "elapsed hours",
+#      ylab = "")
 
 points(testData$start_date[ranks],
        ChargingSessionPredict[ranks],
@@ -91,13 +120,15 @@ plot(lm_df$fitted.values,
 
 qqnorm(lm_df$residuals, ylab = "Residual Quantiles")
 
-res_test <- ChargingSessionPredict - testData$end_date
+res_test <- testData$hours_elapsed - ChargingSessionPredict
 
+# Estimates are off by this many hours on average
 rmse_test <- sqrt(mean(res_test ^ 2))
 
 # oneliner version of rmse calculation above
 # sqrt(mean((ChargingSessionPredict - testData$end_date) ^2))
 
+# Estimates are off by this many hours on average
 rmse_train <- sqrt(mean(lm_df$residuals ^ 2))
 
 # Ratio of test RMSE over training RMSE
@@ -109,19 +140,20 @@ actual_predicts$difference <- NULL
 
 actual_predicts$difference <-
   actual_predicts$actual - actual_predicts$predicted
+# 
+# # converting seconds to datetime
+# actual_predicts$actual <-
+#   as.POSIXct(as.numeric(actual_predicts$actual),
+#              origin = "1970-01-01",
+#              tzdb = "GMT1")
+# 
+# actual_predicts$predicted <-
+#   as.POSIXct(as.numeric(actual_predicts$predicted),
+#              origin = "1970-01-01",
+#              tzdb = "GMT1")
+# 
 
-# converting seconds to datetime
-actual_predicts$actual <-
-  as.POSIXct(as.numeric(actual_predicts$actual),
-             origin = "1970-01-01",
-             tzdb = "GMT1")
-
-actual_predicts$predicted <-
-  as.POSIXct(as.numeric(actual_predicts$predicted),
-             origin = "1970-01-01",
-             tzdb = "GMT1")
-
-acceptableTimeRange <- 4 * 3600
+acceptableTimeRange <- 4
 
 resultsWithInRange <- actual_predicts %>%
   filter(difference <= acceptableTimeRange / 2 & difference >= -(acceptableTimeRange / 2))
@@ -132,3 +164,5 @@ actualAccuracy <- 100 / nrow(actual_predicts) * nrow(resultsWithInRange)
 #   seconds_to_period(actual_predicts$actual - actual_predicts$predicted)
 # 
 # actual_predicts$difference <- gsub("\\..*", "S", as.character(actual_predicts$difference))
+
+unique(df$dayOfWeek)
