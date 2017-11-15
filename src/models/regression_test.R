@@ -4,6 +4,8 @@ library(config)
 library(readr)
 library(lubridate)
 library(tidyr)
+library(purrr)
+library(corrplot)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -20,14 +22,22 @@ minUserSessions <- 10
 
 classifyTf <- function(datetime) {
   datetime <- hour(datetime)
-  if (datetime >= 12 & datetime < 18) {
-    return("12-18")
-  } else if (datetime >= 18 & datetime < 24) {
-    return("18-00")
-  } else if (datetime >= 0 & datetime < 6) {
-    return("00-06")
-  } else if (datetime >= 6 & datetime < 12) {
-    return("06-12")
+  if (datetime >= 0 & datetime < 3) {
+    return(0)
+  } else if (datetime >= 3 & datetime < 6) {
+    return(1)
+  } else if (datetime >= 6 & datetime < 9) {
+    return(2)
+  } else if (datetime >= 9 & datetime < 12) {
+    return(3)
+  } else if (datetime >= 12 & datetime < 15) {
+    return(4)
+  } else if (datetime >= 15 & datetime < 18) {
+    return(5)
+  } else if (datetime >= 18 & datetime < 21) {
+    return(6)
+  } else if (datetime >= 21 & datetime < 24) {
+    return(7)
   }
 }
 
@@ -41,18 +51,20 @@ usersWithEnoughSessions <- df %>%
 # Gets the day of the week from the date
 df$dayOfWeek <- weekdays(as.Date(df$start_date))
 
+df$hour <- as.numeric(format(round(df$start_date, "hours"), format='%H'))
+
 df <- df %>%
   filter(
     !is.na(hours_elapsed),
-    hours_elapsed > 0.00,
-    !is.na(start_date),
-    !is.na(end_date),
-    !is.na(car),
-    hours_elapsed < 24,
+    hours_elapsed <= 24,
+    hours_elapsed >= 0,!is.na(start_date),!is.na(end_date),!is.na(car),!is.na(charged_kwh),
     user_id %in% usersWithEnoughSessions$user_id
   ) %>%
   mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
-  mutate(start_tf = map(start_date, classifyTf), end_tf = map(end_date, classifyTf)) %>%
+  mutate(
+    start_tf = map(start_date, classifyTf),
+    end_tf = map(end_date, classifyTf)
+  ) %>%
   mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf)))
 
 # Create train and test data from the data --------------------------------
@@ -60,21 +72,22 @@ df <- df %>%
 set.seed(100)
 trainingRowIndex <- sample(1:nrow(df), 0.7 * nrow(df))
 trainingData <-
-  df[trainingRowIndex, ]  # 70% training data
-testData  <- df[-trainingRowIndex, ]   # remaining test data
+  df[trainingRowIndex,]  # 70% training data
+testData  <- df[-trainingRowIndex,]   # remaining test data
 
 # Testing linear model ----------------------------------------------------
 
 # build linear model to predict end_date with the following parameters
 lm_df <-
-  lm(hours_elapsed ~ car + dayOfWeek + kw_charge_point_speed + start_tf, data = trainingData)
+  lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek,
+     data = trainingData)
 
 modelSummary <- summary(lm_df)
 modelCoeffs <- modelSummary$coefficients
 rSquared <- modelSummary$r.squared
 adjRSquared <- modelSummary$adj.r.squared
 
-ranks <- order(testData$start_date)
+ranks <- order(testData$start_tf)
 
 ChargingSessionPredict <- predict(lm_df, testData)
 
@@ -82,20 +95,18 @@ actual_predicts <- data.frame(cbind(actual = testData$hours_elapsed,
                                     predicted = ChargingSessionPredict))
 
 actual_predicts <- actual_predicts %>%
-  filter(
-    !is.na(actual_predicts$predicted)
-  )
+  filter(!is.na(actual_predicts$predicted))
 
-plot(testData$start_date,
+plot(testData$start_tf,
      testData$hours_elapsed,
-     xlab = "Start date",
+     xlab = "Start timeframe",
      ylab = "Hours elapsed")
 
 # plot(testData$hours_elapsed ~.,
 #      xlab = "elapsed hours",
 #      ylab = "")
 
-points(testData$start_date[ranks],
+points(testData$start_tf[ranks],
        ChargingSessionPredict[ranks],
        col = "green")
 
@@ -122,7 +133,8 @@ rmse_train <- sqrt(mean(lm_df$residuals ^ 2))
 # Ratio of test RMSE over training RMSE
 rmse_test / rmse_train
 
-minMaxAccuracy <- mean(apply(actual_predicts, 1, min) / apply(actual_predicts, 1, max))
+minMaxAccuracy <-
+  mean(apply(actual_predicts, 1, min) / apply(actual_predicts, 1, max))
 
 actual_predicts$difference <- NULL
 
@@ -132,6 +144,40 @@ actual_predicts$difference <-
 acceptableTimeRange <- 4
 
 resultsWithInRange <- actual_predicts %>%
-  filter(difference <= acceptableTimeRange / 2 & difference >= -(acceptableTimeRange / 2))
+  filter(difference <= acceptableTimeRange / 2 &
+           difference >= -(acceptableTimeRange / 2))
 
-actualAccuracy <- 100 / nrow(actual_predicts) * nrow(resultsWithInRange)
+actualAccuracy <-
+  100 / nrow(actual_predicts) * nrow(resultsWithInRange)
+
+numberfySmart <- function(smart) {
+  if (smart == "Yes") {
+    return(1)
+  } else if (smart == "No") {
+    return(0)
+  }
+}
+
+temp <- as.data.frame(unique(df$car))
+colnames(temp) <- c("car")
+temp$carNumber <- NA
+nrow(temp)
+for (i in 1:nrow(temp)) {
+  temp[i, 2] <- i
+}
+
+df <- base::merge(df, temp)
+
+df_cor_test <- df %>%
+  select(hours_elapsed, hour, start_tf, charged_kwh, carNumber) %>%
+  mutate(day_number = wday(as.Date(df$start_date))) %>%
+  mutate(smart_charger = map(df$smart_charging, numberfySmart)) %>%
+  mutate(smart_charger = as.numeric(unlist(smart_charger)))
+
+df_cor_test$hours_elapsed <- as.numeric(df_cor_test$hours_elapsed)
+df_cor_test$hour <- as.numeric(df_cor_test$hour)
+df_cor_test$start_tf <- as.numeric(df_cor_test$start_tf)
+
+colnames(df_cor_test) <- c("Hours Elapsed", "Time in H", "Timeframe", "Charged KwH", "Car", "Day of the week", "Smart")
+str(df_cor_test)
+corrplot.mixed(cor(df_cor_test))
