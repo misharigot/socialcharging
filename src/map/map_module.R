@@ -51,7 +51,7 @@ mapModule <- function(input, output, session, data) {
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
-    handleDefaultMapCreation(input$category, mapData = mapData())
+    handleDefaultMapCreation(mapData = mapData())
   })
   
   # Updates map when category input changes
@@ -101,7 +101,7 @@ getMapData <- function(scData) {
 mapId <- "map"
 
 # Creates the default leaflet map without user input
-handleDefaultMapCreation <- function(userInput, mapData) {
+handleDefaultMapCreation <- function(mapData) {
   radius <- mapData$total_charged / max(mapData$total_charged) * 300
   pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
   
