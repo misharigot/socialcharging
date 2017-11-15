@@ -8,7 +8,7 @@ library(lattice)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source("src/map/map_renderer.R")
+source("src/map/map_module.R")
 
 server <- function(input, output) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
@@ -19,7 +19,7 @@ server <- function(input, output) {
     return(df)
   })
 
-  mapData <- callModule(myMapData, "map", scData())
+  map <- callModule(module = mapModule, id = "map", data = scData())
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
@@ -65,10 +65,6 @@ server <- function(input, output) {
     source("src/plots/timeframe_vs_users.R")
     return(multiplotUserTimeframes(scData()))
   })
-# 
-#   output$map <- renderLeaflet({
-#     handleDefaultMapCreation(input$category, scData = scData())
-#   })
 
   # Observers -------------------------------------------------------------------------------------------------------
 
@@ -94,15 +90,4 @@ server <- function(input, output) {
     ranges$x <- NULL
     ranges$y <- NULL
   })
-# 
-#   #Eventhandler for changing the data for the map
-#   observe({
-#     handleMapCreation(input$category, scData = scData())
-#   })
-# 
-#   #Eventhandler for Popups when clicking on circle
-#   observe({
-#     handlePopupCreation(input$map_shape_click, scData = scData())
-#   })
 }
-

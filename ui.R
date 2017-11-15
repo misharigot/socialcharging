@@ -2,7 +2,7 @@ library(shiny)
 library(shinydashboard)
 library(leaflet)
 
-source("src/map/myMapData.R")
+source("src/map/map_module.R")
 
 ui <- dashboardPage(
   skin = ("green"),
@@ -93,7 +93,7 @@ ui <- dashboardPage(
       ),
       # map here pls
       tabItem(tabName = "mapTab",
-              myMapDataUI("map")
+              mapModuleUI(id = "map")
               )
     )
   )

@@ -1,9 +1,10 @@
 library(shiny)
 library(ggplot2)
+source("src/helpers/coordinateHelper.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
 
-myMapDataUI <- function(id) {
+mapModuleUI <- function(id) {
   ns <- NS(id)
   div(class = "outer",
       tags$head(
@@ -26,8 +27,12 @@ myMapDataUI <- function(id) {
                     h2("Filter controls"),
                     selectInput(ns("category"),
                                 "Category",
-                                c("Charged kWh per station", "Occupation percentage",
-                                  "Efficiency percentage", "Users per station")
+                                c(
+                                  "Charged kWh per station" = "kwh_station",
+                                  "Occupation percentage" = "occ_perc",
+                                  "Efficiency percentage" =  "eff_perc",
+                                  "Users per station" = "users_station"
+                                  )
                     ),
                     h5("The category determines the size of the circles")
       )
@@ -37,22 +42,24 @@ myMapDataUI <- function(id) {
 
 # Server ----------------------------------------------------------------------------------------------------------
 
-source("src/map/map_renderer.R")
-
-myMapData <- function(input, output, session, data) {
+mapModule <- function(input, output, session, data) {
+  
+  # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
    getMapData(data)
   })
+  
+  # The rendered leaflet map
   output$map <- renderLeaflet({
     handleDefaultMapCreation(input$category, mapData = mapData())
   })
   
-  #Eventhandler for changing the data for the map
+  # Updates map when category input changes
   observeEvent(input$category, {
     handleMapCreation(input$category, mapData = mapData())
   })
 
-  #Eventhandler for Popups when clicking on circle
+  # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
   })
@@ -60,23 +67,13 @@ myMapData <- function(input, output, session, data) {
 
 # Functions -------------------------------------------------------------------------------------------------------
 
+# Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(scData) {
-  print("cleaning map data")
   mapDf <- scData %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   
-  mapDf$latitude <- sapply(mapDf$latitude, function(x){
-    insert <- "."[order(3)]
-    index <- sort(3)
-    paste(interleave(split_str_by_index(x, 3), "."), collapse = "")
-  })
-  
-  mapDf$longitude <- sapply(mapDf$longitude, function(x){
-    insert <- "."[order(2)]
-    index <- sort(2)
-    paste(interleave(split_str_by_index(x, 2), "."), collapse = "")
-  })
-  
+  mapDf$latitude <- sapply(mapDf$latitude, formatCoordinate, "latitude")
+  mapDf$longitude <- sapply(mapDf$longitude, formatCoordinate, "longitude")
   mapDf$latitude <- as.numeric(mapDf$latitude)
   mapDf$longitude <- as.numeric(mapDf$longitude)
   
@@ -94,41 +91,22 @@ getMapData <- function(scData) {
     mutate(efficiency_score = round((total_effective_charging / total_hours_elapsed) * 100 + 10, digits = 0),
            popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
                                      / outlets) * 100 + 10, digits = 0))
-  
   mapDf$total_sessions <- as.numeric(mapDf$total_sessions)
   mapDf$total_charged <- as.numeric(mapDf$total_charged)
   return(mapDf)
 }
 
-split_str_by_index <- function(target, index) {
-  index <- sort(index)
-  substr(rep(target, length(index) + 1),
-         start = c(1, index),
-         stop = c(index - 1, nchar(target)))
-}
+# Render functions ------------------------------------------------------------------------------------------------
 
-interleave <- function(v1, v2) {
-  ord1 <- 2 * (1:length(v1)) - 1
-  ord2 <- 2 * (1:length(v2))
-  c(v1, v2)[order(c(ord1, ord2))]
-}
-
-
-# render functions ------------------------------------------------------------------------------------------------
-
-
-# Id for ui.R
 mapId <- "map"
 
-# This method handles the default content of the map like circles and legends.
+# Creates the default leaflet map without user input
 handleDefaultMapCreation <- function(userInput, mapData) {
   radius <- mapData$total_charged / max(mapData$total_charged) * 300
   pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
   
   leaflet() %>%
-    addTiles(
-      urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png"
-    ) %>%
+    addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
     setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
     addCircles(
       lng = mapData$longitude,
@@ -145,22 +123,22 @@ handleDefaultMapCreation <- function(userInput, mapData) {
     )
 }
 
-# This method handles the content of the map like circles and legends.
+# Creates a leaflet map based on user input
 handleMapCreation <- function(userInput, mapData) {
   categorySelected <- userInput
-  if (!(categorySelected == "Users per station")) {
+  if (!(categorySelected == "users_station")) {
     
-    if (categorySelected == "Charged kWh per station") {
+    if (categorySelected == "kwh_station") {
       radius <- mapData$total_charged / max(mapData$total_charged) * 300
       pal <-  colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
     }
     
-    if (categorySelected == "Occupation percentage") {
+    if (categorySelected == "occ_perc") {
       radius <- mapData$popularity_score / max(mapData$popularity_score) * 300
       pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
     }
     
-    if (categorySelected == "Efficiency percentage") {
+    if (categorySelected == "eff_perc") {
       radius <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
       pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
     }
@@ -198,7 +176,7 @@ handleMapCreation <- function(userInput, mapData) {
 geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
           position = position_stack(vjust = 0.5))
 
-# This method handles the content of the popup when circles are clicked on the map.
+# Adds a popup to leaflet map when a node is clicked
 chargingStationPopup <- function(id, lat, lng, mapData) {
   selectedChargingPole <- mapData[id, ]
   content <- as.character(tagList(
