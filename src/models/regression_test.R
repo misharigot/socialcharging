@@ -55,18 +55,6 @@ df <- df %>%
   mutate(start_tf = map(start_date, classifyTf), end_tf = map(end_date, classifyTf)) %>%
   mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf)))
 
-
-# # test with user_id 1829, because it has a lower variance
-# df <- df %>%
-#   filter(
-#     user_id >= 0 & user_id <= 100
-#   )
-
-# # Converts the datetime to seconds
-# df$start_date <- as.numeric(df$start_date)
-# df$end_date <- as.numeric(df$end_date)
-# df$hours_elapsed <- df$hours_elapsed * 3600
-
 # Create train and test data from the data --------------------------------
 
 set.seed(100)
@@ -126,7 +114,7 @@ res_test <- testData$hours_elapsed - ChargingSessionPredict
 rmse_test <- sqrt(mean(res_test ^ 2))
 
 # oneliner version of rmse calculation above
-# sqrt(mean((ChargingSessionPredict - testData$end_date) ^2))
+# sqrt(mean((testData$hours_elapsed - ChargingSessionPredict) ^2))
 
 # Estimates are off by this many hours on average
 rmse_train <- sqrt(mean(lm_df$residuals ^ 2))
@@ -140,18 +128,6 @@ actual_predicts$difference <- NULL
 
 actual_predicts$difference <-
   actual_predicts$actual - actual_predicts$predicted
-# 
-# # converting seconds to datetime
-# actual_predicts$actual <-
-#   as.POSIXct(as.numeric(actual_predicts$actual),
-#              origin = "1970-01-01",
-#              tzdb = "GMT1")
-# 
-# actual_predicts$predicted <-
-#   as.POSIXct(as.numeric(actual_predicts$predicted),
-#              origin = "1970-01-01",
-#              tzdb = "GMT1")
-# 
 
 acceptableTimeRange <- 4
 
@@ -159,10 +135,3 @@ resultsWithInRange <- actual_predicts %>%
   filter(difference <= acceptableTimeRange / 2 & difference >= -(acceptableTimeRange / 2))
 
 actualAccuracy <- 100 / nrow(actual_predicts) * nrow(resultsWithInRange)
-
-# actual_predicts$difference <-
-#   seconds_to_period(actual_predicts$actual - actual_predicts$predicted)
-# 
-# actual_predicts$difference <- gsub("\\..*", "S", as.character(actual_predicts$difference))
-
-unique(df$dayOfWeek)
