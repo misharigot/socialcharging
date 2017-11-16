@@ -1,16 +1,10 @@
 #68-station classification
 #classify the station by how important they are 
 #using the information about shiny map 
-library(RColorBrewer)
-library(rpart.plot)
-library(rattle)
-library(caret)
-library(rpart)
+
 library(ggplot2)
 library(config)
 library(readr)
-library(e1071)
-
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -95,42 +89,4 @@ showDistribution <- function(scData){
     ggtitle("Show the station Class number")
 }
 showDistribution(stationDf)
-
-
-
-
-# tree --------------------------------------------------------------------
-
-#divide data
-intrain <- createDataPartition(y = df$stationClass, p = 0.7, list = FALSE)
-train <- df[intrain, ]
-test <- df[-intrain, ]
-
-
-#make tree
-rpartmod <- rpart(stationClass ~ total_hours_elapsed + total_users + total_charged, data = train, method = "class")
-plot(rpartmod)
-text(rpartmod)
-
-#pruning
-printcp(rpartmod)
-plotcp(rpartmod)
-
-ptree <- prune(rpartmod, cp = rpartmod$cptable[which.min(rpartmod$cptable[, "xerror"]), "CP"])
-plot(ptree)
-text(ptree)
-
-#check accuracy by using test dataset
-rpartpred <- predict(ptree, test, type = "class")
-confusionMatrix(rpartpred, test$stationClass)
-
-# fancy plot
-fancyRpartPlot(ptree, tweak = 1.5)
-
-#predict buy using input data
-predictClass <- function(totHourElapsed, totUser, totCharged ) {
-  pframe <- data.frame(total_hours_elapsed = totHourElapsed, total_users = totUser, total_charged = totCharged)
-  test <- predict(ptree, pframe, type = "class")
-  return(test)
-}
 
