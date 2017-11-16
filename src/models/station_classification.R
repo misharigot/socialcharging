@@ -23,7 +23,7 @@ set.seed(1000)
 # trim data ----------------------------------------------------------
 
 cleanDataForStation <- function(x) {
-
+  
   df <- df %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
@@ -35,7 +35,7 @@ cleanDataForStation <- function(x) {
               total_users = n_distinct(user_id),
               total_charged = sum(charged_kwh),
               total_hours_elapsed = sum(hours_elapsed)
-             )
+    )
 }
 df <- cleanDataForStation(df)
 # classification ----------------------------------------------------------
@@ -67,11 +67,11 @@ changeName <- function(x) {
                                    ifelse(x == "LHH", "WorkerBee",
                                           ifelse(x == "LLH", "PowerBank",
                                                  ifelse(x == "LLL", "ForeverAlone", "HitandRun")
-                                                 )
                                           )
                                    )
                            )
                    )
+          )
   )
 }
 stationDf$stationClass <- changeName(stationDf$stationClass)
@@ -82,20 +82,20 @@ df$stationClass <- stationDf$stationClass
 # distribution ------------------------------------------------------------
 
 # show the distribution of the station class
-stationClassDis <- function(){
+stationClassDis <- function(stationDf){
   stationDf %>%
-  group_by(stationClass) %>%
-  summarise(num = n()) %>%
-  mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
+    group_by(stationClass) %>%
+    summarise(num = n()) %>%
+    mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
-
-showDistribution <- function(){
-  ggplot(stationClassDis(), aes(x = stationClass, y = num)) +
+showDistribution <- function(scData){
+  ggplot(stationClassDis(scData), aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
     coord_flip() +
     ggtitle("Show the station Class number")
 }
-showDistribution()
+showDistribution(stationDf)
+
 
 
 
