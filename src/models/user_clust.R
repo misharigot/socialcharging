@@ -71,7 +71,7 @@ plotClusterDataCharged <- function(data, kmeans) {
           text = ~paste("</br> Hours elapsed: ", total_hours_elapsed,
                         "</br> Charged kWh: ", total_charged,
                         "</br> Sessions: ", total_charge_sessions,
-                        "</br> User id: ", rownames(cleanDfCharged))) %>%
+                        "</br> User id: ", rownames(data))) %>%
     hide_colorbar() %>%
     layout(scene = list(xaxis = list(title = "Total hours elapsed"),
                         yaxis = list(title = "Total charged kwh"),
@@ -82,7 +82,7 @@ plotClusterDataTime <- function(data, kmeans) {
   plot_ly(data, x = ~charged_kwh, y = ~hours_elapsed,
           z = ~start_date_hour, color = kmeans$cluster, showscale = TRUE,
           hoverinfo = "text",
-          text = ~paste("</br> User id: ", rownames(cleanDfTime))) %>%
+          text = ~paste("</br> User id: ", rownames(data))) %>%
     hide_colorbar() %>%
     layout(scene = list(xaxis = list(title = "charged_kwh"),
                         yaxis = list(title = "hours_elapsed"),

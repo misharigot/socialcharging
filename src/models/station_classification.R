@@ -88,6 +88,7 @@ stationClassDis <- function(){
   summarise(num = n()) %>%
   mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
+
 showDistribution <- function(){
   ggplot(stationClassDis(), aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +

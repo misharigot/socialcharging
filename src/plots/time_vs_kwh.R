@@ -7,7 +7,7 @@ library(config)
 
 getDfHoursElapsed <- function(df) {
   df %>%
-    filter(!is.na(end_date), !is.na(charged_kwh)) %>%
+    filter(!is.na(end_date), !is.na(charged_kwh), hours_elapsed < 300) %>%
     mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
       round(x / 3600, 2)
     }))

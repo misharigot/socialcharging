@@ -24,7 +24,7 @@ cleanDf <- function(df) {
     summarise(count = n()) %>%
     filter(count >= minUserSessions) %>%
     select(user_id)
-  
+
   df %>%
   filter(!is.na(hours_elapsed),
          hours_elapsed > 0.00,
@@ -150,7 +150,7 @@ classDistributionDf <- function(sessionClassificationDf) {
 
 # Barchart: count for each timeframe
 plotClassCount <- function(sessionClassificationDf) {
-  ggplot(classDistributionDf(sessionClassificationDf), 
+  ggplot(classDistributionDf(sessionClassificationDf),
          aes(x = class, y = n)) +
     geom_bar(stat = "identity") +
     geom_smooth() +

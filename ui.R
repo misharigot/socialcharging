@@ -19,6 +19,13 @@ ui <- dashboardPage(
                menuSubItem("Analyzing per Car", tabName = "chart7"),
                menuSubItem("Timeframe vs users", tabName = "chart8")
       ),
+      menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
+               menuSubItem("User classification distribution", tabName = "predtab1"),
+               menuSubItem("User clustering", tabName = "predtab2"),
+               menuSubItem("Session clustering", tabName = "predtab3"),
+               menuSubItem("Linear model", tabName = "predtab4"),
+               menuSubItem("Correlation", tabName = "predtab5")
+      ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
   ),
@@ -91,7 +98,43 @@ ui <- dashboardPage(
                 box(plotOutput("plot8"), width = 12)
               )
       ),
-      # map here pls
+      tabItem(tabName = "chart9",
+              fluidRow(
+                box(plotOutput("plot9"), width = 12)
+              )
+      ),
+      tabItem(tabName = "chart10",
+              fluidRow(
+                box(plotOutput("plot10"), width = 12)
+              )
+      ),
+# Pred plots ------------------------------------------------------------------------------------------------------
+      tabItem(tabName = "predtab1",
+              fluidRow(
+                box(plotOutput("pred1"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab2",
+              fluidRow(
+                box(plotlyOutput("pred2"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab",
+              fluidRow(
+                box(plotlyOutput("pred3"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab4",
+              fluidRow(
+                box(plotOutput("pred4"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab5",
+              fluidRow(
+                box(plotOutput("cor1"), width = 12)
+              )
+      ),
+# Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
               mapModuleUI(id = "map")
       )

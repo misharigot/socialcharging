@@ -5,6 +5,7 @@ library(leaflet)
 library(RColorBrewer)
 library(scales)
 library(lattice)
+library(plotly)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -64,6 +65,33 @@ server <- function(input, output) {
   output$plot8 <- renderPlot({
     source("src/plots/timeframe_vs_users.R")
     return(multiplotUserTimeframes(scData()))
+  })
+  
+# Prediction plots ------------------------------------------------------------------------------------------------
+
+  output$pred1 <- renderPlot({
+    source("src/models/user_class.R")
+    return(plotClassCountShiny(scData()))
+  })
+  
+  output$pred2 <- renderPlotly({
+    source("src/models/user_clust.R")
+    return(plotUserCluster1(scData()))
+  })
+
+  output$plot3 <- renderPlotly({
+    source("src/models/user_clust.R")
+    return(plotUserCluster2(scData()))
+  })
+  
+  output$pred4 <- renderPlot({
+    source("src/models/regression_test.R")
+    return(plotLinearModelsResult(scData()))
+  })
+  
+  output$cor1 <- renderPlot({
+    source("src/models/regression_test.R")
+    return(plotCorrelationResult(scData()))
   })
   
   # Observers -------------------------------------------------------------------------------------------------------
