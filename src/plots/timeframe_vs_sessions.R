@@ -6,8 +6,6 @@ config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanDataframe(df)
 timeframeLevels <- c("6:00 7:00",
                      "7:00 8:00",
                      "8:00 9:00",
@@ -36,8 +34,8 @@ timeframeLevels <- c("6:00 7:00",
 # Table functions ---------------------------------------------------------
 
 # Returns a table with amount of sessions started at timeframe of 1 hour
-getStartTimeframe <- function() {
-  df %>%
+getStartTimeframe <- function(scData) {
+  scData %>%
     filter(!is.na(end_date), !is.na(charged_kwh)) %>%
     mutate(start_timeframe = paste(
       paste(hour(floor_date(start_date, "hour")), "00", sep = ":"),
@@ -50,8 +48,8 @@ getStartTimeframe <- function() {
 }
 
 # Returns a table with amount of sessions ended at timeframe of 1 hour
-getEndTimeframe <- function() {
-  df %>%
+getEndTimeframe <- function(scData) {
+  scData %>%
     filter(!is.na(end_date), !is.na(charged_kwh)) %>%
     mutate(end_timeframe = paste(
       paste(hour(floor_date(end_date, "hour")), "00", sep = ":"),
@@ -66,8 +64,8 @@ getEndTimeframe <- function() {
 # Plot functions ----------------------------------------------------------
 
 # Returns a plot with amount of sessions started at timeframe of 1 hour
-plotStartTimeframe <- function() {
-  p <- ggplot(getStartTimeframe(), aes(y = count, x = start_timeframe)) +
+plotStartTimeframe <- function(scData) {
+  p <- ggplot(getStartTimeframe(scData), aes(y = count, x = start_timeframe)) +
     geom_bar(stat = "identity", fill = "#66bb6a") +
     coord_flip() +
     labs(title = "Charging sessions",
@@ -80,8 +78,8 @@ plotStartTimeframe <- function() {
 }
 
 # Returns a plot with amount of sessions ended at timeframe of 1 hour
-plotEndTimeframe <- function() {
-  p <- ggplot(getEndTimeframe(), aes(y = count, x = end_timeframe)) +
+plotEndTimeframe <- function(scData) {
+  p <- ggplot(getEndTimeframe(scData), aes(y = count, x = end_timeframe)) +
     geom_bar(stat = "identity", fill = "#66bb6a") +
     coord_flip() +
     labs(title = "Charging sessions",
@@ -94,10 +92,10 @@ plotEndTimeframe <- function() {
 }
 
 # Returns two plots side by side
-multiplotTimeframes <- function() {
-  return(multiplotHelper(plotStartTimeframe(), plotEndTimeframe(), cols = 2))
+multiplotTimeframes <- function(scData) {
+  return(multiplotHelper(plotStartTimeframe(scData), plotEndTimeframe(scData), cols = 2))
 }
 
 # Calls -------------------------------------------------------------------
-plotStartTimeframe()
-plotEndTimeframe()
+# plotStartTimeframe()
+# plotEndTimeframe()
