@@ -83,6 +83,11 @@ server <- function(input, output) {
     return(plotUserCluster2(scData()))
   })
   
+  output$pred4 <- renderPlotly({
+    source("src/models/cluster_charging_station.R")
+    return(createStationClusterPlot(scData()))
+  })
+  
   # Observers -------------------------------------------------------------------------------------------------------
   
   # When a double-click happens, check if there's a brush on the plot.

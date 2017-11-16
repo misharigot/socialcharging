@@ -1,6 +1,7 @@
 library(shiny)
 library(shinydashboard)
 library(leaflet)
+library(plotly)
 
 source("src/map/map_module.R")
 
@@ -22,7 +23,8 @@ ui <- dashboardPage(
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
                menuSubItem("User classification distribution", tabName = "predtab1"),
                menuSubItem("User clustering", tabName = "predtab2"),
-               menuSubItem("Session clustering", tabName = "predtab3")
+               menuSubItem("Session clustering", tabName = "predtab3"),
+               menuSubItem("Station clustering", tabName = "predtab4")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
@@ -120,6 +122,11 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab3",
               fluidRow(
                 box(plotlyOutput("pred3"))
+              )
+      ),
+      tabItem(tabName = "predtab4",
+              fluidRow(
+                box(plotlyOutput("pred4"))
               )
       ),
 # Map -------------------------------------------------------------------------------------------------------------
