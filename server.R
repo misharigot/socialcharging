@@ -89,16 +89,6 @@ server <- function(input, output) {
     return(plotLinearModelsResult(scData()))
   })
   
-  output$pred5 <- renderPlot({
-    source("src/models/regression_test.R")
-    return(plotQqResult())
-  })
-  
-  output$pred6 <- renderPlot({
-    source("src/models/regression_test.R")
-    return(plotFittedResult())
-  })
-  
   output$cor1 <- renderPlot({
     source("src/models/regression_test.R")
     return(plotCorrelationResult(scData()))
