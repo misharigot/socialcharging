@@ -147,6 +147,7 @@ classDistributionDf <- function(sessionClassificationDf) {
     group_by(class) %>%
     summarise(n = n())
 }
+
 # Barchart: count for each timeframe
 plotClassCount <- function(sessionClassificationDf) {
   ggplot(classDistributionDf(sessionClassificationDf), 

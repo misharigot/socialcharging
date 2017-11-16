@@ -11,7 +11,7 @@ set.seed(100)
 df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
-abc <- df %>% filter(!is.na(start_date), !is.na(end_date)) %>% sessionClassificationDf()
+
 
 # Data cleaning -----------------------------------------------------------------------------------------------
 cleanDataChargedKwh <- function(data) {
@@ -24,46 +24,21 @@ cleanDataChargedKwh <- function(data) {
     select(total_charge_sessions, total_charged, total_hours_elapsed)
 }
 
-# Todo: change logic
 cleanDataTime <- function(data) {
-  topUsersClasses <- userClassificationDf(data)
-  
-  summary <- data %>%
-    filter(!is.na(start_date), !is.na(end_date), !is.na(hours_elapsed), hours_elapsed < 56) %>%
-    group_by(user_id) %>%
-    summarise(avg_hours_elapsed = mean(hours_elapsed),
-              # start_time = mean(as.numeric(format(round(start_date, "hours"), format = "%H"))),
-              # end_time = mean(as.numeric(format(round(end_date, "hours"), format = "%H"))),
-              n_diff_stations = n_distinct(address)) %>%
-    select(avg_hours_elapsed, n_diff_stations)
-  print(str(summary))
-  print(str(topUsersClasses))
-  print(summary(summary))
-  print(summary(topUsersClasses))
-  
-  
-  summary$class <- map(topUsersClasses, function(x) {
-    print(x["user_id"])
-    print("en die andere:")
-    print(summary$user_id)
-    if (x["user_id"] == summary$user_id) {
-      summary$top_class <- x["class"]
-    }
-  })
+  data <- data %>% 
+    filter(!is.na(start_date), !is.na(end_date), !is.na(hours_elapsed), hours_elapsed < 56, !is.na(charged_kwh)) %>%
+    select(charged_kwh, hours_elapsed, start_date_hour)
 }
 
-cleanDfCharged <- cleanDataChargedKwh(df)
-cleanDfTime <- cleanDataTime(abc)
+
 
 # Kmeans Clustering -------------------------------------------------------------------------------------------
 
-clusteredChargedKm <- kmeans(cleanDfCharged, 5, nstart = 20)
-clusteredTimeKm <- kmeans(cleanDfTime, 5, nstart = 20)
 
 # Dunn's Index ------------------------------------------------------------------------------------------------
 
-dunnKmCharged <- dunn(clusters = clusteredChargedKm$cluster, Data = cleanDfCharged)
-dunnKmTime <- dunn(clusters = clusteredTimeKm$cluster, Data = cleanDfTime)
+# dunnKmCharged <- dunn(clusters = clusteredChargedKm$cluster, Data = cleanDfCharged)
+# dunnKmTime <- dunn(clusters = clusteredTimeKm$cluster, Data = cleanDfTime)
 
 # Screeplot ---------------------------------------------------------------------------------------------------
 
@@ -75,6 +50,16 @@ screePlot <- function(data) {
   }
   plot(ratioSs, type = "b", xlab = "k")
   print(ratioSs)
+}
+
+dunnPlot <- function(data) {
+  dunn <- rep(0, 10)
+  for (k in 2:10) {
+    kmeansObj <- kmeans(data, k, nstart = 20)
+    dunn[k] <- dunn(clusters = kmeansObj$cluster, Data = data)
+  }
+  plot(dunn, type = "b", xlab = "k")
+  print(dunn)
 }
 
 # Plots -------------------------------------------------------------------------------------------------------
@@ -94,19 +79,36 @@ plotClusterDataCharged <- function(data, kmeans) {
 }
 
 plotClusterDataTime <- function(data, kmeans) {
-  plot_ly(data, x = ~start_time, y = ~n_diff_stations,
-          z = ~avg_hours_elapsed, color = kmeans$cluster, showscale = TRUE,
+  plot_ly(data, x = ~charged_kwh, y = ~hours_elapsed,
+          z = ~start_date_hour, color = kmeans$cluster, showscale = TRUE,
           hoverinfo = "text",
           text = ~paste("</br> User id: ", rownames(cleanDfTime))) %>%
     hide_colorbar() %>%
-    layout(scene = list(xaxis = list(title = "Avg start time"),
-                        yaxis = list(title = "N Diff stations"),
-                        zaxis = list(title = "Avg hours elapsed")))
+    layout(scene = list(xaxis = list(title = "charged_kwh"),
+                        yaxis = list(title = "hours_elapsed"),
+                        zaxis = list(title = "start_date_hour")))
 }
 
 # Calls -------------------------------------------------------------------------------------------------------- 
 
-plotClusterDataCharged(cleanDfCharged, clusteredChargedKm)
-plotClusterDataTime(cleanDfTime, clusteredTimeKm)
-screePlot(cleanDfCharged)
-screePlot(cleanDfTime)
+# Fucked up #1
+plotUserCluster1 <- function(scData) {
+  cleanDfCharged <- cleanDataChargedKwh(scData)
+  clusteredChargedKm <- kmeans(cleanDfCharged, 6, nstart = 20)
+  plotClusterDataCharged(cleanDfCharged, clusteredChargedKm)
+}
+
+# Fucked up #2
+plotUserCluster2 <- function(scData) {
+  abc <- df %>% filter(!is.na(start_date), !is.na(end_date)) %>% sessionClassificationDf()
+  cleanDfTime <- cleanDataTime(abc)
+  clusteredTimeKm <- kmeans(cleanDfTime, 4, nstart = 20)
+  plotClusterDataTime(cleanDfTime, clusteredTimeKm)
+}
+
+# screePlot(cleanDfCharged)
+# screePlot(cleanDfTime)
+# dunnPlot(cleanDfCharged)
+# dunnPlot(cleanDfTime)
+# dunn(clusters = clusteredTimeKm$cluster, Data = cleanDfTime)
+
