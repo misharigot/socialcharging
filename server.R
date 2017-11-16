@@ -71,6 +71,11 @@ server <- function(input, output) {
     return(plotClassCount(sessionClassificationDf(cleanDf(scData))))
   })
   
+  output$plot10 <- renderPlot({
+    source("src/models/stationBLABLA.R")
+    return(PLOTSTATIONDISTBLA())
+  })
+  
   # Observers -------------------------------------------------------------------------------------------------------
   
   # When a double-click happens, check if there's a brush on the plot.

@@ -18,7 +18,8 @@ ui <- dashboardPage(
                menuSubItem("Timeframe vs Sessions", tabName = "chart4"),
                menuSubItem("Analyzing per Car", tabName = "chart7"),
                menuSubItem("Timeframe vs users", tabName = "chart8"),
-               menuSubItem("Profile distribution", tabName = "chart9")
+               menuSubItem("User profile distribution", tabName = "chart9"),
+               menuSubItem("Station profile distribution", tabName = "chart10")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
@@ -95,6 +96,11 @@ ui <- dashboardPage(
       tabItem(tabName = "chart9",
               fluidRow(
                 box(plotOutput("plot9"), width = 12)
+              )
+      ),
+      tabItem(tabName = "chart10",
+              fluidRow(
+                box(plotOutput("plot10"), width = 12)
               )
       ),
       # map here pls
