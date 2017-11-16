@@ -74,13 +74,12 @@ server <- function(input, output) {
     return(plotClassCountShiny(scData()))
   })
   
+  source("src/models/user_clust.R")
   output$pred2 <- renderPlotly({
-    source("src/models/user_clust.R")
     return(plotUserCluster1(scData()))
   })
 
-  output$plot3 <- renderPlotly({
-    source("src/models/user_clust.R")
+  output$pred3 <- renderPlotly({
     return(plotUserCluster2(scData()))
   })
   

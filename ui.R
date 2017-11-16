@@ -114,12 +114,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab2",
               fluidRow(
-                box(plotlyOutput("pred2"), width = 12)
+                box(plotlyOutput("pred2"))
               )
       ),
-      tabItem(tabName = "predtab",
+      tabItem(tabName = "predtab3",
               fluidRow(
-                box(plotlyOutput("pred3"), width = 12)
+                box(plotlyOutput("pred3"))
               )
       ),
 # Map -------------------------------------------------------------------------------------------------------------
