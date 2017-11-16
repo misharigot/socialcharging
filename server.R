@@ -67,7 +67,8 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
-# Prediction plots ------------------------------------------------------------------------------------------------
+  
+  # Prediction plots ------------------------------------------------------------------------------------------------
 
   output$pred1 <- renderPlot({
     source("src/models/user_class.R")

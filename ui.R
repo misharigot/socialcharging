@@ -18,7 +18,8 @@ ui <- dashboardPage(
                menuSubItem("kWh vs Stations", tabName = "chart3"),
                menuSubItem("Timeframe vs Sessions", tabName = "chart4"),
                menuSubItem("Analyzing per Car", tabName = "chart7"),
-               menuSubItem("Timeframe vs users", tabName = "chart8")
+               menuSubItem("Timeframe vs users", tabName = "chart8"),
+               menuSubItem("Class distribution", tabName = "chart9")
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
                menuSubItem("User classification distribution", tabName = "predtab1"),
@@ -93,6 +94,7 @@ ui <- dashboardPage(
                   title = "Analyzing per car ",
                   width = 12)
               )
+              
       ),
       tabItem(tabName = "chart8",
               fluidRow(
@@ -101,7 +103,9 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart9",
               fluidRow(
-                box(plotOutput("plot9"), width = 12)
+                box(width = 6, align = "center",
+                    img(src = "classdistribution.PNG", width = "90%", height = "90%")
+                )
               )
       ),
       tabItem(tabName = "chart10",

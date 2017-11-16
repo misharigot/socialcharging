@@ -5,17 +5,15 @@
 library(ggplot2)
 library(config)
 library(readr)
+library(dplyr)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
-df <- read_csv2(config$scDataset)
-df <- cleanSecondDf(df)
-
 
 # trim data ----------------------------------------------------------
 
-cleanDataForStation <- function(x) {
+cleanDataForStation <- function(df) {
   
   df <- df %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
@@ -85,9 +83,11 @@ stationClassDis <- function(df){
     mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
 showDistribution <- function(df){
-  ggplot(stationClassDis(df), aes(x = stationClass, y = num)) +
+  df <- makestationDf(df)
+  df <- stationClassDis(df)
+  ggplot(df, aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
     coord_flip() +
     ggtitle("Show the station Class number")
 }
-showDistribution(makestationDf(df))
+showDistribution(df)
