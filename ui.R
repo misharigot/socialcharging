@@ -17,9 +17,11 @@ ui <- dashboardPage(
                menuSubItem("kWh vs Stations", tabName = "chart3"),
                menuSubItem("Timeframe vs Sessions", tabName = "chart4"),
                menuSubItem("Analyzing per Car", tabName = "chart7"),
-               menuSubItem("Timeframe vs users", tabName = "chart8"),
-               menuSubItem("User profile distribution", tabName = "chart9"),
-               menuSubItem("Station profile distribution", tabName = "chart10")
+               menuSubItem("Timeframe vs users", tabName = "chart8")
+      ),
+      menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
+               menuSubItem("User classification distribution", tabName = "pred1"),
+               menuSubItem("Station classification distribution", tabName = "pred2")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )

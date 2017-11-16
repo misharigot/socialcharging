@@ -66,7 +66,7 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
-  output$plot9 <- renderPlot({
+  output$pred9 <- renderPlot({
     source("src/models/user_class.R")
     return(plotClassCount(sessionClassificationDf(cleanDf(scData))))
   })
