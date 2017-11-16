@@ -183,3 +183,12 @@ doClustering <- function() {
   plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster,
        xlab = "start timeframe (hour)", ylab = "hours elapsed in session")
 }
+
+
+# Get user classification -------------------------------------------------
+
+getUserClassifications <- function(){
+  simpledUserclassifications <- userClassifications %>%
+    select(user_id, class)
+  return(simpledUserclassifications)
+}
