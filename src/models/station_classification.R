@@ -34,11 +34,8 @@ cleanDataForStation <- function(x) {
               total_sessions = n(),
               total_users = n_distinct(user_id),
               total_charged = sum(charged_kwh),
-              total_hours_elapsed = sum(hours_elapsed),
-              total_effective_charging = sum(effective_charging_hours)) %>%
-    mutate(efficiency_score = round((total_effective_charging / total_hours_elapsed) * 100 + 10, digits = 0),
-           popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
-                                     / outlets) * 100 + 10, digits = 0))
+              total_hours_elapsed = sum(hours_elapsed)
+             )
 }
 df <- cleanDataForStation(df)
 # classification ----------------------------------------------------------

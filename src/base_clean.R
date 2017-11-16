@@ -35,8 +35,5 @@ cleanSecondDf <- function(df) {
            kw_charge_point_speed = kw_charge_point_speed*0.01) %>%
     mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
       round(x / 3600, 2)
-    })) %>% 
-    mutate(effective_charging_hours = sapply(charged_kwh / kw_charge_point_speed, function(x) {
-      round(x, digits = 2)
     }))
 }
