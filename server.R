@@ -74,14 +74,23 @@ server <- function(input, output) {
     return(plotClassCountShiny(scData()))
   })
   
+  source("src/models/user_clust.R")
   output$pred2 <- renderPlotly({
-    source("src/models/user_clust.R")
     return(plotUserCluster1(scData()))
   })
 
-  output$plot3 <- renderPlotly({
-    source("src/models/user_clust.R")
+  output$pred3 <- renderPlotly({
     return(plotUserCluster2(scData()))
+  })
+  
+  output$pred4 <- renderPlotly({
+    source("src/models/cluster_charging_station.R")
+    return(createStationClusterPlot(scData()))
+  })
+  
+  output$pred5 <- renderPlotly({
+    source("src/models/station_classification.R")
+    return(showDistribution(scData()))
   })
   
   # Observers -------------------------------------------------------------------------------------------------------
