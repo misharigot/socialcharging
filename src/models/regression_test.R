@@ -85,18 +85,17 @@ testData  <- dataFrame[-trainingRowIndex, ]   # remaining test data
 
 # Testing linear model ----------------------------------------------------
 
+# Create linear model
+lm_df <-
+  lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek + class,
+     data = trainingData)
+
 # build linear model to predict end_date with the following parameters
-createLinearModelData <- function(){
-  lm_df <-
-    lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek + class,
-       data = trainingData)
-  
+createLinearModelData <- function() {
   modelSummary <- summary(lm_df)
   modelCoeffs <- modelSummary$coefficients
   rSquared <- modelSummary$r.squared
   adjRSquared <- modelSummary$adj.r.squared
-  
-  ranks <- order(testData$start_tf)
   
   ChargingSessionPredict <- predict(lm_df, testData)
   
@@ -105,22 +104,6 @@ createLinearModelData <- function(){
   
   actual_predicts <- actual_predicts %>%
     filter(!is.na(actual_predicts$predicted))
-  
-  plot(testData$start_tf,
-       testData$hours_elapsed,
-       xlab = "Start timeframe",
-       ylab = "Hours elapsed")
-  
-  points(testData$start_tf[ranks],
-         ChargingSessionPredict[ranks],
-         col = "green")
-  
-  plot(lm_df$fitted.values,
-       lm_df$residuals,
-       xlab = "Fitted values",
-       ylab = "Residuals")
-  
-  qqnorm(lm_df$residuals, ylab = "Residual Quantiles")
   
   res_test <- testData$hours_elapsed - ChargingSessionPredict
   
@@ -134,10 +117,11 @@ createLinearModelData <- function(){
   rmse_train <- sqrt(mean(lm_df$residuals ^ 2))
   
   # Ratio of test RMSE over training RMSE
-  rmse_test / rmse_train
+  rmse_ratio <- rmse_test / rmse_train
   
   minMaxAccuracy <-
-    mean(apply(actual_predicts, 1, min) / apply(actual_predicts, 1, max))
+    mean(min(actual_predicts$actual, actual_predicts$predicted) 
+         / max(actual_predicts$actual, actual_predicts$predicted))
   
   actual_predicts$difference <- NULL
   
@@ -152,11 +136,42 @@ createLinearModelData <- function(){
   
   actualAccuracy <-
     100 / nrow(actual_predicts) * nrow(resultsWithInRange)
+  
+  plotLmModel(lm_df, ChargingSessionPredict)
+  
+  resultList <- list("rmse_test" = rmse_test, "rmse_train" = rmse_train, 
+                     "minMaxAccuracy" = minMaxAccuracy, "rSquared" = rSquared,
+                     "adjRSquared" = adjRSquared, "rmse_ratio" = rmse_ratio,
+                     "actualAccuracy" = actualAccuracy)
+  return(resultList)
+}
+
+plotLmModel <- function(lm, prediction) {
+  
+  ranks <- order(testData$start_tf)
+  
+  plot(testData$start_tf,
+       testData$hours_elapsed,
+       xlab = "Start timeframe",
+       ylab = "Hours elapsed")
+  
+  points(testData$start_tf[ranks],
+         prediction[ranks],
+         col = "green")
+  
+  
+  plot(lm$fitted.values,
+       lm$residuals,
+       xlab = "Fitted values",
+       ylab = "Residuals")
+  
+  qqnorm(lm$residuals, ylab = "Residual Quantiles")
+  
 }
 
 # Correlation plot --------------------------------------------------------
 
-createCorrelationPlot <- function(){
+createCorrelationPlot <- function() {
   numberfySmart <- function(smart) {
     if (smart == "Yes") {
       return(1)
