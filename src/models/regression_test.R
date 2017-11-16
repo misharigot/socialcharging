@@ -10,8 +10,9 @@ library(corrplot)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
+source(config$UserClass)
 
-dataFrame <- read_csv2(config$scBigDataset, col_names = FALSE)
+dataFrame <- read_csv2(config$scDataset, col_names = FALSE)
 
 dataFrame <- cleanSecondDf(dataFrame)
 
@@ -41,7 +42,7 @@ classifyTf <- function(datetime) {
   }
 }
 
-source("src/models/user_class.R")
+
 userClassdataFrame <- getUserClassifications()
 dataFrame <- base::merge(dataFrame, userClassdataFrame)
 
@@ -60,8 +61,8 @@ dataFrame$hour <- as.numeric(format(round(dataFrame$start_date, "hours"), format
 dataFrame <- dataFrame %>%
   filter(
     !is.na(hours_elapsed),
-    hours_elapsed <= 24,
-    hours_elapsed >= 0,!is.na(start_date),!is.na(end_date),!is.na(car),!is.na(charged_kwh),
+    hours_elapsed >= 0 & hours_elapsed <= 24,
+    !is.na(start_date),!is.na(end_date),!is.na(car),!is.na(charged_kwh),
     user_id %in% usersWithEnoughSessions$user_id
   ) %>%
   mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%

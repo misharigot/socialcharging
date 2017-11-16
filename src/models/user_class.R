@@ -11,7 +11,7 @@ set.seed(100)
 # Constants
 minUserSessions <- 10
 
-df <- read_csv2(config$scBigDataset, col_names = FALSE)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
