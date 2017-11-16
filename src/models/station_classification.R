@@ -11,7 +11,6 @@ source(config$baseClean)
 
 df <- read_csv2(config$scDataset)
 df <- cleanSecondDf(df)
-set.seed(1000)
 
 
 # trim data ----------------------------------------------------------
@@ -31,10 +30,10 @@ cleanDataForStation <- function(x) {
               total_hours_elapsed = sum(hours_elapsed)
     )
 }
-df <- cleanDataForStation(df)
+
 # classification ----------------------------------------------------------
 
-# using five number summary give the station a score (high or low)
+# using five number summary give the value for station
 givePoint <- function(x) {
   kwhSummary <- summary(x)
   med <- kwhSummary[3]
@@ -43,16 +42,14 @@ givePoint <- function(x) {
 
 #make a station table
 stationPointTable <- function(x) {
+  df <- cleanDataForStation(df)
   df$charging <- givePoint(df$total_charged)
   df$occupation <- givePoint(df$total_hours_elapsed)
   df$user_amount <- givePoint(df$total_users)
   df <- df %>%  select(latitude, address, occupation, user_amount, charging)
 }
-stationDf <- stationPointTable(df)
 
-# classify the station based on the scores of the features
-stationDf$stationClass <- paste(stationDf$occupation, stationDf$user_amount, stationDf$charging, sep = "")
-class(stationDf$stationClass)
+#change class name fancy
 changeName <- function(x) {
   ifelse (x == "HHH", "LadyOfTheEvening",
           ifelse ( x == "HHL", "ParkingSpace",
@@ -68,25 +65,29 @@ changeName <- function(x) {
           )
   )
 }
-stationDf$stationClass <- changeName(stationDf$stationClass)
-df$stationClass <- stationDf$stationClass
 
+# make the final dataframe
+makestationDf <- function(df) {
+  stationDf <- stationPointTable(df)
+  stationDf$stationClass <- paste(stationDf$occupation, stationDf$user_amount, stationDf$charging, sep = "")
+  stationDf$stationClass <- changeName(stationDf$stationClass)
+  return(stationDf)
+}
 
 
 # distribution ------------------------------------------------------------
 
 # show the distribution of the station class
-stationClassDis <- function(stationDf){
-  stationDf %>%
+stationClassDis <- function(df){
+  df %>%
     group_by(stationClass) %>%
     summarise(num = n()) %>%
     mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
-showDistribution <- function(scData){
-  ggplot(stationClassDis(scData), aes(x = stationClass, y = num)) +
+showDistribution <- function(df){
+  ggplot(stationClassDis(df), aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
     coord_flip() +
     ggtitle("Show the station Class number")
 }
-showDistribution(stationDf)
-
+showDistribution(makestationDf(df))
