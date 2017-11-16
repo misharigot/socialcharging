@@ -11,7 +11,7 @@ set.seed(100)
 # Constants
 minUserSessions <- 10
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
+df <- read_csv2(config$scBigDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
@@ -182,4 +182,13 @@ doClustering <- function() {
 
   plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster,
        xlab = "start timeframe (hour)", ylab = "hours elapsed in session")
+}
+
+
+# Get user classification -------------------------------------------------
+
+getUserClassifications <- function(){
+  simpledUserclassifications <- userClassifications %>%
+    select(user_id, class)
+  return(simpledUserclassifications)
 }
