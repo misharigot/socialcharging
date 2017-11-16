@@ -33,7 +33,7 @@ cleanDf <- function(df) {
   
   df$hour <- as.numeric(format(round(df$start_date, "hours"), format = "%H"))
   
-  df <- df %>%
+  df %>%
     filter(
       !is.na(hours_elapsed),
       hours_elapsed >= 0 & hours_elapsed <= 24,
@@ -92,7 +92,7 @@ createLinearModelData <- function(data) {
   testData <- df[-trainingRowIndex, ]   # remaining test data
   
   # Create linear model
-  lm_df <-
+  lm_df <<-
     lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek,
        data = trainingData)
   
@@ -101,7 +101,7 @@ createLinearModelData <- function(data) {
   rSquared <- modelSummary$r.squared
   adjRSquared <- modelSummary$adj.r.squared
   
-  ChargingSessionPredict <- predict(lm_df, testData)
+  ChargingSessionPredict <<- predict(lm_df, testData)
   
   actual_predicts <- data.frame(cbind(actual = testData$hours_elapsed,
                                       predicted = ChargingSessionPredict))
@@ -141,37 +141,39 @@ createLinearModelData <- function(data) {
   actualAccuracy <-
     100 / nrow(actual_predicts) * nrow(resultsWithInRange)
   
-  plotLmModel(lm_df, ChargingSessionPredict)
-  
   resultList <- list("rmse_test" = rmse_test, "rmse_train" = rmse_train, 
                      "minMaxAccuracy" = minMaxAccuracy, "rSquared" = rSquared,
                      "adjRSquared" = adjRSquared, "rmse_ratio" = rmse_ratio,
                      "actualAccuracy" = actualAccuracy)
-  return(resultList)
+  plotBox(ChargingSessionPredict, testData)
 }
 
-plotLmModel <- function(lm, prediction) {
+plotQq <- function(lm) {
   
-  ranks <- order(testData$start_tf)
+  qqnorm(lm$residuals, ylab = "Residual Quantiles")
+}
+
+plotBox <- function(prediction, data) {
   
-  plot(testData$start_tf,
-       testData$hours_elapsed,
+  ranks <- order(data$start_tf)
+  
+  plot(data$start_tf,
+       data$hours_elapsed,
        xlab = "Start timeframe",
        ylab = "Hours elapsed")
   
-  points(testData$start_tf[ranks],
+  points(data$start_tf[ranks],
          prediction[ranks],
          col = "green")
-  
-  
+}
+
+plotFitted <- function(lm) {
   plot(lm$fitted.values,
        lm$residuals,
        xlab = "Fitted values",
        ylab = "Residuals")
-  
-  qqnorm(lm$residuals, ylab = "Residual Quantiles")
-  
 }
+
 
 # Correlation plot --------------------------------------------------------
 
@@ -219,6 +221,14 @@ plotLinearModelsResult <- function(scData) {
   createLinearModelData(sessionClassificationDf(cleanDf(scData)))
 }
 
-plotClassCountShiny <- function(scData) {
+plotCorrelationResult <- function(scData) {
   createCorrelationPlot(sessionClassificationDf(cleanDf(scData)))
+}
+
+plotQqResult <- function() {
+  plotQq(lm_df)
+}
+
+plotFittedResult <- function() {
+  plotFitted(lm_df)
 }

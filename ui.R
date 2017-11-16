@@ -22,7 +22,10 @@ ui <- dashboardPage(
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
                menuSubItem("User classification distribution", tabName = "predtab1"),
                menuSubItem("User clustering", tabName = "predtab2"),
-               menuSubItem("Session clustering", tabName = "predtab3")
+               menuSubItem("Session clustering", tabName = "predtab3"),
+               menuSubItem("Linear model", tabName = "predtab4"),
+               menuSubItem("Correlation", tabName = "predtab5"),
+               menuSubItem("QQ norm", tabName = "predtab6")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
@@ -120,6 +123,21 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab",
               fluidRow(
                 box(plotlyOutput("pred3"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab4",
+              fluidRow(
+                box(plotOutput("pred4"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab5",
+              fluidRow(
+                box(plotOutput("cor1"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab6",
+              fluidRow(
+                box(plotOutput("pred5"), width = 12)
               )
       ),
 # Map -------------------------------------------------------------------------------------------------------------
