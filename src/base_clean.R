@@ -1,3 +1,4 @@
+
 # This script does some general cleaning on the social charging csv.
 library(readr)
 library(dplyr)
@@ -36,3 +37,4 @@ cleanSecondDf <- function(df) {
       round(x / 3600, 2)
     }))
 }
+

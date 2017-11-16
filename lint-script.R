@@ -15,3 +15,4 @@ linters <- with_defaults(
 
 lintr::clear_cache(file = NULL)
 lintr::lint(filename = config$fileToLint, linters = linters)
+
