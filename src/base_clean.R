@@ -1,3 +1,4 @@
+
 # This script does some general cleaning on the social charging csv.
 library(readr)
 library(dplyr)
@@ -12,15 +13,15 @@ getScColnames <- function() {
 cleanDataframe <- function(df) {
   colnames(df) <- getScColnames()
   df %>%
-    mutate(start_date = ymd_hms(start_date),
-           end_date = ymd_hms(end_date),
-           charged_kwh = as.numeric(charged_kwh)) %>%
-    mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
-    mutate(kw_charge_point_speed = as.numeric(kw_charge_point_speed)) %>%
-    mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
+  mutate(start_date = ymd_hms(start_date),
+         end_date = ymd_hms(end_date),
+         charged_kwh = as.numeric(charged_kwh)) %>%
+  mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
+  mutate(kw_charge_point_speed = as.numeric(kw_charge_point_speed)) %>%
+  mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
       round(x / 3600, 2)
     })) %>%
-    mutate(effective_charging_hours = sapply(charged_kwh / kw_charge_point_speed, function(x) {
+  mutate(effective_charging_hours = sapply(charged_kwh / kw_charge_point_speed, function(x) {
       round(x, digits = 4)
     }))
 }
@@ -31,9 +32,9 @@ cleanSecondDf <- function(df) {
   df %>%
     mutate(start_date = ymd_hms(start_date),
            end_date = ymd_hms(end_date),
-           charged_kwh = as.numeric(charged_kwh),
-           kw_charge_point_speed = kw_charge_point_speed*0.01) %>%
+           charged_kwh = as.numeric(charged_kwh)) %>%
     mutate(hours_elapsed = sapply(end_date - start_date, function(x) {
       round(x / 3600, 2)
     }))
 }
+

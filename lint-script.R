@@ -1,8 +1,7 @@
 # This script enables you to lint your R scripts, to check on styling errors.
 library(lintr)
-
-# File to lint
-fileToLint <- "src/models/station_classification.R"
+library(config)
+config <- config::get(file = "config.yml")
 
 # Custom lint rules
 linters <- with_defaults(
@@ -10,8 +9,10 @@ linters <- with_defaults(
   line_length_linter(120),
   multiple_dots_linter = NULL,
   object_length_linter(40),
-  spaces_left_parentheses_linter = NULL
+  spaces_left_parentheses_linter = NULL,
+  trailing_whitespace_linter = NULL
 )
 
 lintr::clear_cache(file = NULL)
-lintr::lint(filename = fileToLint, linters = linters)
+lintr::lint(filename = config$fileToLint, linters = linters)
+
