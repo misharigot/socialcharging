@@ -79,7 +79,7 @@ server <- function(input, output) {
     return(plotUserCluster1(scData()))
   })
 
-  output$plot3 <- renderPlotly({
+  output$pred3 <- renderPlotly({
     source("src/models/user_clust.R")
     return(plotUserCluster2(scData()))
   })

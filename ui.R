@@ -119,7 +119,7 @@ ui <- dashboardPage(
                 box(plotlyOutput("pred2"), width = 12)
               )
       ),
-      tabItem(tabName = "predtab",
+      tabItem(tabName = "predtab3",
               fluidRow(
                 box(plotlyOutput("pred3"), width = 12)
               )
