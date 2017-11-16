@@ -66,6 +66,11 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
+  output$plot9 <- renderPlot({
+    source("src/models/user_class.R")
+    return(plotClassCount(sessionClassificationDf(cleanDf(scData))))
+  })
+  
   # Observers -------------------------------------------------------------------------------------------------------
   
   # When a double-click happens, check if there's a brush on the plot.
