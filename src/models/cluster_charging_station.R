@@ -14,10 +14,7 @@ source(config$baseClean)
 set.seed(100)
 
 # Data cleaning --------------------------------------------------------------------------------------
-cleanDataFrame <- function() {
-  df <- read_csv2(config$scDataset, col_names = FALSE)
-  df <- cleanDataframe(df)
-  
+cleanDataFrame <- function(df) {
   df <- df %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   
@@ -41,21 +38,21 @@ cleanDataFrame <- function() {
   return(df)
 }
 
-createClusterDataFrame <- function() {
-  cleanedDf <- cleanDataFrame()
+createClusterDataFrame <- function(scData) {
+  cleanedDf <- cleanDataFrame(scData)
   clusterDf <- cleanedDf %>%
     ungroup() %>%
     select(total_charged, total_hours_elapsed, total_sessions)
   
-  rownames(clusterDf) <- paste(cleanedDf$longitude, cleanedDf$latitude, sep=", ")
+  rownames(clusterDf) <- paste(cleanedDf$longitude, cleanedDf$latitude, sep = ", ")
   
   return(clusterDf)
 }
 
 # Ploting ---------------------------------------------------------------------------------------------------
-createStationClusterPlot <- function() {
+createStationClusterPlot <- function(scData) {
   
-  clusterDf <- createClusterDataFrame()
+  clusterDf <- createClusterDataFrame(scData)
   
   charging_km <- kmeans(clusterDf, 4, nstart = 20)
   
@@ -96,4 +93,4 @@ createScreePlot <- function() {
   plot(ratio_ss, type = "b", xlab = "k")
 }
 
-createStationClusterPlot()
+# createStationClusterPlot()
