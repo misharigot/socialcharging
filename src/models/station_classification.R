@@ -63,12 +63,12 @@ stationDf <- stationPointTable(df)
 stationDf$stationClass <- paste(stationDf$occupation, stationDf$user_amount, stationDf$charging, sep = "")
 class(stationDf$stationClass)
 changeName <- function(x) {
-  ifelse (x == "HHH", "FacebookStar",
+  ifelse (x == "HHH", "LadyOfTheEvening",
           ifelse ( x == "HHL", "ParkingSpace",
                    ifelse (x == "HLL", "MarriedToThisStation",
-                           ifelse (x == "HLH", "HomeStation",
-                                   ifelse(x == "LHH", "MostEfficient",
-                                          ifelse(x == "LLH", "HomeStation",
+                           ifelse (x == "HLH", "LateNightCharging",
+                                   ifelse(x == "LHH", "WorkerBee",
+                                          ifelse(x == "LLH", "PowerBank",
                                                  ifelse(x == "LLL", "ForeverAlone", "HitandRun")
                                                  )
                                           )
@@ -87,8 +87,8 @@ df$stationClass <- stationDf$stationClass
 # show the distribution of the station class
 stationClassDis <- function(){
   stationDf %>%
-  group_by(stationClass) %>% 
-  summarise(num = n()) %>% 
+  group_by(stationClass) %>%
+  summarise(num = n()) %>%
   mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
 showDistribution <- function(){
@@ -136,5 +136,3 @@ predictClass <- function(totHourElapsed, totUser, totCharged ) {
   return(test)
 }
 
-
-predictClass(3.3, 1, 21)
