@@ -56,13 +56,16 @@ usersWithEnoughSessions <- dataFrame %>%
 # Gets the day of the week from the date
 dataFrame$dayOfWeek <- weekdays(as.Date(dataFrame$start_date))
 
-dataFrame$hour <- as.numeric(format(round(dataFrame$start_date, "hours"), format='%H'))
+dataFrame$hour <- as.numeric(format(round(dataFrame$start_date, "hours"), format = "%H"))
 
 dataFrame <- dataFrame %>%
   filter(
     !is.na(hours_elapsed),
     hours_elapsed >= 0 & hours_elapsed <= 24,
-    !is.na(start_date),!is.na(end_date),!is.na(car),!is.na(charged_kwh),
+    !is.na(start_date),
+    !is.na(end_date),
+    !is.na(car),
+    !is.na(charged_kwh),
     user_id %in% usersWithEnoughSessions$user_id
   ) %>%
   mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
@@ -77,8 +80,8 @@ dataFrame <- dataFrame %>%
 set.seed(100)
 trainingRowIndex <- sample(1:nrow(dataFrame), 0.7 * nrow(dataFrame))
 trainingData <-
-  dataFrame[trainingRowIndex,]  # 70% training data
-testData  <- dataFrame[-trainingRowIndex,]   # remaining test data
+  dataFrame[trainingRowIndex, ]  # 70% training data
+testData  <- dataFrame[-trainingRowIndex, ]   # remaining test data
 
 # Testing linear model ----------------------------------------------------
 
@@ -183,7 +186,9 @@ createCorrelationPlot <- function(){
   df_cor_test$hour <- as.numeric(df_cor_test$hour)
   df_cor_test$start_tf <- as.numeric(df_cor_test$start_tf)
   
-  colnames(df_cor_test) <- c("Hours Elapsed", "Time in H", "Timeframe", "Charged KwH", "Car", "User class", "Day of week", "Smart")
+  colnames(df_cor_test) <- c("Hours Elapsed", "Time in H", "Timeframe",
+                             "Charged KwH", "Car", "User class",
+                             "Day of week", "Smart")
   str(df_cor_test)
   corrplot.mixed(cor(df_cor_test))
 }
