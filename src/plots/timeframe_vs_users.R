@@ -3,11 +3,8 @@ library(config)
 library(readr)
 library(dplyr)
 config <- config::get(file = "config.yml")
-source(config$baseClean)
 source(config$multiplotHelper)
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanDataframe(df)
 timeframeLevels <- c("6:00 7:00",
                      "7:00 8:00",
                      "8:00 9:00",
@@ -33,19 +30,20 @@ timeframeLevels <- c("6:00 7:00",
                      "4:00 5:00",
                      "5:00 6:00"
 )
+
 # Table functions ---------------------------------------------------------
 
 # Returns a table with total kWh grouped by user
-getKwhPerUser <- function() {
-  df %>%
+getKwhPerUser <- function(scData) {
+  scData %>%
     group_by(user_id) %>%
     filter(!is.na(charged_kwh), !is.na(end_date)) %>%
     summarise(avg_charged = mean(charged_kwh))
 }
 
 # 
-getKwhPerUserStartTime <- function() {
-  df %>%
+getKwhPerUserStartTime <- function(scData) {
+  scData %>%
     filter(!is.na(charged_kwh), !is.na(end_date)) %>%
     mutate(start_timeframe = paste(
       paste(hour(floor_date(start_date, "hour")), "00", sep = ":"),
@@ -58,10 +56,9 @@ getKwhPerUserStartTime <- function() {
     summarise(tcharged = sum(total_charged), count = n(), m_kwh = mean(total_charged))
 }
 
-
 # 
-getHoursElapsedPerUserStartTime <- function() {
-  df %>%
+getHoursElapsedPerUserStartTime <- function(scData) {
+  scData %>%
     filter(!is.na(charged_kwh), !is.na(end_date)) %>%
     mutate(start_timeframe = paste(
       paste(hour(floor_date(start_date, "hour")), "00", sep = ":"),
@@ -77,8 +74,8 @@ getHoursElapsedPerUserStartTime <- function() {
 # Plot functions ----------------------------------------------------------
 
 #
-plotKwhPerUserStartTime <- function() {
-  p <- ggplot(getKwhPerUserStartTime(), aes(y = m_kwh, x = start_timeframe)) +
+plotKwhPerUserStartTime <- function(scData) {
+  p <- ggplot(getKwhPerUserStartTime(scData), aes(y = m_kwh, x = start_timeframe)) +
     geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     scale_x_discrete(limits = c(timeframeLevels)) +
@@ -90,8 +87,8 @@ plotKwhPerUserStartTime <- function() {
 }
 
 #
-plotHoursElapsedPerUserEndTime <- function() {
-  p <- ggplot(getHoursElapsedPerUserStartTime(), aes(y = m_hours, x = start_timeframe)) +
+plotHoursElapsedPerUserEndTime <- function(scData) {
+  p <- ggplot(getHoursElapsedPerUserStartTime(scData), aes(y = m_hours, x = start_timeframe)) +
     geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     scale_x_discrete(limits = c(timeframeLevels)) +
@@ -99,19 +96,10 @@ plotHoursElapsedPerUserEndTime <- function() {
     ggtitle("Average hours elapsed at a Timeframe") +
     coord_flip() +
     theme_light()
-  return (p)
+  return(p)
 }
 
-#Returns two plots side by side
-multiplotUserTimeframes <- function() {
-  return(multiplotHelper(plotKwhPerUserStartTime(), plotHoursElapsedPerUserEndTime(), cols = 2))
+# Returns two plots side by side
+multiplotUserTimeframes <- function(scData) {
+  return(multiplotHelper(plotKwhPerUserStartTime(scData), plotHoursElapsedPerUserEndTime(scData), cols = 2))
 }
-
-# Calls -------------------------------------------------------------------
-
-avgKwhPerUser <- getKwhPerUser()
-tabel1 <- getKwhPerUserStartTime()
-tabel2 <- getHoursElapsedPerUserStartTime()
-plotKwhPerUserStartTime()
-plotHoursElapsedPerUserEndTime()
-multiplotUserTimeframes()

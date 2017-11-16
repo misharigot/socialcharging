@@ -160,7 +160,9 @@ plotClassCount <- function(sessionClassificationDf) {
     theme_light()
 }
 
-plotClassCount(sessionClassificationDf(cleanDf(df)))
+plotClassCountShiny <- function(scData) {
+  plotClassCount(sessionClassificationDf(cleanDf(scData)))
+}
 
 # Clustering for exploration purposes -----------------------------------------------------------------------------
 
@@ -193,4 +195,3 @@ doClustering <- function() {
   plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster,
        xlab = "start timeframe (hour)", ylab = "hours elapsed in session")
 }
-

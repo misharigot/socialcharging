@@ -6,38 +6,38 @@ config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanDataframe(df)
-df <- df %>%
-  filter(!is.na(end_date), !is.na(charged_kwh), hours_elapsed > 0) %>%
-  mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
-    round(x, digits = 2)
-  }))
+cleanScData <- function(scData) {
+  scData %>%
+    filter(!is.na(end_date), !is.na(charged_kwh), hours_elapsed > 0) %>%
+    mutate(percentage_charging = sapply(100 / hours_elapsed * effective_charging_hours, function(x) {
+      round(x, digits = 2)
+    }))
+}
 
 # Table functions ---------------------------------------------------------
 
 # Returns table with smart rows
-getIsSmart <- function() {
-  df %>%
+getIsSmart <- function(scData) {
+  scData %>%
     filter(smart_charging == "Yes")
 }
 
 # Returns table with not-smart rows
-getIsNotSmart <- function() {
-  df %>%
+getIsNotSmart <- function(scData) {
+  scData %>%
     filter(smart_charging == "No")
 }
 
 # Creates a simple dataframe with AVG percentage of usage
-getAvgChargingPercentageDf <- function() {
-  avgSmartPercentage <- round(mean(getIsSmart()$percentage_charging, na.rm = T), digits = 2)
-  avgSmartChargeTime <- round(mean(getIsSmart()$hours_elapsed, na.rm = T), digits = 2)
-  avgNonSmartChargePercentage <- round(mean(getIsNotSmart()$percentage_charging, na.rm = T), digits = 2)
-  avgNonSmartChargeTime <- round(mean(getIsNotSmart()$hours_elapsed, na.rm = T), digits = 2)
-  avgSmartEffTime <- round(mean(getIsSmart()$effective_charging_hours, na.rm = T), digits = 2)
-  avgNonSmartEffTime <- round(mean(getIsNotSmart()$effective_charging_hours, na.rm = T), digits = 2)
+getAvgChargingPercentageDf <- function(scData) {
+  avgSmartPercentage <- round(mean(getIsSmart(scData)$percentage_charging, na.rm = T), digits = 2)
+  avgSmartChargeTime <- round(mean(getIsSmart(scData)$hours_elapsed, na.rm = T), digits = 2)
+  avgNonSmartChargePercentage <- round(mean(getIsNotSmart(scData)$percentage_charging, na.rm = T), digits = 2)
+  avgNonSmartChargeTime <- round(mean(getIsNotSmart(scData)$hours_elapsed, na.rm = T), digits = 2)
+  avgSmartEffTime <- round(mean(getIsSmart(scData)$effective_charging_hours, na.rm = T), digits = 2)
+  avgNonSmartEffTime <- round(mean(getIsNotSmart(scData)$effective_charging_hours, na.rm = T), digits = 2)
   tempDf <- data.frame( "smart_charging" = c("Yes", "No"),
-                        "number_of_usage" = c(nrow(getIsSmart()), nrow( getIsNotSmart())),
+                        "number_of_usage" = c(nrow(getIsSmart(scData)), nrow(getIsNotSmart(scData))),
                         "average_charging_percentage" = c(avgSmartPercentage, avgNonSmartChargePercentage),
                         "average_charging_time" = c(avgSmartChargeTime, avgNonSmartChargeTime),
                         "average_eff_charge_time" = c(avgSmartEffTime, avgNonSmartEffTime))
@@ -47,8 +47,9 @@ getAvgChargingPercentageDf <- function() {
 # Plot functions ----------------------------------------------------------
 
 # Simple bar chart displaying smart- and non smart usages
-plotBarSmart <- function() {
-  p <- ggplot(df, aes(x = factor(1), fill = factor(smart_charging))) +
+plotBarSmart <- function(scData) {
+  scData <- cleanScData(scData)
+  p <- ggplot(scData, aes(x = factor(1), fill = factor(smart_charging))) +
     geom_bar(width = 0.2) +
     geom_text(stat = "count", aes(label = paste0(round((..count..)/sum(..count..) * 100),'%')),
               position = position_stack( vjust = 0.5 )) +
@@ -62,11 +63,12 @@ plotBarSmart <- function() {
 }
 
 # Returns a bar plot displaying the avg charge time
-plotChargeTime <- function() {
-  p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_time,
+plotChargeTime <- function(scData) {
+  scData <- cleanScData(scData)
+  p <- ggplot(getAvgChargingPercentageDf(scData), aes(x = smart_charging, y = average_charging_time,
                                                 fill = factor(smart_charging))) +
     geom_bar(stat = "identity", width = 0.5) +
-    geom_text(data = getAvgChargingPercentageDf(), aes(label = paste0(average_charging_time,'h')),
+    geom_text(data = getAvgChargingPercentageDf(scData), aes(label = paste0(average_charging_time,'h')),
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL, y = "Average charging time in hours") +
     ggtitle("Average chargetime") +
@@ -78,11 +80,12 @@ plotChargeTime <- function() {
 }
 
 #  Returns a bar plot displaying the avg charging percentage
-plotChargePercentage <- function() {
-  p <- ggplot(getAvgChargingPercentageDf(), aes(x = smart_charging, y = average_charging_percentage,
+plotChargePercentage <- function(scData) {
+  scData <- cleanScData(scData)
+  p <- ggplot(getAvgChargingPercentageDf(scData), aes(x = smart_charging, y = average_charging_percentage,
                                                 fill = factor(smart_charging))) +
     geom_bar(stat = "identity", width = 0.5) +
-    geom_text(data = getAvgChargingPercentageDf(), aes(label = paste0(average_charging_percentage,'%')),
+    geom_text(data = getAvgChargingPercentageDf(scData), aes(label = paste0(average_charging_percentage,'%')),
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL, y = "Effective % of total time car charging") +
     ggtitle("Effective time battery charged ") +
@@ -94,10 +97,10 @@ plotChargePercentage <- function() {
 }
 
 # Plots multiple plots side by side
-plotMultiple <- function() {
-  return(multiplotHelper(plotChargeTime(), plotChargePercentage(), plotBarSmart(), cols = 2))
+plotMultiple <- function(scData) {
+  return(multiplotHelper(plotChargeTime(scData), plotChargePercentage(scData), plotBarSmart(scData), cols = 2))
 }
 
 # Calls -------------------------------------------------------------------
 
-plotMultiple()
+# plotMultiple()
