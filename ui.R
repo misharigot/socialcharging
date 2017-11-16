@@ -22,6 +22,7 @@ ui <- dashboardPage(
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
                menuSubItem("User classification distribution", tabName = "predtab1"),
+               menuSubItem("Station classification", tabName = "predtab5"),
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Session clustering", tabName = "predtab3"),
                menuSubItem("Station clustering", tabName = "predtab4")
@@ -127,6 +128,11 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab4",
               fluidRow(
                 box(plotlyOutput("pred4"))
+              )
+      ),
+      tabItem(tabName = "predtab5",
+              fluidRow(
+                box(plotlyOutput("pred5"))
               )
       ),
 # Map -------------------------------------------------------------------------------------------------------------

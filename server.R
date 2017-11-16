@@ -88,6 +88,11 @@ server <- function(input, output) {
     return(createStationClusterPlot(scData()))
   })
   
+  output$pred5 <- renderPlotly({
+    source("src/models/station_classification.R")
+    return(showDistribution(scData()))
+  })
+  
   # Observers -------------------------------------------------------------------------------------------------------
   
   # When a double-click happens, check if there's a brush on the plot.
