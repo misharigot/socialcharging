@@ -20,8 +20,9 @@ ui <- dashboardPage(
                menuSubItem("Timeframe vs users", tabName = "chart8")
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
-               menuSubItem("User classification distribution", tabName = "pred1"),
-               menuSubItem("Station classification distribution", tabName = "pred2")
+               menuSubItem("User classification distribution", tabName = "predtab1"),
+               menuSubItem("User clustering", tabName = "predtab2"),
+               menuSubItem("Session clustering", tabName = "predtab3")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
@@ -105,7 +106,23 @@ ui <- dashboardPage(
                 box(plotOutput("plot10"), width = 12)
               )
       ),
-      # map here pls
+# Pred plots ------------------------------------------------------------------------------------------------------
+      tabItem(tabName = "predtab1",
+              fluidRow(
+                box(plotOutput("pred1"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab2",
+              fluidRow(
+                box(plotlyOutput("pred2"), width = 12)
+              )
+      ),
+      tabItem(tabName = "predtab",
+              fluidRow(
+                box(plotlyOutput("pred3"), width = 12)
+              )
+      ),
+# Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
               mapModuleUI(id = "map")
       )
