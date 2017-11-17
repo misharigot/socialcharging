@@ -5,7 +5,7 @@ source("src/helpers/coordinate_helper.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
 
-mapModuleUI <- function(id) {
+regressionMapModuleUI <- function(id) {
   ns <- NS(id)
   div(class = "outer",
       tags$head(
@@ -35,7 +35,7 @@ mapModuleUI <- function(id) {
                                   "Efficiency percentage" =  "eff_perc",
                                   "Users per station" = "users_station",
                                   "Prediction Model" = "prediction_model"
-                                 )
+                                )
                     ),
                     h5("These categories determine the prediction model and attributes for it:"),
                     selectInput("prediction",
@@ -52,7 +52,7 @@ mapModuleUI <- function(id) {
 
 # Server ----------------------------------------------------------------------------------------------------------
 
-mapModule <- function(input, output, session, data) {
+regressionMapModule <- function(input, output, session, data) {
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
     getMapData(data)
@@ -108,7 +108,7 @@ getMapData <- function(scData) {
 
 # Render functions ------------------------------------------------------------------------------------------------
 
-mapId <- "map"
+mapId <- "regressionMap"
 
 # Creates the default leaflet map without user input
 handleDefaultMapCreation <- function(mapData) {

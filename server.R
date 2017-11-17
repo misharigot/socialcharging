@@ -10,6 +10,8 @@ library(plotly)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
+source("src/map/regression_map_module.R")
+source("src/models/regression_test.R")
 
 server <- function(input, output) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
@@ -20,13 +22,39 @@ server <- function(input, output) {
     return(df)
   })
   
+  profileRegression <- reactive({
+    df <- createProfileRegression(scData())
+    return(df)
+  })
+  
   callModule(module = mapModule, id = "map", data = scData())
+  callModule(module = mapModule, id = "regressionMap", data = profileRegression())
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   # Output ----------------------------------------------------------------------------------------------------------
+  output$user_selection <- renderUI({
+    selectInput("users",
+                "Select a user",
+                isolate(as.vector(profileRegression()$user_id))
+    )
+  })
+  
+  output$session_selection <- renderUI({
+    selectInput("sessions",
+                "Select a session",
+                as.vector(getSessions(profileRegression(), input$users)$session_id)
+    )
+  })
+  
+  getSessionData <- function() {
+    sessionData <- profileRegression() 
+    sessionData <- sessionData %>%
+      filter(session_id == input$sessions)
+    return(sessionData)
+  }
   
   output$table1 <- renderDataTable({
     scData()
@@ -36,29 +64,6 @@ server <- function(input, output) {
     source("src/plots/time_vs_kwh.R")
     return(plotTimeKwh(scData()) +
              coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
-  })
-  
-  output$advanced_selection <- renderUI({
-    source("src/models/regression_test.R")
-    profileRegression <- createProfileRegression(scData())
-    #usersRegression <- createUserRegression()
-    list(
-      h5("These categories determine the prediction model and attributes for it:"),
-      selectInput("prediction",
-                  "Prediction based on",
-                  c(
-                    "Profile Regression" = "profiling"
-                  )
-      ),
-      selectInput("users",
-                  "Select a user",
-                  as.vector(profileRegression$user_id)
-      ),
-      selectInput("sessions",
-                  "Select a session",
-                  as.vector(getSessions(profileRegression, input$users)$session_id)
-      )
-    )
   })
   
   output$plot2 <- renderPlot({

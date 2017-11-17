@@ -256,11 +256,13 @@ returnDf <- createProfilingPrediction(sessionClassificationDf(cleanDf(df)))
 # Function calls ----------------------------------------------------------
 
 createProfileRegression <- function(scData) {
+  print("loading data")
   returnDf <- createProfilingPrediction(sessionClassificationDf(cleanDf(scData)))
   return(returnDf)
 }
 
 getSessions <- function(profileRegression, user) {
+  print(user)
   if (!is.null(user)) {
     profileRegression <- profileRegression %>%
       filter(user_id == user)
