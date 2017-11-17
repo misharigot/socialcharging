@@ -18,7 +18,7 @@ mapModuleUI <- function(id) {
       absolutePanel(id = "controls",
                     class = "panel panel-default",
                     fixed = TRUE,
-                    draggable = TRUE,
+                    draggable = FALSE,
                     top = 60,
                     left = "auto",
                     right = 20,
@@ -26,19 +26,20 @@ mapModuleUI <- function(id) {
                     width = 330,
                     height = "auto",
                     h2("Filter controls"),
+                    h5("This category determines the size of the circles:"),
                     selectInput(ns("category"),
                                 "Category",
                                 c(
                                   "Charged kWh per station" = "kwh_station",
                                   "Occupation percentage" = "occ_perc",
                                   "Efficiency percentage" =  "eff_perc",
-                                  "Users per station" = "users_station"
-                                )
+                                  "Users per station" = "users_station",
+                                  "Prediction Model" = "prediction_model"
+                                 )
                     ),
-                    h5("The category determines the size of the circles")
+                    uiOutput("advanced_selection")
       )
   )
-  
 }
 
 # Server ----------------------------------------------------------------------------------------------------------
@@ -140,6 +141,11 @@ handleMapCreation <- function(userInput, mapData) {
   if (categorySelected == "users_station") {
     radius <- mapData$total_users / max(mapData$total_users) * 300
     color <- "red"
+  }
+  
+  if (categorySelected == "prediction_model") {
+    radius <- mapData$total_users / max(mapData$total_users) * 10
+    color <- "blue"
   }
   leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultCircles(mapData, radius, color)
 }

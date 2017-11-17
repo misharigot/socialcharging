@@ -38,6 +38,29 @@ server <- function(input, output) {
              coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
   })
   
+  output$advanced_selection <- renderUI({
+    source("src/models/regression_test.R")
+    profileRegression <- createProfileRegression(scData())
+    #usersRegression <- createUserRegression()
+    list(
+      h5("These categories determine the prediction model and attributes for it:"),
+      selectInput("prediction",
+                  "Prediction based on",
+                  c(
+                    "Profile Regression" = "profiling"
+                  )
+      ),
+      selectInput("users",
+                  "Select a user",
+                  as.vector(profileRegression$user_id)
+      ),
+      selectInput("sessions",
+                  "Select a session",
+                  as.vector(getSessions(profileRegression, input$users)$session_id)
+      )
+    )
+  })
+  
   output$plot2 <- renderPlot({
     source("src/plots/smart_charging_vs_kwh.R")
     return(plotMultiple(scData()))

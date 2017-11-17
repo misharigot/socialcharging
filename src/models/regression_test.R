@@ -148,6 +148,42 @@ createLinearModelData <- function(data) {
   plotBox(ChargingSessionPredict, testData)
 }
 
+createProfilingPrediction <- function(data) {
+  
+  df <- data
+  # Create train and test data from the data
+  set.seed(100)
+  trainingRowIndex <- sample(1:nrow(df), 0.7 * nrow(df))
+  trainingData <-
+    df[trainingRowIndex, ]  # 70% training data
+  testData <- df[-trainingRowIndex, ]   # remaining test data
+  
+  # Create linear model
+  lm_df <<-
+    lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek,
+       data = trainingData)
+  
+  modelSummary <- summary(lm_df)
+  modelCoeffs <- modelSummary$coefficients
+  rSquared <- modelSummary$r.squared
+  adjRSquared <- modelSummary$adj.r.squared
+  
+  ChargingSessionPredict <<- predict(lm_df, testData)
+  
+  actual_predicts <- data.frame(cbind(actual = testData$hours_elapsed,
+                                      predicted = ChargingSessionPredict))
+  
+  actual_predicts <- actual_predicts %>%
+    filter(!is.na(actual_predicts$predicted))
+  
+  testData <- testData %>%
+    mutate(predicted = ChargingSessionPredict) %>%
+    arrange(user_id)
+  
+  return(testData)
+}
+
+
 plotQq <- function(lm) {
   
   qqnorm(lm$residuals, ylab = "Residual Quantiles")
@@ -215,7 +251,22 @@ createCorrelationPlot <- function(data) {
   corrplot.mixed(cor(df_cor_test))
 }
 
+returnDf <- createProfilingPrediction(sessionClassificationDf(cleanDf(df)))
+
 # Function calls ----------------------------------------------------------
+
+createProfileRegression <- function(scData) {
+  returnDf <- createProfilingPrediction(sessionClassificationDf(cleanDf(scData)))
+  return(returnDf)
+}
+
+getSessions <- function(profileRegression, user) {
+  if (!is.null(user)) {
+    profileRegression <- profileRegression %>%
+      filter(user_id == user)
+    return(profileRegression)
+  }
+}
 
 plotLinearModelsResult <- function(scData) {
   createLinearModelData(sessionClassificationDf(cleanDf(scData)))
