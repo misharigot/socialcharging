@@ -28,13 +28,8 @@ server <- function(input, output) {
   })
   
   callModule(module = mapModule, id = "map", data = scData())
-  callModule(module = mapModule, id = "regressionMap", data = profileRegression())
+  callModule(module = regressionMapModule, id = "regressionMap", data = profileRegression())
   
-  # maybe a javascript to reset the ranges variable on active view change?
-  # Single zoomable plot
-  ranges <- reactiveValues(x = NULL, y = NULL)
-  
-  # Output ----------------------------------------------------------------------------------------------------------
   output$user_selection <- renderUI({
     selectInput("users",
                 "Select a user",
@@ -49,13 +44,11 @@ server <- function(input, output) {
     )
   })
   
-  getSessionData <- function() {
-    sessionData <- profileRegression() 
-    sessionData <- sessionData %>%
-      filter(session_id == input$sessions)
-    return(sessionData)
-  }
+  # maybe a javascript to reset the ranges variable on active view change?
+  # Single zoomable plot
+  ranges <- reactiveValues(x = NULL, y = NULL)
   
+  # Output ----------------------------------------------------------------------------------------------------------
   output$table1 <- renderDataTable({
     scData()
   })

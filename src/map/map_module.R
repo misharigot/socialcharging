@@ -18,7 +18,7 @@ mapModuleUI <- function(id) {
       absolutePanel(id = "controls",
                     class = "panel panel-default",
                     fixed = TRUE,
-                    draggable = FALSE,
+                    draggable = TRUE,
                     top = 60,
                     left = "auto",
                     right = 20,
@@ -26,28 +26,19 @@ mapModuleUI <- function(id) {
                     width = 330,
                     height = "auto",
                     h2("Filter controls"),
-                    h5("This category determines the size of the circles:"),
                     selectInput(ns("category"),
                                 "Category",
                                 c(
                                   "Charged kWh per station" = "kwh_station",
                                   "Occupation percentage" = "occ_perc",
                                   "Efficiency percentage" =  "eff_perc",
-                                  "Users per station" = "users_station",
-                                  "Prediction Model" = "prediction_model"
-                                 )
-                    ),
-                    h5("These categories determine the prediction model and attributes for it:"),
-                    selectInput("prediction",
-                                "Prediction based on",
-                                c(
-                                  "Profile Regression" = "profiling"
+                                  "Users per station" = "users_station"
                                 )
                     ),
-                    uiOutput("user_selection"),
-                    uiOutput("session_selection")
+                    h5("The category determines the size of the circles")
       )
   )
+  
 }
 
 # Server ----------------------------------------------------------------------------------------------------------
@@ -72,7 +63,6 @@ mapModule <- function(input, output, session, data) {
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
   })
-  
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
@@ -151,11 +141,6 @@ handleMapCreation <- function(userInput, mapData) {
     radius <- mapData$total_users / max(mapData$total_users) * 300
     color <- "red"
   }
-  
-  if (categorySelected == "prediction_model") {
-    radius <- 100
-    color <- "blue"
-  }
   leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultCircles(mapData, radius, color)
 }
 
@@ -199,4 +184,3 @@ chargingStationPopup <- function(id, lat, lng, mapData) {
   
   leafletProxy(mapId) %>% addPopups(lng, lat, content, layerId = id)
 }
-

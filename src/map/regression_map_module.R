@@ -14,7 +14,7 @@ regressionMapModuleUI <- function(id) {
         includeScript("src/map/gomap.js")
       ),
       # If not using custom CSS, set height of leafletOutput to a number instead of percent
-      leafletOutput(ns("map"), width = "100%", height = "100%"),
+      leafletOutput(ns("regressionMap"), width = "100%", height = "100%"),
       absolutePanel(id = "controls",
                     class = "panel panel-default",
                     fixed = TRUE,
@@ -26,18 +26,7 @@ regressionMapModuleUI <- function(id) {
                     width = 330,
                     height = "auto",
                     h2("Filter controls"),
-                    h5("This category determines the size of the circles:"),
-                    selectInput(ns("category"),
-                                "Category",
-                                c(
-                                  "Charged kWh per station" = "kwh_station",
-                                  "Occupation percentage" = "occ_perc",
-                                  "Efficiency percentage" =  "eff_perc",
-                                  "Users per station" = "users_station",
-                                  "Prediction Model" = "prediction_model"
-                                )
-                    ),
-                    h5("These categories determine the prediction model and attributes for it:"),
+                    h5("These selections determine the prediction model and attributes for it:"),
                     selectInput("prediction",
                                 "Prediction based on",
                                 c(
@@ -55,22 +44,22 @@ regressionMapModuleUI <- function(id) {
 regressionMapModule <- function(input, output, session, data) {
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
-    getMapData(data)
+    data
   })
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
-    handleDefaultMapCreation(mapData = mapData())
+    handleDefaultRegressionMapCreation(mapData = mapData())
   })
   
   # Updates map when category input changes
-  observeEvent(input$category, {
-    handleMapCreation(input$category, mapData = mapData())
+  observeEvent(input$sessions, {
+    handleRegressionMapCreation(mapData = mapData())
   })
   
   # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
-    handlePopupCreation(input$map_shape_click, mapData = mapData())
+    handleRegressionPopupCreation(input$map_shape_click, mapData = mapData())
   })
   
 }
@@ -111,67 +100,35 @@ getMapData <- function(scData) {
 mapId <- "regressionMap"
 
 # Creates the default leaflet map without user input
-handleDefaultMapCreation <- function(mapData) {
-  radius <- mapData$total_charged / max(mapData$total_charged) * 300
-  pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
-  
+handleDefaultRegressionMapCreation <- function(mapData) {
+  radius <- 100
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
     setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
-    defaultCircles(mapData, radius, pal(mapData$total_charged)) %>%
-    addLegend("bottomright",
-              pal = pal,
-              values = mapData$total_charged,
-              title = "Total Charged kWh",
-              layerId = "colorLegend"
-    )
+    defaultCircles(mapData, radius, color = "blue")
 }
 
 # Creates a leaflet map based on user input
-handleMapCreation <- function(userInput, mapData) {
-  categorySelected <- userInput
-  pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
-  
-  if (categorySelected == "kwh_station") {
-    radius <- mapData$total_charged / max(mapData$total_charged) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "occ_perc") {
-    radius <- mapData$popularity_score / max(mapData$popularity_score) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "eff_perc") {
-    radius <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "users_station") {
-    radius <- mapData$total_users / max(mapData$total_users) * 300
-    color <- "red"
-  }
-  
-  if (categorySelected == "prediction_model") {
-    radius <- 100
-    color <- "blue"
-  }
-  leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultCircles(mapData, radius, color)
+handleRegressionMapCreation <- function(mapData) {
+  pal <- colorBin("plasma", mapData$charged_kwh, 5, pretty = FALSE)
+  radius <- 100
+  color <- pal(mapData$charged_kwh)
+  leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultRegressionCircles(mapData, radius, color)
 }
 
 # This method handles the popup event
-handlePopupCreation <- function(event, mapData) {
+handleRegressionPopupCreation <- function(event, mapData) {
   leafletProxy(mapId) %>% clearPopups()
   if (is.null(event)) {
     return()
   }
   isolate({
-    chargingStationPopup(event$id, event$lat, event$lng, mapData)
+    RegressionStationPopup(event$id, event$lat, event$lng, mapData)
   })
 }
 
 # Adds the default circle styling to a leaflet map
-defaultCircles <- function(leaflet, mapData, radius, color) {
+defaultRegressionCircles <- function(leaflet, mapData, radius, color) {
   leaflet %>% addCircles(
     lng = mapData$longitude,
     lat = mapData$latitude,
@@ -185,18 +142,12 @@ geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..cou
           position = position_stack(vjust = 0.5))
 
 # Adds a popup to leaflet map when a node is clicked
-chargingStationPopup <- function(id, lat, lng, mapData) {
+RegressionStationPopup <- function(id, lat, lng, mapData) {
   selectedChargingPole <- mapData[id, ]
   content <- as.character(tagList(
     tags$h4("Location: ", selectedChargingPole$address),
-    sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br(),
-    sprintf("Total elapsed hours: %s", selectedChargingPole$total_hours_elapsed), tags$br(),
-    sprintf("Total effective hours: %s", selectedChargingPole$total_effective_charging), tags$br(),
-    sprintf("Station outlets: %s", selectedChargingPole$outlets), tags$br(),
-    sprintf("Total sessions: %s", selectedChargingPole$total_sessions), tags$br(),
-    sprintf("Total users: %s", selectedChargingPole$total_users)
+    sprintf("Total charged kWh: %s")
   ))
   
   leafletProxy(mapId) %>% addPopups(lng, lat, content, layerId = id)
 }
-
