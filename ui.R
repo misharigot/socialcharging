@@ -5,7 +5,6 @@ library(shinycssloaders)
 library(plotly)
 
 source("src/map/map_module.R")
-source("src/map/regression_map_module.R")
 
 ui <- dashboardPage(
   skin = ("green"),
@@ -30,8 +29,7 @@ ui <- dashboardPage(
                menuSubItem("Linear model", tabName = "predtab4"),
                menuSubItem("Correlation", tabName = "predtab5")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
-      menuItem("Regression Map", tabName = "regressionMapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
   ),
   dashboardBody(
@@ -147,9 +145,6 @@ ui <- dashboardPage(
 # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
               mapModuleUI(id = "map")
-      ),
-      tabItem(tabName = "regressionMapTab",
-        regressionMapModuleUI(id = "regressionMap")
       )
     )
   )

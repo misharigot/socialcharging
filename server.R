@@ -10,7 +10,6 @@ library(plotly)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
-source("src/map/regression_map_module.R")
 source("src/models/regression_test.R")
 
 server <- function(input, output) {
@@ -22,27 +21,26 @@ server <- function(input, output) {
     return(df)
   })
   
-  profileRegression <- reactive({
-    df <- createProfileRegression(scData())
-    return(df)
-  })
+  # profileRegression <- reactive({
+  #   df <- createProfileRegression(scData())
+  #   return(df)
+  # })
   
   callModule(module = mapModule, id = "map", data = scData())
-  callModule(module = regressionMapModule, id = "regressionMap", data = profileRegression())
-  
-  output$user_selection <- renderUI({
-    selectInput("users",
-                "Select a user",
-                isolate(as.vector(profileRegression()$user_id))
-    )
-  })
-  
-  output$session_selection <- renderUI({
-    selectInput("sessions",
-                "Select a session",
-                as.vector(getSessions(profileRegression(), input$users)$session_id)
-    )
-  })
+
+  # output$user_selection <- renderUI({
+  #   selectInput("users",
+  #               "Select a user",
+  #               isolate(as.vector(profileRegression()$user_id))
+  #   )
+  # })
+  # 
+  # output$session_selection <- renderUI({
+  #   selectInput("sessions",
+  #               "Select a session",
+  #               as.vector(getSessions(profileRegression(), input$users)$session_id)
+  #   )
+  # })
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
