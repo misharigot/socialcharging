@@ -18,7 +18,7 @@ mapModuleUI <- function(id) {
       absolutePanel(id = "controls",
                     class = "panel panel-default",
                     fixed = TRUE,
-                    draggable = TRUE,
+                    draggable = FALSE,
                     top = 60,
                     left = "auto",
                     right = 20,
@@ -32,10 +32,25 @@ mapModuleUI <- function(id) {
                                   "Charged kWh per station" = "kwh_station",
                                   "Occupation percentage" = "occ_perc",
                                   "Efficiency percentage" =  "eff_perc",
-                                  "Users per station" = "users_station"
+                                  "Users per station" = "users_station",
+                                  "Regression" = "regression"
                                 )
                     ),
-                    h5("The category determines the size of the circles")
+                    h5("The category determines the size of the circles"),
+                    conditionalPanel(
+                      paste0("input['", ns("category"), "'] == 'regression'"),
+                      tags$hr(),
+                      h5("These selections determine the prediction model and attributes for it:"),
+                      selectInput("prediction",
+                                  "Prediction based on",
+                                  c(
+                                    "User based regression" = "user_reg",
+                                    "Profile based regression" = "profile_reg"
+                                  )
+                      )
+                      # uiOutput("user_selection"),
+                      # uiOutput("session_selection")
+                    )
       )
   )
   
@@ -121,7 +136,8 @@ handleDefaultMapCreation <- function(mapData) {
 handleMapCreation <- function(userInput, mapData) {
   categorySelected <- userInput
   pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
-  
+  color <- "black"
+  radius <- 100
   if (categorySelected == "kwh_station") {
     radius <- mapData$total_charged / max(mapData$total_charged) * 300
     color <- pal(mapData$total_charged)
