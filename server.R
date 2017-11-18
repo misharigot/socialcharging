@@ -6,6 +6,7 @@ library(RColorBrewer)
 library(scales)
 library(lattice)
 library(plotly)
+library(dplyr)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -67,31 +68,41 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
-  
-  # Prediction plots ------------------------------------------------------------------------------------------------
+# Prediction plots ------------------------------------------------------------------------------------------------
 
   output$pred1 <- renderPlot({
     source("src/models/user_class.R")
     return(plotClassCountShiny(scData()))
   })
   
-  source("src/models/user_clust.R")
   output$pred2 <- renderPlotly({
+    source("src/models/user_clust.R")
     return(plotUserCluster1(scData()))
   })
 
   output$pred3 <- renderPlotly({
+    source("src/models/user_clust.R")
     return(plotUserCluster2(scData()))
   })
   
-  output$pred4 <- renderPlotly({
+  output$pred4 <- renderPlot({
+    source("src/models/regression_test.R")
+    return(plotLinearModelsResult(scData()))
+  })
+  
+  output$cor1 <- renderPlot({
+    source("src/models/regression_test.R")
+    return(plotCorrelationResult(scData()))
+  })
+  
+  output$pred6 <- renderPlotly({
     source("src/models/cluster_charging_station.R")
     return(createStationClusterPlot(scData()))
   })
   
-  output$pred5 <- renderPlotly({
+  output$pred7 <- renderPlot({
     source("src/models/station_classification.R")
-    return(showDistribution(scData()))
+    return(distributionPlot(scData()))
   })
   
   # Observers -------------------------------------------------------------------------------------------------------
@@ -119,3 +130,4 @@ server <- function(input, output) {
     ranges$y <- NULL
   })
 }
+

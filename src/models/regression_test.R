@@ -10,16 +10,40 @@ library(corrplot)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
-source(config$UserClass)
 
-dataFrame <- read_csv2(config$scDataset, col_names = FALSE)
+df <- read_csv2(config$scDataset, col_names = FALSE)
 
-dataFrame <- cleanSecondDf(dataFrame)
+df <- cleanSecondDf(df)
 
 # Minimum amount of sessions required in order to get the
 minUserSessions <- 10
 
 # Data preperation --------------------------------------------------------
+
+cleanDf <- function(df) {
+  # Gets the user that met the minimum required sessions
+  usersWithEnoughSessions <- df %>%
+    group_by(user_id) %>%
+    summarise(count = n()) %>%
+    filter(count >= minUserSessions) %>%
+    select(user_id, count)
+  
+  # Gets the day of the week from the date
+  df$dayOfWeek <- weekdays(as.Date(df$start_date))
+  
+  df$hour <- as.numeric(format(round(df$start_date, "hours"), format = "%H"))
+  
+  df %>%
+    filter(
+      !is.na(hours_elapsed),
+      hours_elapsed >= 0 & hours_elapsed <= 24,
+      !is.na(start_date),
+      !is.na(end_date),
+      !is.na(car),
+      !is.na(charged_kwh),
+      user_id %in% usersWithEnoughSessions$user_id
+    ) 
+}
 
 classifyTf <- function(datetime) {
   datetime <- hour(datetime)
@@ -42,62 +66,42 @@ classifyTf <- function(datetime) {
   }
 }
 
-
-userClassdataFrame <- getUserClassifications()
-dataFrame <- base::merge(dataFrame, userClassdataFrame)
-
-# Gets the user that met the minimum required sessions
-usersWithEnoughSessions <- dataFrame %>%
-  group_by(user_id) %>%
-  summarise(count = n()) %>%
-  filter(count >= minUserSessions) %>%
-  select(user_id, count)
-
-# Gets the day of the week from the date
-dataFrame$dayOfWeek <- weekdays(as.Date(dataFrame$start_date))
-
-dataFrame$hour <- as.numeric(format(round(dataFrame$start_date, "hours"), format = "%H"))
-
-dataFrame <- dataFrame %>%
-  filter(
-    !is.na(hours_elapsed),
-    hours_elapsed >= 0 & hours_elapsed <= 24,
-    !is.na(start_date),
-    !is.na(end_date),
-    !is.na(car),
-    !is.na(charged_kwh),
-    user_id %in% usersWithEnoughSessions$user_id
-  ) %>%
-  mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
-  mutate(
-    start_tf = map(start_date, classifyTf),
-    end_tf = map(end_date, classifyTf)
-  ) %>%
-  mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf)))
-
-# Create train and test data from the data --------------------------------
-
-set.seed(100)
-trainingRowIndex <- sample(1:nrow(dataFrame), 0.7 * nrow(dataFrame))
-trainingData <-
-  dataFrame[trainingRowIndex, ]  # 70% training data
-testData  <- dataFrame[-trainingRowIndex, ]   # remaining test data
+# Classify session on timeframes
+sessionClassificationDf <- function(cleanDf) {
+  sessionClassifications <- cleanDf %>%
+    mutate(kw_charge_point_speed = gsub(00, "", kw_charge_point_speed)) %>%
+    mutate(
+      start_tf = map(start_date, classifyTf),
+      end_tf = map(end_date, classifyTf)
+    ) %>%
+    mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf)))
+  return(sessionClassifications)
+}
 
 # Testing linear model ----------------------------------------------------
 
-# Create linear model
-lm_df <-
-  lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek + class,
-     data = trainingData)
-
 # build linear model to predict end_date with the following parameters
-createLinearModelData <- function() {
+createLinearModelData <- function(data) {
+  
+  df <- data
+  # Create train and test data from the data
+  set.seed(100)
+  trainingRowIndex <- sample(1:nrow(df), 0.7 * nrow(df))
+  trainingData <-
+    df[trainingRowIndex, ]  # 70% training data
+  testData <- df[-trainingRowIndex, ]   # remaining test data
+  
+  # Create linear model
+  lm_df <<-
+    lm(hours_elapsed ~ hour + charged_kwh + car + start_tf + smart_charging + dayOfWeek,
+       data = trainingData)
+  
   modelSummary <- summary(lm_df)
   modelCoeffs <- modelSummary$coefficients
   rSquared <- modelSummary$r.squared
   adjRSquared <- modelSummary$adj.r.squared
   
-  ChargingSessionPredict <- predict(lm_df, testData)
+  ChargingSessionPredict <<- predict(lm_df, testData)
   
   actual_predicts <- data.frame(cbind(actual = testData$hours_elapsed,
                                       predicted = ChargingSessionPredict))
@@ -137,41 +141,45 @@ createLinearModelData <- function() {
   actualAccuracy <-
     100 / nrow(actual_predicts) * nrow(resultsWithInRange)
   
-  plotLmModel(lm_df, ChargingSessionPredict)
-  
   resultList <- list("rmse_test" = rmse_test, "rmse_train" = rmse_train, 
                      "minMaxAccuracy" = minMaxAccuracy, "rSquared" = rSquared,
                      "adjRSquared" = adjRSquared, "rmse_ratio" = rmse_ratio,
                      "actualAccuracy" = actualAccuracy)
-  return(resultList)
+  plotBox(ChargingSessionPredict, testData)
 }
 
-plotLmModel <- function(lm, prediction) {
+plotQq <- function(lm) {
   
-  ranks <- order(testData$start_tf)
+  qqnorm(lm$residuals, ylab = "Residual Quantiles")
+}
+
+plotBox <- function(prediction, data) {
   
-  plot(testData$start_tf,
-       testData$hours_elapsed,
+  ranks <- order(data$start_tf)
+  
+  plot(data$start_tf,
+       data$hours_elapsed,
        xlab = "Start timeframe",
        ylab = "Hours elapsed")
   
-  points(testData$start_tf[ranks],
+  points(data$start_tf[ranks],
          prediction[ranks],
          col = "green")
-  
-  
+}
+
+plotFitted <- function(lm) {
   plot(lm$fitted.values,
        lm$residuals,
        xlab = "Fitted values",
        ylab = "Residuals")
-  
-  qqnorm(lm$residuals, ylab = "Residual Quantiles")
-  
 }
+
 
 # Correlation plot --------------------------------------------------------
 
-createCorrelationPlot <- function() {
+createCorrelationPlot <- function(data) {
+  
+  df <- data
   numberfySmart <- function(smart) {
     if (smart == "Yes") {
       return(1)
@@ -180,7 +188,7 @@ createCorrelationPlot <- function() {
     }
   }
   
-  temp <- as.data.frame(unique(dataFrame$car))
+  temp <- as.data.frame(unique(df$car))
   colnames(temp) <- c("car")
   temp$carNumber <- NA
   nrow(temp)
@@ -188,21 +196,20 @@ createCorrelationPlot <- function() {
     temp[i, 2] <- i
   }
   
-  dataFrame <- base::merge(dataFrame, temp)
+  df <- base::merge(df, temp)
   
-  df_cor_test <- dataFrame %>%
-    select(hours_elapsed, hour, start_tf, charged_kwh, carNumber, class) %>%
-    mutate(day_number = wday(as.Date(dataFrame$start_date))) %>%
-    mutate(smart_charger = map(dataFrame$smart_charging, numberfySmart)) %>%
-    mutate(smart_charger = as.numeric(unlist(smart_charger))) %>%
-    mutate(class = as.numeric(unlist(class)))
+  df_cor_test <- df %>%
+    select(hours_elapsed, hour, start_tf, charged_kwh, carNumber) %>%
+    mutate(day_number = wday(as.Date(df$start_date))) %>%
+    mutate(smart_charger = map(df$smart_charging, numberfySmart)) %>%
+    mutate(smart_charger = as.numeric(unlist(smart_charger)))
   
   df_cor_test$hours_elapsed <- as.numeric(df_cor_test$hours_elapsed)
   df_cor_test$hour <- as.numeric(df_cor_test$hour)
   df_cor_test$start_tf <- as.numeric(df_cor_test$start_tf)
   
   colnames(df_cor_test) <- c("Hours Elapsed", "Time in H", "Timeframe",
-                             "Charged KwH", "Car", "User class",
+                             "Charged KwH", "Car",
                              "Day of week", "Smart")
   str(df_cor_test)
   corrplot.mixed(cor(df_cor_test))
@@ -210,5 +217,18 @@ createCorrelationPlot <- function() {
 
 # Function calls ----------------------------------------------------------
 
-createLinearModelData()
-createCorrelationPlot()
+plotLinearModelsResult <- function(scData) {
+  createLinearModelData(sessionClassificationDf(cleanDf(scData)))
+}
+
+plotCorrelationResult <- function(scData) {
+  createCorrelationPlot(sessionClassificationDf(cleanDf(scData)))
+}
+
+plotQqResult <- function() {
+  plotQq(lm_df)
+}
+
+plotFittedResult <- function() {
+  plotFitted(lm_df)
+}

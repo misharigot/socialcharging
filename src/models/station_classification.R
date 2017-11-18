@@ -10,41 +10,14 @@ library(dplyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
+# trim data and classification----------------------------------------------------------
 
-# trim data ----------------------------------------------------------
-
-cleanDataForStation <- function(df) {
-  
-  df <- df %>%
-    filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
-  totalHours <- interval(min(df$start_date), max(df$end_date)) / 3600
-  df <- df %>%
-    group_by(longitude, latitude) %>%
-    summarise(address = first(address),
-              outlets = first(outlets),
-              total_sessions = n(),
-              total_users = n_distinct(user_id),
-              total_charged = sum(charged_kwh),
-              total_hours_elapsed = sum(hours_elapsed)
-    )
-}
-
-# classification ----------------------------------------------------------
 
 # using five number summary give the value for station
 givePoint <- function(x) {
   kwhSummary <- summary(x)
   med <- kwhSummary[3]
   ifelse (x > med, "H", "L")
-}
-
-#make a station table
-stationPointTable <- function(x) {
-  df <- cleanDataForStation(df)
-  df$charging <- givePoint(df$total_charged)
-  df$occupation <- givePoint(df$total_hours_elapsed)
-  df$user_amount <- givePoint(df$total_users)
-  df <- df %>%  select(latitude, address, occupation, user_amount, charging)
 }
 
 #change class name fancy
@@ -64,14 +37,24 @@ changeName <- function(x) {
   )
 }
 
-# make the final dataframe
-makestationDf <- function(df) {
-  stationDf <- stationPointTable(df)
-  stationDf$stationClass <- paste(stationDf$occupation, stationDf$user_amount, stationDf$charging, sep = "")
-  stationDf$stationClass <- changeName(stationDf$stationClass)
-  return(stationDf)
+#dat cleaning and classification
+cleanStationDf <- function(df) {
+  
+  df <- df %>%
+    filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed)) %>% 
+    group_by(longitude, latitude) %>%
+    summarise(address = first(address),
+              total_charged = sum(charged_kwh),
+              total_hours_elapsed = sum(hours_elapsed),
+              total_users = n_distinct(user_id))
+  df$charging <- givePoint(df$total_charged)
+  df$occupation <- givePoint(df$total_hours_elapsed)
+  df$user_amount <- givePoint(df$total_users)
+  df$stationClass <- paste(df$occupation, df$user_amount, df$charging, sep = "")
+  df$stationClass <- changeName(df$stationClass)
+  
+  return(df) 
 }
-
 
 # distribution ------------------------------------------------------------
 
@@ -82,12 +65,17 @@ stationClassDis <- function(df){
     summarise(num = n()) %>%
     mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
-showDistribution <- function(df){
-  df <- makestationDf(df)
-  df <- stationClassDis(df)
-  ggplot(df, aes(x = stationClass, y = num)) +
+# make a plot for showing distribution
+showDistribution <- function(scData){
+  ggplot(scData, aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
     coord_flip() +
     ggtitle("Show the station Class number")
 }
-showDistribution(df)
+
+
+# call --------------------------------------------------------------------
+
+distributionPlot <- function(df) {
+  showDistribution(stationClassDis(cleanStationDf(df))) 
+}
