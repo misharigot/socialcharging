@@ -2,9 +2,9 @@ library(shiny)
 library(ggplot2)
 library(leaflet)
 source("src/helpers/coordinate_helper.R")
+source("src/map/map_functions.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
-
 mapModuleUI <- function(id) {
   ns <- NS(id)
   div(class = "outer",
@@ -25,39 +25,57 @@ mapModuleUI <- function(id) {
                     bottom = "auto",
                     width = 330,
                     height = "auto",
-                    h2("Filter controls"),
-                    selectInput(ns("category"),
-                                "Category",
-                                c(
-                                  "Charged kWh per station" = "kwh_station",
-                                  "Occupation percentage" = "occ_perc",
-                                  "Efficiency percentage" =  "eff_perc",
-                                  "Users per station" = "users_station",
-                                  "Regression" = "regression"
-                                )
+                    h2("Node size"),
+                    radioButtons(ns("category"),
+                                 "", 
+                                 choices = c(
+                                   "Occupation percentage" = "occ_perc",
+                                   "Efficiency percentage" =  "eff_perc",
+                                   "Users per station" = "users_station"
+                                 )
                     ),
-                    h5("The category determines the size of the circles"),
-                    conditionalPanel(
-                      paste0("input['", ns("category"), "'] == 'regression'"),
-                      tags$hr(),
-                      h5("These selections determine the prediction model and attributes for it:"),
-                      selectInput("prediction",
-                                  "Prediction based on",
-                                  c(
-                                    "User based regression" = "user_reg",
-                                    "Profile based regression" = "profile_reg"
-                                  )
-                      )
-                      # uiOutput("user_selection"),
-                      # uiOutput("session_selection")
-                    )
-      )
+                    tags$hr(),
+                    h2("Color"),
+                    radioButtons(ns("color"),
+                                 "", 
+                                 choices = c(
+                                   "Charged kWh" = "charged_kwh",
+                                   "Elapsed hours" = "total_hours_elapsed",
+                                   "Amount of sessions" = "total_sessions"
+                                 )
+                    ),
+                    tags$hr(),
+                    filterUI("filterSelection")
+        )
   )
   
 }
 
-# Server ----------------------------------------------------------------------------------------------------------
 
+filterUI <- function(id) {
+  ns <- NS(id)
+  
+  tagList(
+    h2("Filter controls"),
+    selectInput(ns("station_profiles"),
+                "Station profiles",
+                c(
+                  "All station profiles" = "station_profiles",
+                  "Profile based regression" = "profile_reg"
+                )
+    ),
+    selectInput(ns("user_profiles"),
+                "User profiles",
+                c(
+                  "All user profiles" = "user_profiles",
+                  "User based regression" = "user_reg"
+                )
+    ),
+    uiOutput("user_selection")
+  )
+}
+
+# Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
@@ -71,7 +89,11 @@ mapModule <- function(input, output, session, data) {
   
   # Updates map when category input changes
   observeEvent(input$category, {
-    handleMapCreation(input$category, mapData = mapData())
+    handleMapCreation(input$category, input$color, mapData = mapData())
+  })
+  
+  observeEvent(input$color, {
+    handleMapCreation(input$category, input$color, mapData = mapData())
   })
   
   # Updates map with popup when a node is clicked
@@ -81,7 +103,6 @@ mapModule <- function(input, output, session, data) {
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
-
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(scData) {
   mapDf <- scData %>%
@@ -112,7 +133,6 @@ getMapData <- function(scData) {
 }
 
 # Render functions ------------------------------------------------------------------------------------------------
-
 mapId <- "map"
 
 # Creates the default leaflet map without user input
@@ -133,31 +153,24 @@ handleDefaultMapCreation <- function(mapData) {
 }
 
 # Creates a leaflet map based on user input
-handleMapCreation <- function(userInput, mapData) {
-  categorySelected <- userInput
-  pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
-  color <- "black"
-  radius <- 100
-  if (categorySelected == "kwh_station") {
-    radius <- mapData$total_charged / max(mapData$total_charged) * 300
-    color <- pal(mapData$total_charged)
-  }
+handleMapCreation <- function(sizeInput, colorInput, mapData) {
+  if (length(sizeInput) == 0) {return()}
+  if (length(colorInput) == 0) {return()}
   
-  if (categorySelected == "occ_perc") {
-    radius <- mapData$popularity_score / max(mapData$popularity_score) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "eff_perc") {
-    radius <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "users_station") {
-    radius <- mapData$total_users / max(mapData$total_users) * 300
-    color <- "red"
-  }
-  leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultCircles(mapData, radius, color)
+  pal <- createPallet(colorInput, mapData)
+  color <- createCircleColor(colorInput, mapData, pal)
+  radius <- createCircleSize(sizeInput, mapData)
+  values <- createLegendValues(colorInput, mapData)
+  title <- createLegendTitle(colorInput)
+
+
+  leafletProxy(mapId, data = mapData) %>% clearShapes() %>% 
+    defaultCircles(mapData, radius, color) %>%
+    addLegend("bottomright",
+              pal = pal,
+              values = values,
+              title = title,
+              layerId = "colorLegend")
 }
 
 # This method handles the popup event

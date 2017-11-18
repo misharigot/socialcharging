@@ -21,19 +21,14 @@ server <- function(input, output) {
     return(df)
   })
   
-  # profileRegression <- reactive({
-  #   df <- createProfileRegression(scData())
-  #   return(df)
-  # })
-  
   callModule(module = mapModule, id = "map", data = scData())
 
-  # output$user_selection <- renderUI({
-  #   selectInput("users",
-  #               "Select a user",
-  #               isolate(as.vector(profileRegression()$user_id))
-  #   )
-  # })
+  output$user_selection <- renderUI({
+    selectInput("users",
+                "Select a user",
+                isolate(as.vector(scData()$user_id))
+    )
+  })
   # 
   # output$session_selection <- renderUI({
   #   selectInput("sessions",
