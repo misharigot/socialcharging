@@ -12,9 +12,8 @@ source(config$baseClean)
 
 # trim data and classification----------------------------------------------------------
 
-
 # using five number summary give the value for station
-givePoint <- function(x) {
+divideCategory <- function(x) {
   kwhSummary <- summary(x)
   med <- kwhSummary[3]
   ifelse (x > med, "H", "L")
@@ -39,7 +38,6 @@ changeName <- function(x) {
 
 #dat cleaning and classification
 cleanStationDf <- function(df) {
-  
   df <- df %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed)) %>% 
     group_by(longitude, latitude) %>%
@@ -47,9 +45,9 @@ cleanStationDf <- function(df) {
               total_charged = sum(charged_kwh),
               total_hours_elapsed = sum(hours_elapsed),
               total_users = n_distinct(user_id))
-  df$charging <- givePoint(df$total_charged)
-  df$occupation <- givePoint(df$total_hours_elapsed)
-  df$user_amount <- givePoint(df$total_users)
+  df$charging <- divideCategory(df$total_charged)
+  df$occupation <- divideCategory(df$total_hours_elapsed)
+  df$user_amount <- divideCategory(df$total_users)
   df$stationClass <- paste(df$occupation, df$user_amount, df$charging, sep = "")
   df$stationClass <- changeName(df$stationClass)
   
@@ -59,12 +57,13 @@ cleanStationDf <- function(df) {
 # distribution ------------------------------------------------------------
 
 # show the distribution of the station class
-stationClassDis <- function(df){
+countClass <- function(df){
   df %>%
     group_by(stationClass) %>%
     summarise(num = n()) %>%
     mutate(stationClass = factor(stationClass, levels = stationClass[order(num)]))  
 }
+
 # make a plot for showing distribution
 showDistribution <- function(scData){
   ggplot(scData, aes(x = stationClass, y = num)) +
@@ -73,9 +72,8 @@ showDistribution <- function(scData){
     ggtitle("Show the station Class number")
 }
 
-
 # call --------------------------------------------------------------------
 
-distributionPlot <- function(df) {
-  showDistribution(stationClassDis(cleanStationDf(df))) 
+showDistributionPlot <- function(df) {
+  showDistribution(countClass(cleanStationDf(df))) 
 }

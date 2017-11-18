@@ -23,12 +23,12 @@ ui <- dashboardPage(
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
                menuSubItem("User classification distribution", tabName = "predtab1"),
+               menuSubItem("Station classification distribution", tabName = "predtab7"),
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Session clustering", tabName = "predtab3"),
                menuSubItem("Station clustering", tabName = "predtab6"),
                menuSubItem("Linear model", tabName = "predtab4"),
-               menuSubItem("Correlation", tabName = "predtab5"),
-               menuSubItem("Station classification distribution", tabName = "predtab7")
+               menuSubItem("Correlation", tabName = "predtab5")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
