@@ -29,13 +29,6 @@ server <- function(input, output) {
                 isolate(as.vector(scData()$user_id))
     )
   })
-  # 
-  # output$session_selection <- renderUI({
-  #   selectInput("sessions",
-  #               "Select a session",
-  #               as.vector(getSessions(profileRegression(), input$users)$session_id)
-  #   )
-  # })
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
