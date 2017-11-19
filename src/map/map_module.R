@@ -53,7 +53,8 @@ mapModuleUI <- function(id) {
                                 selected = "charged_kwh"
                     ),
                     tags$hr(),
-                    filterUI("filterSelection")
+                    filterUI("filterSelection"),
+                    stationTable("tableChargingSessions")
         )
   )
   
@@ -80,6 +81,27 @@ filterUI <- function(id) {
                 )
     ),
     uiOutput("user_selection")
+  )
+}
+
+stationTable <- function(id) {
+  ns <- NS(id)
+  div(
+    class = "inner",
+    absolutePanel(
+      id = "controls",
+      class = "panel panel-default",
+      fixed = TRUE,
+      draggable = FALSE,
+      top = "auto",
+      left = 300,
+      right = "auto",
+      bottom = 5,
+      width = 1675,
+      height = "auto",
+      h3("Station sessions"),
+      div(style = "overflow-x: scroll", dataTableOutput("stationTable"))
+    )
   )
 }
 
