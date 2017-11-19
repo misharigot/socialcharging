@@ -90,8 +90,8 @@ server <- function(input, output) {
   })
   
   output$cor1 <- renderPlot({
-    source("src/models/regression_test.R")
-    return(plotCorrelationResult(scData()))
+    source("src/models/Interactive_correlation.R")
+    return(plotCorrelationplot(scData()))
   })
   
   output$pred6 <- renderPlotly({
