@@ -102,7 +102,7 @@ server <- function(input, output) {
   
   output$pred7 <- renderPlot({
     source("src/models/station_classification.R")
-    return(distributionPlot(scData()))
+    return(showDistributionPlot(scData()))
   })
   
   # Observers -------------------------------------------------------------------------------------------------------
