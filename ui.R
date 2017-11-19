@@ -134,6 +134,7 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab5",
               fluidRow(
+                box(uiOutput("corColumns")),
                 box(withSpinner(plotOutput("cor1")), width = 12)
               )
       ),

@@ -122,13 +122,8 @@ convertDfToNumeric <- function(cleanDf) {
   return(df)
 }
 
-
-plotCorrelation <- function(data) {
-  corrplot.mixed(cor(data))
-}
-
 # Number to call for numberfied dataframe ---------------------------------
 
 plotCorrelationplot <- function(scData) {
-  plotCorrelation(convertDfToNumeric(sessionClassificationDf(cleanDf(scData))))
+  corrplot.mixed(cor(convertDfToNumeric(sessionClassificationDf(cleanDf(scData)))))
 }
