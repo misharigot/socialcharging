@@ -53,57 +53,81 @@ mapModuleUI <- function(id) {
                                 selected = "charged_kwh"
                     ),
                     tags$hr(),
-                    filterUI("filterSelection")
+                    h3("Filter controls"),
+                    selectInput(ns("station_profiles"),
+                                "Station profiles",
+                                c(
+                                  "All station profiles" = "all",
+                                  "Profile based regression" = "profile_reg"
+                                )
+                    ),
+                    selectInput(ns("user_profiles"),
+                                "User profiles",
+                                c(
+                                  "All user profiles" = "all",
+                                  "User based regression" = "user_reg"
+                                )
+                    ),
+                    selectInput(ns("userId"),
+                                "Users",
+                                c("Show all" = "all")
+                    ) 
         )
   )
   
-}
-
-
-filterUI <- function(id) {
-  ns <- NS(id)
-  
-  tagList(
-    h3("Filter controls"),
-    selectInput(ns("station_profiles"),
-                "Station profiles",
-                c(
-                  "All station profiles" = "station_profiles",
-                  "Profile based regression" = "profile_reg"
-                )
-    ),
-    selectInput(ns("user_profiles"),
-                "User profiles",
-                c(
-                  "All user profiles" = "user_profiles",
-                  "User based regression" = "user_reg"
-                )
-    ),
-    uiOutput("user_selection")
-  )
 }
 
 # Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
-    getMapData(data)
+    print("mapData called")
+    if (input$userId == "all") {
+      getMapData(plainData())
+    } else {
+      plainData <- plainData()
+      print("input$userIds:")
+      print(input$userId)
+      if (input$userId != "all") {
+        plainData <- plainData %>% filter(user_id == input$userId)
+      }
+      if (input$station_profiles != "all") {
+        plainData <- plainData %>% filter(station_profiles == input$station_profiles)
+      }
+      if (input$user_profiles != "all") {
+        plainData <- plainData %>% filter(user_profile == input$user_profiles)
+      }
+      getMapData(plainData)
+    }
+  })
+  
+  plainData <- reactive({
+    print("plainData called")
+    data %>% filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   })
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
+    print("handleDEFAULTMapCreation called")
     handleDefaultMapCreation(mapData = mapData())
   })
   
+  observe({
+    updateSelectInput(session, "userId", choices = c("Show all" = "all", plainData()$user_id))
+  })
+    
   # Updates map when size input changes
   observeEvent(input$size, {
+    print("handleMapCreation @ size called")
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
+  # Updates map when color input changes
   observeEvent(input$color, {
+    print("handleMapCreation @ color called")
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
-  
+
   # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
@@ -112,9 +136,8 @@ mapModule <- function(input, output, session, data) {
 
 # Functions -------------------------------------------------------------------------------------------------------
 # Returns a data set prepared for the leaflet map, based on SC data
-getMapData <- function(scData) {
-  mapDf <- scData %>%
-    filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
+getMapData <- function(mapDf) {
+  print("getMapData called")
   
   mapDf$latitude <- sapply(mapDf$latitude, formatCoordinate, "latitude")
   mapDf$longitude <- sapply(mapDf$longitude, formatCoordinate, "longitude")
@@ -137,6 +160,7 @@ getMapData <- function(scData) {
                                      / outlets) * 100 + 10, digits = 0))
   mapDf$total_sessions <- as.numeric(mapDf$total_sessions)
   mapDf$total_charged <- as.numeric(mapDf$total_charged)
+  print("getMapData execution finished")
   return(mapDf)
 }
 
@@ -168,6 +192,7 @@ handleDefaultMapCreation <- function(mapData) {
 handleMapCreation <- function(sizeInput, colorInput, mapData) {
   if (length(sizeInput) == 0) {return()}
   if (length(colorInput) == 0) {return()}
+  if (nrow(mapData) == 0) {return()}
   
   pal <- createPallete(mapData, colorInput)
   color <- createCircleColor(mapData, colorInput, pal)

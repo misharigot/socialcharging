@@ -22,13 +22,6 @@ server <- function(input, output) {
   })
   
   callModule(module = mapModule, id = "map", data = scData())
-
-  output$user_selection <- renderUI({
-    selectInput("users",
-                "Select a user",
-                isolate(as.vector(scData()$user_id))
-    )
-  })
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
