@@ -11,6 +11,7 @@ library(corrplot)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
+source("src/models/regression_test.R")
 
 server <- function(input, output) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
@@ -34,6 +35,13 @@ server <- function(input, output) {
   })
   
   callModule(module = mapModule, id = "map", data = scData())
+
+  output$user_selection <- renderUI({
+    selectInput("users",
+                "Select a user",
+                isolate(as.vector(scData()$user_id))
+    )
+  })
   
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)

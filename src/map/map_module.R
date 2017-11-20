@@ -2,9 +2,9 @@ library(shiny)
 library(ggplot2)
 library(leaflet)
 source("src/helpers/coordinate_helper.R")
+source("src/map/map_functions.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
-
 mapModuleUI <- function(id) {
   ns <- NS(id)
   div(class = "outer",
@@ -18,31 +18,72 @@ mapModuleUI <- function(id) {
       absolutePanel(id = "controls",
                     class = "panel panel-default",
                     fixed = TRUE,
-                    draggable = TRUE,
+                    draggable = FALSE,
                     top = 60,
                     left = "auto",
                     right = 20,
                     bottom = "auto",
                     width = 330,
                     height = "auto",
-                    h2("Filter controls"),
-                    selectInput(ns("category"),
-                                "Category",
-                                c(
-                                  "Charged kWh per station" = "kwh_station",
-                                  "Occupation percentage" = "occ_perc",
-                                  "Efficiency percentage" =  "eff_perc",
-                                  "Users per station" = "users_station"
-                                )
+                    h3("Size"),
+                    selectInput(ns("size"),
+                                 "", 
+                                 choices = c(
+                                   "Charged kWh" = "charged_kwh",
+                                   "Elapsed hours" = "total_hours_elapsed",
+                                   "Amount of sessions" = "total_sessions",
+                                   "Occupation percentage" = "occ_perc",
+                                   "Efficiency percentage" =  "eff_perc",
+                                   "Users per station" = "users_station"
+                                 ),
+                                selected = "occ_perc"
                     ),
-                    h5("The category determines the size of the circles")
-      )
+                    tags$hr(),
+                    h3("Color"),
+                    selectInput(ns("color"),
+                                 "", 
+                                 choices = c(
+                                   "Charged kWh" = "charged_kwh",
+                                   "Elapsed hours" = "total_hours_elapsed",
+                                   "Amount of sessions" = "total_sessions",
+                                   "Occupation percentage" = "occ_perc",
+                                   "Efficiency percentage" =  "eff_perc",
+                                   "Users per station" = "users_station"
+                                 ),
+                                selected = "charged_kwh"
+                    ),
+                    tags$hr(),
+                    filterUI("filterSelection")
+        )
   )
   
 }
 
-# Server ----------------------------------------------------------------------------------------------------------
 
+filterUI <- function(id) {
+  ns <- NS(id)
+  
+  tagList(
+    h3("Filter controls"),
+    selectInput(ns("station_profiles"),
+                "Station profiles",
+                c(
+                  "All station profiles" = "station_profiles",
+                  "Profile based regression" = "profile_reg"
+                )
+    ),
+    selectInput(ns("user_profiles"),
+                "User profiles",
+                c(
+                  "All user profiles" = "user_profiles",
+                  "User based regression" = "user_reg"
+                )
+    ),
+    uiOutput("user_selection")
+  )
+}
+
+# Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
@@ -54,9 +95,13 @@ mapModule <- function(input, output, session, data) {
     handleDefaultMapCreation(mapData = mapData())
   })
   
-  # Updates map when category input changes
-  observeEvent(input$category, {
-    handleMapCreation(input$category, mapData = mapData())
+  # Updates map when size input changes
+  observeEvent(input$size, {
+    handleMapCreation(input$size, input$color, mapData = mapData())
+  })
+  
+  observeEvent(input$color, {
+    handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
   # Updates map with popup when a node is clicked
@@ -66,7 +111,6 @@ mapModule <- function(input, output, session, data) {
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
-
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(scData) {
   mapDf <- scData %>%
@@ -102,8 +146,11 @@ mapId <- "map"
 
 # Creates the default leaflet map without user input
 handleDefaultMapCreation <- function(mapData) {
-  radius <- mapData$total_charged / max(mapData$total_charged) * 300
-  pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
+  pal <- createPallete(mapData)
+  color <- createCircleColor(mapData, pal = pal)
+  radius <- createCircleSize(mapData)
+  values <- createLegendValues(mapData)
+  title <- createLegendTitle()
   
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
@@ -111,37 +158,31 @@ handleDefaultMapCreation <- function(mapData) {
     defaultCircles(mapData, radius, pal(mapData$total_charged)) %>%
     addLegend("bottomright",
               pal = pal,
-              values = mapData$total_charged,
-              title = "Total Charged kWh",
+              values = values,
+              title = title,
               layerId = "colorLegend"
     )
 }
 
 # Creates a leaflet map based on user input
-handleMapCreation <- function(userInput, mapData) {
-  categorySelected <- userInput
-  pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
+handleMapCreation <- function(sizeInput, colorInput, mapData) {
+  if (length(sizeInput) == 0) {return()}
+  if (length(colorInput) == 0) {return()}
   
-  if (categorySelected == "kwh_station") {
-    radius <- mapData$total_charged / max(mapData$total_charged) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "occ_perc") {
-    radius <- mapData$popularity_score / max(mapData$popularity_score) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "eff_perc") {
-    radius <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
-    color <- pal(mapData$total_charged)
-  }
-  
-  if (categorySelected == "users_station") {
-    radius <- mapData$total_users / max(mapData$total_users) * 300
-    color <- "red"
-  }
-  leafletProxy(mapId, data = mapData) %>% clearShapes() %>% defaultCircles(mapData, radius, color)
+  pal <- createPallete(mapData, colorInput)
+  color <- createCircleColor(mapData, colorInput, pal)
+  radius <- createCircleSize(mapData, sizeInput)
+  values <- createLegendValues(mapData, colorInput)
+  title <- createLegendTitle(colorInput)
+
+  leafletProxy(mapId, data = mapData) %>% 
+    clearShapes() %>% 
+    defaultCircles(mapData, radius, color) %>%
+    addLegend("bottomright",
+              pal = pal,
+              values = values,
+              title = title,
+              layerId = "colorLegend")
 }
 
 # This method handles the popup event
@@ -160,8 +201,10 @@ defaultCircles <- function(leaflet, mapData, radius, color) {
   leaflet %>% addCircles(
     lng = mapData$longitude,
     lat = mapData$latitude,
-    radius = radius, stroke = FALSE,
-    fillOpacity = 0.8, color = "#03f",
+    radius = radius,
+    stroke = FALSE,
+    fillOpacity = 0.8,
+    color = "#03f",
     layerId = which(mapData$longitude == mapData$longitude & mapData$latitude == mapData$latitude),
     fillColor = color)
 }
@@ -174,9 +217,9 @@ chargingStationPopup <- function(id, lat, lng, mapData) {
   selectedChargingPole <- mapData[id, ]
   content <- as.character(tagList(
     tags$h4("Location: ", selectedChargingPole$address),
-    sprintf("Total charged kWh: %s", selectedChargingPole$total_charged), tags$br(),
-    sprintf("Total elapsed hours: %s", selectedChargingPole$total_hours_elapsed), tags$br(),
-    sprintf("Total effective hours: %s", selectedChargingPole$total_effective_charging), tags$br(),
+    sprintf("Total charged kWh: %s", round(selectedChargingPole$total_charged, digits = 2)), tags$br(),
+    sprintf("Total elapsed hours: %s", round(selectedChargingPole$total_hours_elapsed, digits = 2)), tags$br(),
+    sprintf("Total effective hours: %s", round(selectedChargingPole$total_effective_charging, digits = 2)), tags$br(),
     sprintf("Station outlets: %s", selectedChargingPole$outlets), tags$br(),
     sprintf("Total sessions: %s", selectedChargingPole$total_sessions), tags$br(),
     sprintf("Total users: %s", selectedChargingPole$total_users)
