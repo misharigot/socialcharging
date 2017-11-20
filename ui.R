@@ -29,7 +29,8 @@ ui <- dashboardPage(
                menuSubItem("Linear model", tabName = "predtab4"),
                menuSubItem("Correlation", tabName = "predtab5")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
+      menuItem("Static", tabName = "static", icon = icon("table"))
     )
   ),
   dashboardBody(
@@ -145,7 +146,22 @@ ui <- dashboardPage(
 # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
               mapModuleUI(id = "map")
-      )
+      ),
+      tabItem(tabName = "static",
+              fluidRow(
+                box(
+                 
+                  checkboxGroupInput("checkGroup", 
+                                     h3("Checkbox"), 
+                                     choices = list("session_id" = 1, 
+                                                    "user_id" = 2),
+                                     selected = 1)
+                  ),
+                box(
+                  withSpinner(plotlyOutput("plot11")),
+                  title = "static data ")
+              )
+              )
     )
   )
 )

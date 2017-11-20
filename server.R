@@ -67,6 +67,11 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
+  output$plot11 <- renderPlotly({
+    source("src/plots/visulization_statistic_data.R")
+    return(staticPlot(scData(),input$checkGroup))
+  })
+  
 # Prediction plots ------------------------------------------------------------------------------------------------
 
   output$pred1 <- renderPlot({
