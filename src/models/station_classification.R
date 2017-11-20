@@ -6,7 +6,6 @@ library(ggplot2)
 library(config)
 library(readr)
 library(dplyr)
-
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
@@ -16,24 +15,40 @@ source(config$baseClean)
 divideCategory <- function(x) {
   kwhSummary <- summary(x)
   med <- kwhSummary[3]
-  ifelse (x > med, "H", "L")
+  outVector <- rep(0,length(x))
+  for(i in 1:length(x)){
+    if(x[i] > med){
+      outVector[i] <- "H"  
+    }else{
+      outVector[i] <- "L"
+    }
+  }
+  return(outVector)
 }
 
 #change class name fancy
 changeName <- function(x) {
-  ifelse (x == "HHH", "LadyOfTheEvening",
-          ifelse ( x == "HHL", "ParkingSpace",
-                   ifelse (x == "HLL", "MarriedToThisStation",
-                           ifelse (x == "HLH", "LateNightCharging",
-                                   ifelse(x == "LHH", "WorkerBee",
-                                          ifelse(x == "LLH", "PowerBank",
-                                                 ifelse(x == "LLL", "ForeverAlone", "HitandRun")
-                                          )
-                                   )
-                           )
-                   )
-          )
-  )
+  outVector <- rep(0,length(x))
+  for(i in 1:length(x)){
+    if(x[i] == "HHH"){
+      outVector[i] <- "LadyOfTheEvening"
+    }else if(x[i] == "HHL"){
+      outVector[i] <- "ParkingSpace"
+    }else if(x[i] == "HLL"){
+      outVector[i] <- "MarriedToThisStation"
+    }else if(x[i] == "HLH"){
+      outVector[i] <- "LateNightCharging"
+    }else if(x[i] == "LHH"){
+      outVector[i] <- "WorkerBee"
+    }else if(x[i] == "LLH"){
+      outVector[i] <- "PowerBank"
+    }else if(x[i] == "LLL"){
+      outVector[i] <- "ForeverAlone"
+    }else{
+      outVector[i] <- "HitandRun"
+    }
+  }
+  return(outVector)
 }
 
 #dat cleaning and classification
