@@ -1,3 +1,4 @@
+# Prepares the data for the interactive correlation plot
 library(config)
 library(readr)
 library(corrplot)
@@ -122,7 +123,8 @@ convertDfToNumeric <- function(cleanDf) {
   return(df)
 }
 
-# Number to call for numberfied dataframe ---------------------------------
+
+# Function calls ----------------------------------------------------------
 
 plotCorrelationplot <- function(scData) {
   corrplot.mixed(cor(convertDfToNumeric(sessionClassificationDf(cleanDf(scData)))))

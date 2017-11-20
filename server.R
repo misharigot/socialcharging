@@ -21,19 +21,20 @@ server <- function(input, output) {
     return(df)
   })
   
+  # Returns the numberfied dataframe
   numberfiedDf <- reactive({
     source("src/models/Interactive_correlation.R")
     corDf <- convertDfToNumeric(sessionClassificationDf(cleanDf(scData())))
     return(corDf)
   })
   
+  # Returns the name of the numberfied dataframe
   dfNames <- reactive({
     return(names(numberfiedDf()))
   })
   
   callModule(module = mapModule, id = "map", data = scData())
   
-  # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
   
