@@ -47,7 +47,7 @@ ui <- dashboardPage(
         fluidRow(
           box(
             title = "Social Charging dataset", status = "success", solidHeader = TRUE, width = 12,
-            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1")))
+            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1")), type = 4)
           )
         )
       ),
@@ -57,23 +57,23 @@ ui <- dashboardPage(
                                       brush = brushOpts(
                                         id = "brush",
                                         resetOnNew = TRUE
-                                      ))), width = 12)),
+                                      )), type = 4), width = 12)),
               actionButton("reset_input", "Reset")
       ),
       tabItem(tabName = "chart2",
               fluidRow(
-                box(withSpinner(plotOutput("plot2", height = 750)), width = 12, height = 800)
+                box(withSpinner(plotOutput("plot2", height = 750), type = 4), width = 12, height = 800)
               )
       ),
       tabItem(tabName = "chart3",
               fluidRow(
-                box(withSpinner(plotOutput("plot3")), width = 12)
+                box(withSpinner(plotOutput("plot3"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "chart4",
               fluidRow(
                 fluidRow(
-                  box(withSpinner(plotOutput("plot4")), width = 12)
+                  box(withSpinner(plotOutput("plot4"), type = 4), width = 12)
                 )
               )
       ),
@@ -91,60 +91,60 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(
-                  withSpinner(plotOutput("plot7")),
+                  withSpinner(plotOutput("plot7"), type = 4),
                   title = "Analyzing per car ",
                   width = 12)
               )
       ),
       tabItem(tabName = "chart8",
               fluidRow(
-                box(withSpinner(plotOutput("plot8")), width = 12)
+                box(withSpinner(plotOutput("plot8"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "chart9",
               fluidRow(
-                box(withSpinner(plotOutput("plot9")), width = 12)
+                box(withSpinner(plotOutput("plot9"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "chart10",
               fluidRow(
-                box(withSpinner(plotOutput("plot10")), width = 12)
+                box(withSpinner(plotOutput("plot10"), type = 4), width = 12)
               )
       ),
 # Pred plots ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "predtab1",
               fluidRow(
-                box(withSpinner(plotOutput("pred1")), width = 12)
+                box(withSpinner(plotOutput("pred1"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "predtab2",
               fluidRow(
-                box(withSpinner(plotlyOutput("pred2")), width = 12)
+                box(withSpinner(plotlyOutput("pred2"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "predtab3",
               fluidRow(
-                box(withSpinner(plotlyOutput("pred3")), width = 12)
+                box(withSpinner(plotlyOutput("pred3"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "predtab4",
               fluidRow(
-                box(withSpinner(plotOutput("pred4")), width = 12)
+                box(withSpinner(plotOutput("pred4"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "predtab5",
               fluidRow(
-                box(withSpinner(plotOutput("cor1")), width = 12)
+                box(withSpinner(plotOutput("cor1"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "predtab6",
         fluidRow(
-          box(withSpinner(plotlyOutput("pred6")), width = 12)
+          box(withSpinner(plotlyOutput("pred6"), type = 4), width = 12)
         )
       ),
 # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
-              withSpinner(mapModuleUI(id = "map"))
+                mapModuleUI(id = "map")
       )
     )
   )

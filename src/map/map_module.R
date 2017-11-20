@@ -53,11 +53,24 @@ mapModuleUI <- function(id) {
                                 selected = "charged_kwh"
                     ),
                     tags$hr(),
-                    filterUI("filterSelection"),
-                    stationTable("tableChargingSessions")
+                    filterUI("filterSelection")
+        ),
+        absolutePanel(
+          id = "session-table",
+          class = "panel panel-default",
+          fixed = TRUE,
+          draggable = FALSE,
+          top = "auto",
+          left = 250,
+          right = "auto",
+          bottom = 5,
+          width = 1300,
+          height = "auto",
+          h3("Station sessions"),
+          div(style = "height: 200px; overflow-y: auto;", dataTableOutput(ns("stationTable")))
         )
+        #stationTable("tableChargingSessions")
   )
-  
 }
 
 
@@ -87,7 +100,7 @@ filterUI <- function(id) {
 stationTable <- function(id) {
   ns <- NS(id)
   div(
-    class = "inner",
+    class = "outer",
     absolutePanel(
       id = "controls",
       class = "panel panel-default",
@@ -97,10 +110,10 @@ stationTable <- function(id) {
       left = 300,
       right = "auto",
       bottom = 5,
-      width = 1675,
+      width = 1500,
       height = "auto",
       h3("Station sessions"),
-      div(style = "overflow-x: scroll", dataTableOutput("stationTable"))
+      div(style = "max-height: 200px;", dataTableOutput("stationTable"))
     )
   )
 }
@@ -110,6 +123,10 @@ mapModule <- function(input, output, session, data) {
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
     getMapData(data)
+  })
+  
+  temp <- reactive({
+    prepTableData(data)
   })
   
   # The rendered leaflet map
@@ -122,18 +139,49 @@ mapModule <- function(input, output, session, data) {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
+  # Updates map when color input changes
   observeEvent(input$color, {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
-  # Updates map with popup when a node is clicked
+  # Updates map with popup and updated table when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
   })
+  
+  tableData <- reactive({
+    if (is.null(input$map_shape_click)) {return(NULL)}
+    print(input$map_shape_click)
+    sessions <- temp()
+    isolate({
+      sessions <- sessions %>%
+        filter(latitude == input$map_shape_click$lat,
+               longitude == input$map_shape_click$lng)
+      return(sessions)
+    })
+  })
+
+  # WIP table output
+  output$stationTable <- renderDataTable({
+    tableData()
+  })
+  
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
 # Returns a data set prepared for the leaflet map, based on SC data
+prepTableData <- function(dataf) {
+  dataf <- dataf %>%
+    filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed)) %>%
+    select(latitude, longitude, session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed)
+  
+  dataf$latitude <- sapply(dataf$latitude, formatCoordinate, "latitude")
+  dataf$longitude <- sapply(dataf$longitude, formatCoordinate, "longitude")
+  dataf$latitude <- as.numeric(dataf$latitude)
+  dataf$longitude <- as.numeric(dataf$longitude)
+  return(dataf)
+}
+
 getMapData <- function(scData) {
   mapDf <- scData %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
@@ -249,3 +297,6 @@ chargingStationPopup <- function(id, lat, lng, mapData) {
   
   leafletProxy(mapId) %>% addPopups(lng, lat, content, layerId = id)
 }
+
+
+

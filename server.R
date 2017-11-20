@@ -22,7 +22,7 @@ server <- function(input, output) {
   })
   
   callModule(module = mapModule, id = "map", data = scData())
-
+  
   output$user_selection <- renderUI({
     selectInput("users",
                 "Select a user",
