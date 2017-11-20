@@ -1,7 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(leaflet)
-source("src/helpers/coordinate_helper.R")
+library(data.table)
 source("src/map/map_functions.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
@@ -137,12 +137,12 @@ mapModule <- function(input, output, session, data) {
 # Functions -------------------------------------------------------------------------------------------------------
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(mapDf) {
+  start.time <- Sys.time()
   print("getMapData called")
   
-  mapDf$latitude <- sapply(mapDf$latitude, formatCoordinate, "latitude")
-  mapDf$longitude <- sapply(mapDf$longitude, formatCoordinate, "longitude")
-  mapDf$latitude <- as.numeric(mapDf$latitude)
-  mapDf$longitude <- as.numeric(mapDf$longitude)
+  mapDf <- data.table(mapDf)
+  mapDf[ , longitude := longitude / 100000000]
+  mapDf[ , latitude := latitude / 100000000]
   
   totalHours <- interval(min(mapDf$start_date), max(mapDf$end_date)) / 3600
   
@@ -161,6 +161,9 @@ getMapData <- function(mapDf) {
   mapDf$total_sessions <- as.numeric(mapDf$total_sessions)
   mapDf$total_charged <- as.numeric(mapDf$total_charged)
   print("getMapData execution finished")
+  end.time <- Sys.time()
+  time.taken <- end.time - start.time
+  print(time.taken)
   return(mapDf)
 }
 
