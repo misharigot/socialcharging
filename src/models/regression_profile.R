@@ -24,6 +24,9 @@ minUserSessions <- 10
 #Create dataframe with user classifications (profiles) 
 userProfiles <- userClassificationDf(sessionClassificationDf(cleanDf(df)))
 
+#Create dataframe with station classifications 
+
+
 # Gets the sessions for the specified user_profile
 userSessions <- subset(userProfiles, userProfiles$class == 3)
 
