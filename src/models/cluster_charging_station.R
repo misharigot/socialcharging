@@ -6,7 +6,6 @@ library(purrr)
 library(tidyr)
 library(clValid)
 library(plotly)
-source("src/helpers/coordinate_helper.R")
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)

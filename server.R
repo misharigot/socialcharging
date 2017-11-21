@@ -24,13 +24,6 @@ server <- function(input, output, session) {
   
   callModule(module = mapModule, id = "map", data = scData())
   
-  output$user_selection <- renderUI({
-    selectInput("users",
-                "Select a user",
-                isolate(as.vector(scData()$user_id))
-    )
-  })
-  
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
@@ -75,8 +68,8 @@ server <- function(input, output, session) {
     return(multiplotUserTimeframes(scData()))
   })
   
-# Prediction plots ------------------------------------------------------------------------------------------------
-
+  # Prediction plots ------------------------------------------------------------------------------------------------
+  
   output$pred1 <- renderPlot({
     source("src/models/user_class.R")
     return(plotClassCountShiny(scData()))
@@ -86,7 +79,7 @@ server <- function(input, output, session) {
     source("src/models/user_clust.R")
     return(plotUserCluster1(scData()))
   })
-
+  
   output$pred3 <- renderPlotly({
     source("src/models/user_clust.R")
     return(plotUserCluster2(scData()))
