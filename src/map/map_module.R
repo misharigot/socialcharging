@@ -59,19 +59,21 @@ mapModuleUI <- function(id) {
                     tags$hr(),
                     actionButton(ns("btnHide"), "Show/Hide Table")
       ),
-      absolutePanel(
-        id = ns("session-table"),
-        class = "panel panel-default",
-        fixed = TRUE,
-        draggable = FALSE,
-        top = "auto",
-        left = 300,
-        right = "auto",
-        bottom = 10,
-        width = 1300,
-        height = "auto",
-        h3("Station sessions"),
-        div(style = "height: 200px; overflow-y: auto;", tableOutput(ns("stationTable")))
+      hidden(
+        absolutePanel(
+          id = ns("session-table"),
+          class = "panel panel-default",
+          fixed = TRUE,
+          draggable = FALSE,
+          top = "auto",
+          left = 300,
+          right = "auto",
+          bottom = 10,
+          width = 1300,
+          height = "auto",
+          h3("Station sessions"),
+          div(style = "height: 200px; overflow-y: auto;", tableOutput(ns("stationTable")))
+        )
       )
   )
 }
@@ -129,6 +131,7 @@ mapModule <- function(input, output, session, data) {
   # Updates map with popup and updated table when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
+    shinyjs::show("session-table", anim = TRUE, animType = "slide")
   })
   
   tableData <- reactive({
