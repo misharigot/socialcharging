@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(leaflet)
+library(shinyjs)
 source("src/helpers/coordinate_helper.R")
 source("src/map/map_functions.R")
 
@@ -13,6 +14,7 @@ mapModuleUI <- function(id) {
         includeCSS("src/map/styles.css"),
         includeScript("src/map/gomap.js")
       ),
+      useShinyjs(),
       # If not using custom CSS, set height of leafletOutput to a number instead of percent
       leafletOutput(ns("map"), width = "100%", height = "100%"),
       absolutePanel(id = "controls",
@@ -54,22 +56,23 @@ mapModuleUI <- function(id) {
                     ),
                     tags$hr(),
                     filterUI("filterSelection")
-        ),
-        absolutePanel(
-          id = "session-table",
-          class = "panel panel-default",
-          fixed = TRUE,
-          draggable = FALSE,
-          top = "auto",
-          left = 250,
-          right = "auto",
-          bottom = 5,
-          width = 1300,
-          height = "auto",
-          h3("Station sessions"),
-          div(style = "height: 200px; overflow-y: auto;", dataTableOutput(ns("stationTable")))
-        )
-        #stationTable("tableChargingSessions")
+      ),
+      absolutePanel(
+        actionButton("btnHide", "show/hide"),
+        id = "session-table",
+        class = "panel panel-default",
+        fixed = TRUE,
+        draggable = FALSE,
+        top = "auto",
+        left = 250,
+        right = "auto",
+        bottom = -15,
+        width = 1300,
+        height = "auto",
+        style = "info",
+        h3("Station sessions"),
+        div(style = "height: 200px; overflow-y: auto;", tableOutput(ns("stationTable")))
+      )
   )
 }
 
@@ -94,27 +97,6 @@ filterUI <- function(id) {
                 )
     ),
     uiOutput("user_selection")
-  )
-}
-
-stationTable <- function(id) {
-  ns <- NS(id)
-  div(
-    class = "outer",
-    absolutePanel(
-      id = "controls",
-      class = "panel panel-default",
-      fixed = TRUE,
-      draggable = FALSE,
-      top = "auto",
-      left = 300,
-      right = "auto",
-      bottom = 5,
-      width = 1500,
-      height = "auto",
-      h3("Station sessions"),
-      div(style = "max-height: 200px;", dataTableOutput("stationTable"))
-    )
   )
 }
 
@@ -162,9 +144,13 @@ mapModule <- function(input, output, session, data) {
   })
 
   # WIP table output
-  output$stationTable <- renderDataTable({
+  output$stationTable <- renderTable({
     tableData()
   })
+  
+  observeEvent(input$btnHide, {
+    shinyjs::toggle("session-table")
+  }) 
   
 }
 

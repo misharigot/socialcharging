@@ -12,8 +12,9 @@ source(config$baseClean)
 source("src/map/map_module.R")
 source("src/models/regression_test.R")
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
+  session$onSessionEnded(stopApp)
   
   scData <- reactive({
     df <- read_csv2(config$scDataset, col_names = FALSE)
