@@ -79,20 +79,17 @@ mapModuleUI <- function(id) {
 
 # Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
-  
+  # The default data without filters
   defaultMapData <- reactive({
     getMapData(plainData())
   })
   
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
-    print("mapData called")
     if (input$userId == "all") {
       getMapData(plainData())
     } else {
       plainData <- plainData()
-      print("input$userIds:")
-      print(input$userId)
       if (input$userId != "all") {
         plainData <- plainData %>% filter(user_id == input$userId)
       }
@@ -106,35 +103,33 @@ mapModule <- function(input, output, session, data) {
     }
   })
   
+  # This reactive function should be called to use the data
   plainData <- reactive({
-    print("plainData called")
     data %>% filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   })
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
-    print("handleDEFAULTMapCreation called")
     handleDefaultMapCreation(mapData = defaultMapData())
   })
   
+  # Update the user_id select input with the user_ids available
   observe({
     updateSelectInput(session, "userId", choices = c("Show all" = "all", plainData()$user_id))
   })
     
+  # Updates the map when userId input changes
   observeEvent(input$userId, {
-    print("handleMapCreation @ userId called")
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
   # Updates map when size input changes
   observeEvent(input$size, {
-    print("handleMapCreation @ size called")
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
   # Updates map when color input changes
   observeEvent(input$color, {
-    print("handleMapCreation @ color called")
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
 
@@ -147,12 +142,10 @@ mapModule <- function(input, output, session, data) {
 # Functions -------------------------------------------------------------------------------------------------------
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(mapDf) {
-  start.time <- Sys.time()
-  print("getMapData called")
-  
   mapDf <- data.table(mapDf)
-  mapDf[ , longitude := longitude / 100000000]
-  mapDf[ , latitude := latitude / 100000000]
+  coordDivision <- 100000000
+  mapDf[, longitude := longitude / coordDivision]
+  mapDf[, latitude := latitude / coordDivision]
   
   totalHours <- interval(min(mapDf$start_date), max(mapDf$end_date)) / 3600
   
@@ -170,10 +163,6 @@ getMapData <- function(mapDf) {
                                      / outlets) * 100 + 10, digits = 0))
   mapDf$total_sessions <- as.numeric(mapDf$total_sessions)
   mapDf$total_charged <- as.numeric(mapDf$total_charged)
-  print("getMapData execution finished")
-  end.time <- Sys.time()
-  time.taken <- end.time - start.time
-  print(time.taken)
   return(mapDf)
 }
 
