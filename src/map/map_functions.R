@@ -42,9 +42,11 @@ createPallete <- function(mapData, input = "occ_perc") {
 # Returns color values
 createColors <- function(values) {
   if (length(unique(values)) > 1) { # can only make bins of more than 1 value
-    colorBin("plasma", values, 5, pretty = FALSE)
+    colorFactor("plasma", values)
+    # colorBin(palette = "plasma", domain = values, 5, pretty = TRUE)
   } else {
     colorNumeric(palette = "plasma", domain = values)
+    # colorFactor("plasma", values)
   }
 }
 

@@ -140,6 +140,12 @@ mapModule <- function(input, output, session, data) {
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
+
+# source(config$baseClean)
+df <- read_csv2(config$scDataset, col_names = FALSE)
+
+df <- cleanDataframe(df)
+
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(mapDf) {
   mapDf <- data.table(mapDf)
@@ -166,6 +172,15 @@ getMapData <- function(mapDf) {
   return(mapDf)
 }
 
+temp <- getMapData(df)
+temp <- temp %>%
+  filter(!is.na(total_charged))
+
+temp2 <- as.data.frame(fivenum(temp$total_charged))
+temp2$difference <- NULL
+temp3 <- as.data.frame(diff(temp2$`fivenum(temp$total_charged)`))
+temp3 <- rbind(0, temp3)
+
 # Render functions ------------------------------------------------------------------------------------------------
 
 mapId <- "map"
@@ -181,11 +196,9 @@ handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
   radius <- createCircleSize(mapData, sizeInput)
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
-  # pal <- createPallete(mapData)
-  # color <- createCircleColor(mapData, pal = pal)
-  # radius <- createCircleSize(mapData)
-  # values <- createLegendValues(mapData)
-  # title <- createLegendTitle()
+  
+  print(fivenum(values))
+  print(summary(values))
   
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
@@ -193,7 +206,7 @@ handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
     defaultCircles(mapData, radius, pal(mapData$total_charged)) %>%
     addLegend("bottomright",
               pal = pal,
-              values = values,
+              values = summary(values),
               title = title,
               layerId = "colorLegend"
     )
@@ -210,13 +223,16 @@ handleMapCreation <- function(sizeInput, colorInput, mapData) {
   radius <- createCircleSize(mapData, sizeInput)
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
-
+  
+  print(fivenum(values))
+  print(summary(values))
+  
   leafletProxy(mapId, data = mapData) %>% 
     clearShapes() %>% 
     defaultCircles(mapData, radius, color) %>%
     addLegend("bottomright",
               pal = pal,
-              values = values,
+              values = summary(values),
               title = title,
               layerId = "colorLegend")
 }
