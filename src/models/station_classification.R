@@ -15,11 +15,11 @@ source(config$baseClean)
 divideCategory <- function(x) {
   kwhSummary <- summary(x)
   med <- kwhSummary[3]
-  outVector <- rep(0,length(x))
-  for(i in 1:length(x)){
-    if(x[i] > med){
+  outVector <- rep(0, length(x))
+  for (i in 1:length(x)) {
+    if(x[i] > med) {
       outVector[i] <- "H"  
-    }else{
+    } else {
       outVector[i] <- "L"
     }
   }
@@ -29,14 +29,14 @@ divideCategory <- function(x) {
 #change class name fancy
 changeName <- function(x) {
   res <- switch(x,
-                "HHH"="LadyOfTheEvening",
-                "HHL"="ParkingSpace",
-                "HLL"="MarriedToThisStation",
-                "HLH"="LateNightCharging",
-                "LHH"="WorkerBee",
-                "LLH"="PowerBank",
-                "LLL"="ForeverAlone",
-                "LHL"="HitandRun")
+                "HHH" = "LadyOfTheEvening",
+                "HHL" = "ParkingSpace",
+                "HLL" = "MarriedToThisStation",
+                "HLH" = "LateNightCharging",
+                "LHH" = "WorkerBee",
+                "LLH" = "PowerBank",
+                "LLL" = "ForeverAlone",
+                "LHL" = "HitandRun")
   return(res)
 }
 
