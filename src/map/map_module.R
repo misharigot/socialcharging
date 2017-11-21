@@ -286,6 +286,3 @@ chargingStationPopup <- function(id, lat, lng, mapData) {
   
   leafletProxy(mapId) %>% addPopups(lng, lat, content, layerId = id)
 }
-
-
-
