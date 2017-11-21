@@ -6,11 +6,11 @@ library(RColorBrewer)
 library(scales)
 library(lattice)
 library(plotly)
-library(dplyr)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
+source("src/models/regression_test.R")
 
 server <- function(input, output) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
@@ -28,7 +28,6 @@ server <- function(input, output) {
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   # Output ----------------------------------------------------------------------------------------------------------
-  
   output$table1 <- renderDataTable({
     scData()
   })
@@ -130,4 +129,3 @@ server <- function(input, output) {
     ranges$y <- NULL
   })
 }
-
