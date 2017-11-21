@@ -55,21 +55,21 @@ mapModuleUI <- function(id) {
                                 selected = "charged_kwh"
                     ),
                     tags$hr(),
-                    filterUI("filterSelection")
+                    filterUI("filterSelection"),
+                    tags$hr(),
+                    actionButton(ns("btnHide"), "Show/Hide Table")
       ),
       absolutePanel(
-        actionButton("btnHide", "show/hide"),
-        id = "session-table",
+        id = ns("session-table"),
         class = "panel panel-default",
         fixed = TRUE,
         draggable = FALSE,
         top = "auto",
-        left = 250,
+        left = 300,
         right = "auto",
-        bottom = -15,
+        bottom = 10,
         width = 1300,
         height = "auto",
-        style = "info",
         h3("Station sessions"),
         div(style = "height: 200px; overflow-y: auto;", tableOutput(ns("stationTable")))
       )
@@ -149,7 +149,7 @@ mapModule <- function(input, output, session, data) {
   })
   
   observeEvent(input$btnHide, {
-    shinyjs::toggle("session-table")
+    shinyjs::toggle("session-table", anim = TRUE, animType = "slide")
   }) 
   
 }

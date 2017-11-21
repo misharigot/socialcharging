@@ -19,7 +19,7 @@ body, label, input, button, select {
 }
 h1, h2, h3, h4 { font-weight: 400; }
 
-#controls {
+#controls, #map-session-table {
   /* Appearance */
   background-color: white;
   padding: 0 20px 20px 20px;
@@ -28,11 +28,6 @@ h1, h2, h3, h4 { font-weight: 400; }
   opacity: 1;
   zoom: 0.9;
   transition: opacity 500ms 1s;
-}
-#controls:hover {
-  /* Fade in while hovering */
-  opacity: 1;
-  transition-delay: 0;
 }
 
 /* Position and style citation */
