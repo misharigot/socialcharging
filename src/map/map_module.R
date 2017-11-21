@@ -161,7 +161,9 @@ mapModule <- function(input, output, session, data) {
   })
   
   tableData <- reactive({
-    if (is.null(input$map_shape_click)) {return(NULL)}
+    if (is.null(input$map_shape_click)) {
+      return(NULL
+    )}
     print(input$map_shape_click)
     sessions <- prepTableDf()
     isolate({
@@ -227,9 +229,15 @@ mapId <- "map"
 
 # Creates the default leaflet map without user input
 handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
-  if (length(sizeInput) == 0) {return()}
-  if (length(colorInput) == 0) {return()}
-  if (nrow(mapData) == 0) {return()}
+  if (length(sizeInput) == 0) {
+    return()
+  }
+  if (length(colorInput) == 0) {
+    return()
+  }
+  if (nrow(mapData) == 0) {
+    return()
+  }
   
   pal <- createPallete(mapData, colorInput)
   color <- createCircleColor(mapData, colorInput, pal)
@@ -256,9 +264,15 @@ handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
 
 # Creates a leaflet map based on user input
 handleMapCreation <- function(sizeInput, colorInput, mapData) {
-  if (length(sizeInput) == 0) {return()}
-  if (length(colorInput) == 0) {return()}
-  if (nrow(mapData) == 0) {return()}
+  if (length(sizeInput) == 0) {
+    return()
+  }
+  if (length(colorInput) == 0) {
+    return()
+  }
+  if (nrow(mapData) == 0) {
+    return()
+  }
   
   pal <- createPallete(mapData, colorInput)
   color <- createCircleColor(mapData, colorInput, pal)
