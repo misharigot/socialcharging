@@ -110,7 +110,7 @@ mapModule <- function(input, output, session, data) {
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
-    handleDefaultMapCreation(mapData = defaultMapData())
+    handleDefaultMapCreation(input$size, input$color, mapData = defaultMapData())
   })
   
   # Update the user_id select input with the user_ids available
@@ -171,12 +171,21 @@ getMapData <- function(mapDf) {
 mapId <- "map"
 
 # Creates the default leaflet map without user input
-handleDefaultMapCreation <- function(mapData) {
-  pal <- createPallete(mapData)
-  color <- createCircleColor(mapData, pal = pal)
-  radius <- createCircleSize(mapData)
-  values <- createLegendValues(mapData)
-  title <- createLegendTitle()
+handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
+  if (length(sizeInput) == 0) {return()}
+  if (length(colorInput) == 0) {return()}
+  if (nrow(mapData) == 0) {return()}
+  
+  pal <- createPallete(mapData, colorInput)
+  color <- createCircleColor(mapData, colorInput, pal)
+  radius <- createCircleSize(mapData, sizeInput)
+  values <- createLegendValues(mapData, colorInput)
+  title <- createLegendTitle(colorInput)
+  # pal <- createPallete(mapData)
+  # color <- createCircleColor(mapData, pal = pal)
+  # radius <- createCircleSize(mapData)
+  # values <- createLegendValues(mapData)
+  # title <- createLegendTitle()
   
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
