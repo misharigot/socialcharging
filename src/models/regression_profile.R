@@ -16,27 +16,27 @@ df <- read_csv2(config$scDataset, col_names = FALSE)
 
 df <- cleanSecondDf(df)
 
-# Minimum amount of sessions required in order to get the
-minUserSessions <- 10
-
 # Data preperation --------------------------------------------------------
 
-#Create dataframe with user classifications (profiles) 
-userProfiles <- userClassificationDf(sessionClassificationDf(cleanDf(df)))
-
-#Create dataframe with station classifications 
-
-
-# Gets the sessions for the specified user_profile
-userSessions <- subset(userProfiles, userProfiles$class == 3)
-
-if(nrow(userSessions) >= minUserSessions){
+prepareDataForLM <- function(df, userClass){
   
-  # Gets the day of the week from the date
-  df$dayOfWeek <- weekdays(as.Date(df$start_date))
+  # Create dataframe with user classifications 
+  userClassifications <- userClassificationDf(sessionClassificationDf(cleanDf(df)))
   
-  df$hour <- as.numeric(format(round(df$start_date, "hours"), format = "%H"))
+  # Add user classifications to df
+  df$user_class <- userClassifications$class[match(df$user_id, userClassifications$user_id)]
   
+  # Makes subset of the sessions for the specified user classification
+  if(userClass != 0){
+    specificUserSessions <- subset(userClassifications, userClassifications$class == userClass)
+    # filter on users with chosen classification
+    df <- df %>%
+      filter(
+        user_id %in% specificUserSessions$user_id 
+      )
+  }
+  
+  # Filter corrupted data
   df <- df %>%
     filter(
       !is.na(hours_elapsed),
@@ -45,29 +45,63 @@ if(nrow(userSessions) >= minUserSessions){
       !is.na(end_date),
       !is.na(car),
       !is.na(charged_kwh),
-      user_id %in% userSessions$user_id #filter on users with certain classification
-    ) 
+      !is.na(user_class)
+    )
   
-}else{
-  print("User does not have enough sessions to make a prediction")
+  # Gets the day of the week from the date
+  df$dayOfWeek <- weekdays(as.Date(df$start_date))
+  # Gets the starting hour of session
+  df$hour <- as.numeric(format(round(df$start_date, "hours"), format = "%H"))
+  
   
 }
-
 # Create linear model ----------------------------------------------------
 
-# build linear model to predict end_date with the following parameters
+createLinearModelData <- function(df, isTest){
 
-# Create train and test data from the data
-set.seed(100)
-trainingRowIndex <- sample(1:nrow(df), 0.7 * nrow(df))
-trainingData <-
-  df[trainingRowIndex, ]  # 70% training data
-testData <- df[-trainingRowIndex, ]   # remaining test data
-
-# Create linear model
-lm_df <<-
-  lm(hours_elapsed ~ charged_kwh,
-     data = trainingData)
+  if(isTest){
+    #if the prediction is only for one classification
+    
+    # create train and test data from the data
+    set.seed(100)
+    trainingRowIndex <- sample(1:nrow(df), 0.7 * nrow(df))
+    trainingData <-
+      df[trainingRowIndex, ]  # 70% training data
+    testData <- df[-trainingRowIndex, ]   # remaining test data
+    
+    # create linear model
+    lm_df <<-
+      lm(hours_elapsed ~ charged_kwh,
+         data = trainingData)
+    chargingSessionPredict <<- predict(lm_df, testData)
+    
+  } else {
+    # if the prediction has to be made for all classifications individually
+    print("before loop")
+    i <- 1
+    userClassificationsUnique <- c(unique(df$user_class))
+    
+    # predict session time for each profile
+    while(i <= length(userClassificationsUnique)) {
+      print(i)
+      # create a df for current user classification 
+      usersWithSpecificClass <- df %>%
+        filter(user_class == userClassificationsUnique[i])
+      
+      # create linear model
+      lm_df <- lm(hours_elapsed ~ charged_kwh, data = usersWithSpecificClass)
+      
+      # add predictions to sessions
+      usersWithSpecificClass$user_pred <- predict(lm_df, usersWithSpecificClass)
+      
+      # df <- base::merge(df, usersWithSpecificClass[, c("session_id", "user_pred")], by="session_id")
+      i <- i + 1
+    }
+    
+  }
+  
+  return (df)
+}
 
 # Testing linear model ----------------------------------------------------
 
@@ -76,16 +110,13 @@ modelCoeffs <- modelSummary$coefficients
 rSquared <- modelSummary$r.squared
 adjRSquared <- modelSummary$adj.r.squared
 
-
-ChargingSessionPredict <<- predict(lm_df, testData)
-
 actual_predicts <- data.frame(cbind(actual = testData$hours_elapsed,
-                                    predicted = ChargingSessionPredict))
+                                    predicted = chargingSessionPredict))
 
 actual_predicts <- actual_predicts %>%
   filter(!is.na(actual_predicts$predicted))
 
-res_test <- testData$hours_elapsed - ChargingSessionPredict
+res_test <- testData$hours_elapsed - chargingSessionPredict
 
 # TEST Estimates are off by this many hours on average
 rmse_test <- sqrt(mean(res_test ^ 2))
