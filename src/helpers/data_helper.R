@@ -15,5 +15,6 @@ source("./src/models/regression_profile.R")
 df <- read_csv2(config$scDataset, col_names = FALSE)
 
 df <- cleanSecondDf(df)
-
-dataframeWithUserProfilePredictions <- createLinearModelData(prepareDataForLM(df,0),FALSE)
+cleanDf <- prepareDataForLM(df, 0)
+idsWithPreds <- createLinearModelData(cleanDf, FALSE)
+result <- base::merge(cleanDf, idsWithPreds, by = "session_id")
