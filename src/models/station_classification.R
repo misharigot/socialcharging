@@ -28,27 +28,16 @@ divideCategory <- function(x) {
 
 #change class name fancy
 changeName <- function(x) {
-  outVector <- rep(0,length(x))
-  for(i in 1:length(x)){
-    if(x[i] == "HHH"){
-      outVector[i] <- "LadyOfTheEvening"
-    }else if(x[i] == "HHL"){
-      outVector[i] <- "ParkingSpace"
-    }else if(x[i] == "HLL"){
-      outVector[i] <- "MarriedToThisStation"
-    }else if(x[i] == "HLH"){
-      outVector[i] <- "LateNightCharging"
-    }else if(x[i] == "LHH"){
-      outVector[i] <- "WorkerBee"
-    }else if(x[i] == "LLH"){
-      outVector[i] <- "PowerBank"
-    }else if(x[i] == "LLL"){
-      outVector[i] <- "ForeverAlone"
-    }else{
-      outVector[i] <- "HitandRun"
-    }
-  }
-  return(outVector)
+  res <- switch(x,
+                "HHH"="LadyOfTheEvening",
+                "HHL"="ParkingSpace",
+                "HLL"="MarriedToThisStation",
+                "HLH"="LateNightCharging",
+                "LHH"="WorkerBee",
+                "LLH"="PowerBank",
+                "LLL"="ForeverAlone",
+                "LHL"="HitandRun")
+  return(res)
 }
 
 #dat cleaning and classification
@@ -64,7 +53,7 @@ cleanStationDf <- function(df) {
   df$occupation <- divideCategory(df$total_hours_elapsed)
   df$user_amount <- divideCategory(df$total_users)
   df$stationClass <- paste(df$occupation, df$user_amount, df$charging, sep = "")
-  df$stationClass <- changeName(df$stationClass)
+  df$stationClass <- lapply(df$stationClass, changeName)
   
   return(df) 
 }
@@ -73,6 +62,7 @@ cleanStationDf <- function(df) {
 
 # show the distribution of the station class
 countClass <- function(df){
+  df$stationClass <- as.character(df$stationClass)
   df %>%
     group_by(stationClass) %>%
     summarise(num = n()) %>%
