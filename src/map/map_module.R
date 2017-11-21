@@ -79,6 +79,11 @@ mapModuleUI <- function(id) {
 
 # Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
+  
+  defaultMapData <- reactive({
+    getMapData(plainData())
+  })
+  
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
     print("mapData called")
@@ -109,13 +114,18 @@ mapModule <- function(input, output, session, data) {
   # The rendered leaflet map
   output$map <- renderLeaflet({
     print("handleDEFAULTMapCreation called")
-    handleDefaultMapCreation(mapData = mapData())
+    handleDefaultMapCreation(mapData = defaultMapData())
   })
   
   observe({
     updateSelectInput(session, "userId", choices = c("Show all" = "all", plainData()$user_id))
   })
     
+  observeEvent(input$userId, {
+    print("handleMapCreation @ userId called")
+    handleMapCreation(input$size, input$color, mapData = mapData())
+  })
+  
   # Updates map when size input changes
   observeEvent(input$size, {
     print("handleMapCreation @ size called")
@@ -237,8 +247,8 @@ defaultCircles <- function(leaflet, mapData, radius, color) {
     fillColor = color)
 }
 
-geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
-          position = position_stack(vjust = 0.5))
+# geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
+#           position = position_stack(vjust = 0.5))
 
 # Adds a popup to leaflet map when a node is clicked
 chargingStationPopup <- function(id, lat, lng, mapData) {
