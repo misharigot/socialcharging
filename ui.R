@@ -135,6 +135,7 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab5",
               fluidRow(
+                box(uiOutput("corColumns")),
                 box(withSpinner(plotOutput("cor1")), width = 12)
               )
       ),
@@ -144,9 +145,9 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "predtab7",
-        fluidRow(
-          box(withSpinner(plotOutput("pred7")), width = 16)
-        )
+              fluidRow(
+                box(withSpinner(plotOutput("pred7")), width = 16)
+              )
       ),
 # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",

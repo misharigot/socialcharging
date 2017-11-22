@@ -6,6 +6,7 @@ library(RColorBrewer)
 library(scales)
 library(lattice)
 library(plotly)
+library(corrplot)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -21,15 +22,46 @@ server <- function(input, output) {
     return(df)
   })
   
-  callModule(module = mapModule, id = "map", data = scData())
+  # Returns the numberfied dataframe
+  numberfiedDf <- reactive({
+    source("src/models/Interactive_correlation.R")
+    corDf <- convertDfToNumeric(sessionClassificationDf(cleanDf(scData())))
+    return(corDf)
+  })
   
-  # maybe a javascript to reset the ranges variable on active view change?
+  # Returns the name of the numberfied dataframe
+  dfNames <- reactive({
+    return(names(numberfiedDf()))
+  })
+  
+  callModule(module = mapModule, id = "map", data = scData())
+
+  output$user_selection <- renderUI({
+    selectInput("users",
+                "Select a user",
+                isolate(as.vector(scData()$user_id))
+    )
+  })
+  
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   # Output ----------------------------------------------------------------------------------------------------------
+  
+  output$corColumns <- renderUI({
+      selectInput("columns", textOutput("minimumReq"), as.list(dfNames()), multiple = TRUE)
+  })
+  
   output$table1 <- renderDataTable({
     scData()
+  })
+  
+  output$minimumReq <- renderText({
+    if(length(input$columns) < 2){
+      "Select at least 2  columns"
+    } else {
+      "Select columns"
+    }
   })
   
   output$plot1 <- renderPlot({
@@ -90,8 +122,12 @@ server <- function(input, output) {
   })
   
   output$cor1 <- renderPlot({
-    source("src/models/regression_test.R")
-    return(plotCorrelationResult(scData()))
+    if(length(input$columns) < 2) {
+      source("src/models/Interactive_correlation.R")
+      return(plotCorrelationplot(scData()))
+    } else {
+      return(corrplot.mixed(cor(numberfiedDf()[,input$columns])))
+    }
   })
   
   output$pred6 <- renderPlotly({
