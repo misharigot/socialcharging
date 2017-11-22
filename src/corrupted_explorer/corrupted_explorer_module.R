@@ -14,17 +14,15 @@ corruptedExplorerModuleUI <- function(id) {
           fluidRow(
             # Filters
             box(
-              h4("Delete NA data"),
-              uiOutput(ns("columnName")),
-              h4("Corrupted data"),
+              h4("Omit NA data"),
+              uiOutput(ns("valuesNA")),
               # checkboxGroupInput("checkGroup", 
               #                    h3("Checkbox group"), 
               #                    choices = list("corrupt" = TRUE, 
               #                                   "session" = TRUE),
               #                    selected = 1)),
-              checkboxInput(ns("corrupt"), "delete", value = FALSE),
-              h4("Have low session under 10"),
-              checkboxInput(ns("session"), "delete", value = FALSE),
+              checkboxInput(ns("corruptDate"), "Corrupted dates", value = FALSE),
+              checkboxInput(ns("session"), "Omit sessions with users having less than 10 total sessions", value = FALSE),
               actionButton(ns("action"), "Action"), width = 2
             ),
             # box(
@@ -36,21 +34,25 @@ corruptedExplorerModuleUI <- function(id) {
             
             # Data 
             box(
-              withSpinner(plotOutput(ns("plot"))),
-              title = "static data "
+              withSpinner(plotOutput(ns("plot")))
             )
           )
   )
 }
 
 corruptedExplorerModule <- function(input, output, session, data) {
-  output$columnName <- renderUI({
+  output$valuesNA <- renderUI({
     ns <- session$ns
-    selectInput(ns("columnN"), textOutput("minimumReq"), as.list(names(data)), multiple = TRUE)
+    selectInput(ns("valuesNA"), textOutput("minimumReq"), as.list(names(data)), multiple = TRUE)
   })
   
   a <- reactive({
-      showDataStatusPlot(data, input$columnN, input$corrupt, input$session)
+      filters <- list(
+        "valuesNA" = input$valuesNA,
+        "corruptDate" = input$corruptDate,
+        "session" = input$session
+      )
+      showDataStatusPlot(data, filters)
   })
   
   output$plot <- renderPlot({
@@ -62,5 +64,10 @@ corruptedExplorerModule <- function(input, output, session, data) {
 }
 
 defaultPlot <- function(data) {
-  showDataStatusPlot(data)
+  filters <- c(
+    "valuesNA" = c(),
+    "corruptDate" = FALSE,
+    "session" = FALSE
+  )
+  showDataStatusPlot(data, filters)
 }

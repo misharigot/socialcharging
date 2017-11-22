@@ -151,32 +151,6 @@ ui <- dashboardPage(
       tabItem(tabName = "corruptTab",
               corruptedExplorerModuleUI(id = "corrupt")
       )
-
-      # tabItem(tabName = "static",
-      #         fluidRow(
-      #           box(h4("Delete NA data"),
-      #               uiOutput("columnName"),
-      #               h4("Corrupted data"),
-      #               # checkboxGroupInput("checkGroup", 
-      #               #                    h3("Checkbox group"), 
-      #               #                    choices = list("corrupt" = TRUE, 
-      #               #                                   "session" = TRUE),
-      #               #                    selected = 1)),
-      #               checkboxInput("corrupt", "delete", value = FALSE),
-      #               h4("Have low session under 10"),
-      #               checkboxInput("session", "delete", value = FALSE),
-      #               actionButton("action", "Action"),width = 2),
-      #           # box(
-      #           #   checkboxGroupInput("checkGroup",
-      #           #                      h3("Checkbox group"),
-      #           #                      choices = list("user_id" = "user_id",
-      #           #                                     "session_id" = "session_id"))
-      #           # ),
-      #           box(
-      #             withSpinner(plotOutput("plot11")),
-      #             title = "static data ")
-      #         )
-      # )
     )
   )
 )

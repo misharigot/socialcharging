@@ -29,10 +29,6 @@ server <- function(input, output) {
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   # Output ----------------------------------------------------------------------------------------------------------
-  # 
-  # output$columnName <- renderUI({
-  #   selectInput("columnN", textOutput("minimumReq"), as.list(namesDf()), multiple = TRUE)
-  # })
   
   output$table1 <- renderDataTable({
     scData()
@@ -72,13 +68,6 @@ server <- function(input, output) {
     source("src/plots/timeframe_vs_users.R")
     return(multiplotUserTimeframes(scData()))
   })
-  
-  # output$plot11 <- renderPlot({
-  #   source("src/plots/visulization_statistic_data.R")
-  #   if (input$action) {
-  #     return(showDataStatusPlot(scData(), input$columnN, input$corrupt, input$session))
-  #   }
-  # })
   
 # Prediction plots ------------------------------------------------------------------------------------------------
 

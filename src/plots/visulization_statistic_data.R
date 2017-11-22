@@ -9,19 +9,17 @@ library(plotly)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 
-# df <- read_csv2(config$scDataset, col_names = FALSE)
-# df <- cleanDataframe(df)
-
-# Returns a list with 2 spaces: 1. df filtered by user input and 2. the amount of rows unfiltered
-applyFilters <- function(df, columnName, corrupt, session) {
-  totalNRow <- nrow(df)
-  
-  if (corrupt) {
+df <- read_csv2(config$scDataset, col_names = FALSE)
+df <- cleanDataframe(df)
+a <- c("hello" = "goodbye")
+# Return the df filtered by user input
+applyFilters <- function(df, filters) {
+  if (filters[["corruptDate"]]) {
     df <- df %>% 
       filter(!(start_date == end_date))
   }
   
-  if (session) {
+  if (filters[["session"]]) {
     count <- df %>% 
       group_by(user_id) %>% 
       summarise(sessionNum = n_distinct(session_id))
@@ -32,31 +30,33 @@ applyFilters <- function(df, columnName, corrupt, session) {
       filter(sessionNum >= 10)
   }
   
-  if (length(columnName) > 0) {
-    for (i in 1:length(columnName)) {
-      df <- df %>% 
-        filter(!is.na(df[,columnName[i]]))
+  valuesNA <- filters[["valuesNA"]]
+  if (!is.na(valuesNA)) {
+    if (length(valuesNA) > 0) {
+      for (i in 1:length(valuesNA)) {
+        df <- df %>% 
+          filter(!is.na(df[,valuesNA[i]]))
+      }
     }
   }
-  resultList <- list(df, totalNRow)
-  return(resultList)
+  return(df)
 }
 
-# Create the table that the barchart plot expects
-createResultTable <- function(resultList) {
-  df <- resultList[[1]]
-  totalNRow <- resultList[[2]]
-  
-  dataStat <- c("useable", "unuseable")
+# Create the data frame that the barchart plot expects
+createResultData <- function(df, originalNRow) {
+  statuses <- c("usable", "unusable")
   data <- c("data", "data")
-  num <- rep(0, 2)
-  num[1] <- nrow(df)
-  num[2] <- totalNRow - nrow(df)
+  
+  rowCount <- rep(0, 2)
+  rowCount[1] <- nrow(df)
+  rowCount[2] <- originalNRow - nrow(df)
+  
   percentage <- rep(0,2)
-  percentage[1] <- paste0(round(num[1] / totalNRow * 100, digits = 2), '%')
-  percentage[2] <- paste0(round(num[2] / totalNRow * 100, digits = 2), '%')
-  dataTable <- data.frame(type = data, status = dataStat, count = num, percentage = percentage)
-  return(dataTable)
+  percentage[1] <- paste0(round(rowCount[1] / originalNRow * 100, digits = 2), '%')
+  percentage[2] <- paste0(round(rowCount[2] / originalNRow * 100, digits = 2), '%')
+  
+  resultDf <- data.frame(type = data, status = statuses, count = rowCount, percentage = percentage)
+  return(resultDf)
 }
 
 # Create the barchart plot
@@ -69,14 +69,15 @@ dataStatusPlot <- function(dataTable) {
     guides( fill = guide_legend(title = "Status")) +
     theme( legend.justification = c(1, 0), legend.position = c(1, 0), legend.text = element_text(size = 18),
            legend.title = element_text(size = 20)) +
-    ggtitle("Our Dataset Status") +
+    ggtitle("Usable data ratio") +
     theme(plot.title = element_text( hjust = 0.5, size = 20))
-  # p <- ggplotly(p)
   return(p)
 }
 
-showDataStatusPlot <- function(scData, columName = c(), corrupt = FALSE, session = FALSE){
-  dataStatusPlot(createResultTable(applyFilters(scData, columName, corrupt, session)))
+showDataStatusPlot <- function(scData, filters){
+  filteredDf <- applyFilters(scData, filters)
+  resultData <- createResultData(filteredDf, nrow(scData))
+  dataStatusPlot(resultData)
 }
 
 # showDataStatusPlot(df,columName,corrupt,session)
