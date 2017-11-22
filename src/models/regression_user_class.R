@@ -64,7 +64,7 @@ createLinearModelDataUser <- function(df, isTest){
     
     if (nrow(sessionsWithSpecificClass) > minimumSessions) {
       # Create linear model
-      lm_df <- lm(hours_elapsed ~ hour + charged_kwh + kw_charge_point_speed, data = sessionsWithSpecificClass)
+      lm_df <- lm(hours_elapsed ~ hour + charged_kwh, data = sessionsWithSpecificClass)
       
       # Add predictions to sessions
       sessionsWithSpecificClass$user_pred <- predict(lm_df, sessionsWithSpecificClass)
