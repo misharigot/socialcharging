@@ -6,7 +6,9 @@ library(leaflet)
 # Functions --------------------------------------------------------------------------------------------------------------
 # Create a pallete for the circles and the legend
 createPallete <- function(mapData, input = "occ_perc") {
-  if (length(input) == 0) {return()}
+  if (length(input) == 0) {
+    return()
+  }
   if (input == "charged_kwh") {
     values <- mapData$total_charged
     pal <- createColors(values)
@@ -24,7 +26,6 @@ createPallete <- function(mapData, input = "occ_perc") {
   
   if (input == "occ_perc") {
     values <- mapData$popularity_score
-    # values <- round(values, digits = 2)
     pal <- createColors(values)
   }
   
@@ -42,9 +43,15 @@ createPallete <- function(mapData, input = "occ_perc") {
 
 # Returns color values
 createColors <- function(values, input = "none") {
-  if (length(unique(values)) > 1) { # can only make bins of more than 1 value
-    if(input == "users_station"){
-      colorBin(palette = "plasma", domain = values, bins = 5, pretty = TRUE)
+  if (length(unique(values)) > 1) {
+    # can only make bins of more than 1 value
+    if (input == "users_station") {
+      colorBin(
+        palette = "plasma",
+        domain = values,
+        bins = 5,
+        pretty = TRUE
+      )
     } else {
       colorFactor("plasma", values)
     }
@@ -55,8 +62,10 @@ createColors <- function(values, input = "none") {
 
 # Create the color of the circles
 createCircleColor <- function(mapData, input = "charged_kwh", pal) {
-  if (length(input) == 0) {return()}
-
+  if (length(input) == 0) {
+    return()
+  }
+  
   if (input == "charged_kwh") {
     color <- pal(mapData$total_charged)
   }
@@ -86,7 +95,9 @@ createCircleColor <- function(mapData, input = "charged_kwh", pal) {
 # Create the radius of the circles
 createCircleSize <- function(mapData, input = "occ_perc") {
   logMultiplier <- 30
-  if (length(input) == 0) {return()}
+  if (length(input) == 0) {
+    return()
+  }
   
   if (input == "charged_kwh") {
     radius <- log(mapData$total_charged) * logMultiplier
@@ -101,15 +112,18 @@ createCircleSize <- function(mapData, input = "occ_perc") {
   }
   
   if (input == "occ_perc") {
-    radius <- log(mapData$popularity_score / max(mapData$popularity_score) * 300) * logMultiplier
+    radius <-
+      log(mapData$popularity_score / max(mapData$popularity_score) * 300) * logMultiplier
   }
   
   if (input == "eff_perc") {
-    radius <- log(mapData$efficiency_score / max(mapData$efficiency_score) * 300) * logMultiplier
+    radius <-
+      log(mapData$efficiency_score / max(mapData$efficiency_score) * 300) * logMultiplier
   }
   
   if (input == "users_station") {
-    radius <- log(mapData$total_users / max(mapData$total_users) * 300) * logMultiplier
+    radius <-
+      log(mapData$total_users / max(mapData$total_users) * 300) * logMultiplier
   }
   
   return(radius)
@@ -117,7 +131,9 @@ createCircleSize <- function(mapData, input = "occ_perc") {
 
 # Create the values for the legend
 createLegendValues <- function(mapData, input = "charged_kwh") {
-  if (length(input) == 0) {return()}
+  if (length(input) == 0) {
+    return()
+  }
   if (input == "charged_kwh") {
     value <- mapData$total_charged
   }
@@ -132,7 +148,6 @@ createLegendValues <- function(mapData, input = "charged_kwh") {
   
   if (input == "occ_perc") {
     value <- mapData$popularity_score
-    # value <- round(value, digits = 2)
   }
   
   if (input == "eff_perc") {
@@ -147,7 +162,9 @@ createLegendValues <- function(mapData, input = "charged_kwh") {
 
 # Create the legend title
 createLegendTitle <- function(input = "charged_kwh") {
-  if (length(input) == 0) {return()}
+  if (length(input) == 0) {
+    return()
+  }
   if (input == "charged_kwh") {
     title <- "Charged kWh"
   }
