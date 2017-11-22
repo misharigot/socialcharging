@@ -1,11 +1,5 @@
 # Writes a csv to data folder with predictions
-library(ggplot2)
 library(config)
-library(readr)
-library(lubridate)
-library(tidyr)
-library(purrr)
-library(corrplot)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
