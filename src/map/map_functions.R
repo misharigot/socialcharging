@@ -8,37 +8,50 @@ library(leaflet)
 createPallete <- function(mapData, input = "occ_perc") {
   if (length(input) == 0) {return()}
   if (input == "charged_kwh") {
-    pal <- colorBin("plasma", mapData$total_charged, 5, pretty = FALSE)
+    values <- mapData$total_charged
+    pal <- createColors(values)
   }
   
   if (input == "total_hours_elapsed") {
-    pal <- colorBin("plasma", mapData$total_hours_elapsed, 5, pretty = FALSE)
+    values <- mapData$total_hours_elapsed
+    pal <- createColors(values)
   }
   
   if (input == "total_sessions") {
-    pal <- colorBin("plasma", mapData$total_sessions, 5, pretty = FALSE)
+    values <- mapData$total_sessions
+    pal <- createColors(values)
   }
   
   if (input == "occ_perc") {
-    value <- mapData$popularity_score / max(mapData$popularity_score) * 300
-    pal <- colorBin("plasma", value, 5, pretty = FALSE)
+    values <- mapData$popularity_score / max(mapData$popularity_score) * 300
+    pal <- createColors(values)
   }
   
   if (input == "eff_perc") {
-    value <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
-    pal <- colorBin("plasma", value, 5, pretty = FALSE)
+    values <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
+    pal <- createColors(values)
   }
   
   if (input == "users_station") {
-    value <- mapData$total_users / max(mapData$total_users) * 300
-    pal <- colorBin("plasma", value, 5, pretty = FALSE)
+    values <- mapData$total_users / max(mapData$total_users) * 300
+    pal <- createColors(values)
   }
   return(pal)
+}
+
+# Returns color values
+createColors <- function(values) {
+  if (length(unique(values)) > 1) { # can only make bins of more than 1 value
+    colorBin("plasma", values, 5, pretty = FALSE)
+  } else {
+    colorNumeric(palette = "plasma", domain = values)
+  }
 }
 
 # Create the color of the circles
 createCircleColor <- function(mapData, input = "charged_kwh", pal) {
   if (length(input) == 0) {return()}
+
   if (input == "charged_kwh") {
     color <- pal(mapData$total_charged)
   }

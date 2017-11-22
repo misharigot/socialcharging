@@ -8,10 +8,8 @@ source(config$baseClean)
 source("src/models/user_class.R")
 set.seed(100)
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanSecondDf(df)
-
-
+# df <- read_csv2(config$scDataset, col_names = FALSE)
+# df <- cleanSecondDf(df)
 
 # Data cleaning -----------------------------------------------------------------------------------------------
 cleanDataChargedKwh <- function(data) {
@@ -29,8 +27,6 @@ cleanDataTime <- function(data) {
     filter(!is.na(start_date), !is.na(end_date), !is.na(hours_elapsed), hours_elapsed < 56, !is.na(charged_kwh)) %>%
     select(charged_kwh, hours_elapsed, start_date_hour)
 }
-
-
 
 # Kmeans Clustering -------------------------------------------------------------------------------------------
 
@@ -111,4 +107,3 @@ plotUserCluster2 <- function(scData) {
 # dunnPlot(cleanDfCharged)
 # dunnPlot(cleanDfTime)
 # dunn(clusters = clusteredTimeKm$cluster, Data = cleanDfTime)
-

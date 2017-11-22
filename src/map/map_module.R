@@ -1,7 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(leaflet)
-source("src/helpers/coordinate_helper.R")
+library(data.table)
 source("src/map/map_functions.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
@@ -53,46 +53,74 @@ mapModuleUI <- function(id) {
                                 selected = "charged_kwh"
                     ),
                     tags$hr(),
-                    filterUI("filterSelection")
+                    h3("Filter controls"),
+                    selectInput(ns("station_profiles"),
+                                "Station profiles",
+                                c(
+                                  "All station profiles" = "all",
+                                  "Profile based regression" = "profile_reg"
+                                )
+                    ),
+                    selectInput(ns("user_profiles"),
+                                "User profiles",
+                                c(
+                                  "All user profiles" = "all",
+                                  "User based regression" = "user_reg"
+                                )
+                    ),
+                    selectInput(ns("userId"),
+                                "Users",
+                                c("Show all" = "all")
+                    ) 
         )
   )
   
 }
 
-
-filterUI <- function(id) {
-  ns <- NS(id)
-  
-  tagList(
-    h3("Filter controls"),
-    selectInput(ns("station_profiles"),
-                "Station profiles",
-                c(
-                  "All station profiles" = "station_profiles",
-                  "Profile based regression" = "profile_reg"
-                )
-    ),
-    selectInput(ns("user_profiles"),
-                "User profiles",
-                c(
-                  "All user profiles" = "user_profiles",
-                  "User based regression" = "user_reg"
-                )
-    ),
-    uiOutput("user_selection")
-  )
-}
-
 # Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
+  # The default data without filters
+  defaultMapData <- reactive({
+    getMapData(plainData())
+  })
+  
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
-    getMapData(data)
+    if (input$userId == "all") {
+      getMapData(plainData())
+    } else {
+      plainData <- plainData()
+      if (input$userId != "all") {
+        plainData <- plainData %>% filter(user_id == input$userId)
+      }
+      if (input$station_profiles != "all") {
+        plainData <- plainData %>% filter(station_profiles == input$station_profiles)
+      }
+      if (input$user_profiles != "all") {
+        plainData <- plainData %>% filter(user_profile == input$user_profiles)
+      }
+      getMapData(plainData)
+    }
+  })
+  
+  # This reactive function should be called to use the data
+  plainData <- reactive({
+    data %>% filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   })
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
-    handleDefaultMapCreation(mapData = mapData())
+    handleDefaultMapCreation(mapData = defaultMapData())
+  })
+  
+  # Update the user_id select input with the user_ids available
+  observe({
+    updateSelectInput(session, "userId", choices = c("Show all" = "all", plainData()$user_id))
+  })
+    
+  # Updates the map when userId input changes
+  observeEvent(input$userId, {
+    handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
   # Updates map when size input changes
@@ -100,10 +128,11 @@ mapModule <- function(input, output, session, data) {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
+  # Updates map when color input changes
   observeEvent(input$color, {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
-  
+
   # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
@@ -112,14 +141,11 @@ mapModule <- function(input, output, session, data) {
 
 # Functions -------------------------------------------------------------------------------------------------------
 # Returns a data set prepared for the leaflet map, based on SC data
-getMapData <- function(scData) {
-  mapDf <- scData %>%
-    filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
-  
-  mapDf$latitude <- sapply(mapDf$latitude, formatCoordinate, "latitude")
-  mapDf$longitude <- sapply(mapDf$longitude, formatCoordinate, "longitude")
-  mapDf$latitude <- as.numeric(mapDf$latitude)
-  mapDf$longitude <- as.numeric(mapDf$longitude)
+getMapData <- function(mapDf) {
+  mapDf <- data.table(mapDf)
+  coordDivision <- 100000000
+  mapDf[, longitude := longitude / coordDivision]
+  mapDf[, latitude := latitude / coordDivision]
   
   totalHours <- interval(min(mapDf$start_date), max(mapDf$end_date)) / 3600
   
@@ -145,7 +171,9 @@ getMapData <- function(scData) {
 mapId <- "map"
 
 # Creates the default leaflet map without user input
-handleDefaultMapCreation <- function(mapData) {
+handleDefaultMapCreation <-  function(mapData) {
+  if (nrow(mapData) == 0) {return()}
+  
   pal <- createPallete(mapData)
   color <- createCircleColor(mapData, pal = pal)
   radius <- createCircleSize(mapData)
@@ -168,6 +196,7 @@ handleDefaultMapCreation <- function(mapData) {
 handleMapCreation <- function(sizeInput, colorInput, mapData) {
   if (length(sizeInput) == 0) {return()}
   if (length(colorInput) == 0) {return()}
+  if (nrow(mapData) == 0) {return()}
   
   pal <- createPallete(mapData, colorInput)
   color <- createCircleColor(mapData, colorInput, pal)
@@ -209,8 +238,8 @@ defaultCircles <- function(leaflet, mapData, radius, color) {
     fillColor = color)
 }
 
-geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
-          position = position_stack(vjust = 0.5))
+# geom_text(stat = "count", aes(label = as.character(round((..count..) / sum(..count..) * 100), digits = 2), "%"),
+#           position = position_stack(vjust = 0.5))
 
 # Adds a popup to leaflet map when a node is clicked
 chargingStationPopup <- function(id, lat, lng, mapData) {
