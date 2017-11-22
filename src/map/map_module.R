@@ -103,7 +103,7 @@ mapModule <- function(input, output, session, data) {
   })
   
   prepTableDf <- reactive({
-    prepTableData(data)
+    prepTableData(plainData())
   })
   
   # Converts raw SC data into data prepped for the leaflet map
@@ -207,7 +207,7 @@ getMapData <- function(mapDf) {
   mapDf[, longitude := longitude / coordDivision]
   mapDf[, latitude := latitude / coordDivision]
   
-  totalHours <- interval(min(mapDf$start_date), max(mapDf$end_date)) / 3600
+  totalHours <- interval(min(as.Date(mapDf$start_date)), max(as.Date(mapDf$end_date))) / 3600
   
   mapDf <- mapDf %>%
     group_by(longitude, latitude) %>%

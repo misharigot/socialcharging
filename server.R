@@ -13,6 +13,13 @@ source(config$baseClean)
 source("src/map/map_module.R")
 source("src/models/regression_test.R")
 
+# df1 <- read_csv2(config$scDataset, col_names = FALSE)
+# df1 <- cleanDataframe(df1)
+# 
+# df2 <- read.csv2(config$dataFolder, sep = ",")
+# df2 <- changeStructures(df2)
+# str(df2)
+
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
   session$onSessionEnded(stopApp)
@@ -20,6 +27,12 @@ server <- function(input, output, session) {
   scData <- reactive({
     df <- read_csv2(config$scDataset, col_names = FALSE)
     df <- cleanDataframe(df)
+    return(df)
+  })
+  
+  regressionData <- reactive({
+    df <- read.csv2(config$dataFolder, sep = ",")
+    df <- changeStructures(df)
     return(df)
   })
   
@@ -35,12 +48,12 @@ server <- function(input, output, session) {
     return(names(numberfiedDf()))
   })
   
-  callModule(module = mapModule, id = "map", data = scData())
+  callModule(module = mapModule, id = "map", data = regressionData())
   
   output$user_selection <- renderUI({
     selectInput("users",
                 "Select a user",
-                isolate(as.vector(scData()$user_id))
+                isolate(as.vector(regressionData()$user_id))
     )
   })
   

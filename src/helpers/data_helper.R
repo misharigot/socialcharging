@@ -8,7 +8,7 @@ source("./src/models/regression_user_class.R")
 source("./src/models/regression_station_class.R")
 
 df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanSecondDf(df)
+df <- cleanDataframe(df)
 
 # Creates a dataframe with predictions based on user classification 
 cleanDf <- prepareDataForUserPred(df)
