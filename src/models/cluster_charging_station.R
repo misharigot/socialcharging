@@ -91,5 +91,3 @@ createScreePlot <- function() {
   
   plot(ratio_ss, type = "b", xlab = "k")
 }
-
-# createStationClusterPlot()

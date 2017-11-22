@@ -31,28 +31,28 @@ mapModuleUI <- function(id) {
                     selectInput(ns("size"),
                                 "", 
                                 choices = c(
+                                  "Amount of sessions" = "total_sessions",
                                   "Charged kWh" = "charged_kwh",
                                   "Elapsed hours" = "total_hours_elapsed",
-                                  "Amount of sessions" = "total_sessions",
                                   "Occupation percentage" = "occ_perc",
                                   "Efficiency percentage" =  "eff_perc",
                                   "Users per station" = "users_station"
                                 ),
-                                selected = "occ_perc"
+                                selected = "total_sessions"
                     ),
                     tags$hr(),
                     h3("Color"),
                     selectInput(ns("color"),
                                 "", 
                                 choices = c(
+                                  "Amount of sessions" = "total_sessions",
                                   "Charged kWh" = "charged_kwh",
                                   "Elapsed hours" = "total_hours_elapsed",
-                                  "Amount of sessions" = "total_sessions",
                                   "Occupation percentage" = "occ_perc",
                                   "Efficiency percentage" =  "eff_perc",
                                   "Users per station" = "users_station"
                                 ),
-                                selected = "charged_kwh"
+                                selected = "total_sessions"
                     ),
                     tags$hr(),
                     h3("Filter controls"),
@@ -97,6 +97,7 @@ mapModuleUI <- function(id) {
 
 # Server ----------------------------------------------------------------------------------------------------------
 mapModule <- function(input, output, session, data) {
+  # The default data without filters
   defaultMapData <- reactive({
     getMapData(plainData())
   })
@@ -131,7 +132,7 @@ mapModule <- function(input, output, session, data) {
   
   # The rendered leaflet map
   output$map <- renderLeaflet({
-    handleDefaultMapCreation(input$size, input$color, mapData = defaultMapData())
+    handleDefaultMapCreation(mapData = defaultMapData())
   })
   
   # Update the user_id select input with the user_ids available
@@ -154,7 +155,7 @@ mapModule <- function(input, output, session, data) {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
   
-  # Updates map with popup and updated table when a node is clicked
+  # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
     shinyjs::show("session-table", anim = TRUE, animType = "slide")
@@ -163,7 +164,7 @@ mapModule <- function(input, output, session, data) {
   tableData <- reactive({
     if (is.null(input$map_shape_click)) {
       return(NULL
-    )}
+      )}
     print(input$map_shape_click)
     sessions <- prepTableDf()
     isolate({
@@ -225,35 +226,23 @@ getMapData <- function(mapDf) {
 }
 
 # Render functions ------------------------------------------------------------------------------------------------
+
 mapId <- "map"
 
 # Creates the default leaflet map without user input
-handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
-  if (length(sizeInput) == 0) {
-    return()
-  }
-  if (length(colorInput) == 0) {
-    return()
-  }
-  if (nrow(mapData) == 0) {
-    return()
-  }
+handleDefaultMapCreation <-  function(mapData) {
+  if (nrow(mapData) == 0) {return()}
   
-  pal <- createPallete(mapData, colorInput)
-  color <- createCircleColor(mapData, colorInput, pal)
-  radius <- createCircleSize(mapData, sizeInput)
-  values <- createLegendValues(mapData, colorInput)
-  title <- createLegendTitle(colorInput)
-  # pal <- createPallete(mapData)
-  # color <- createCircleColor(mapData, pal = pal)
-  # radius <- createCircleSize(mapData)
-  # values <- createLegendValues(mapData)
-  # title <- createLegendTitle()
+  pal <- createPallete(mapData)
+  color <- createCircleColor(mapData, pal = pal)
+  radius <- createCircleSize(mapData)
+  values <- createLegendValues(mapData)
+  title <- createLegendTitle()
   
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
     setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
-    defaultCircles(mapData, radius, pal(mapData$total_charged)) %>%
+    defaultCircles(mapData, radius, color) %>%
     addLegend("bottomright",
               pal = pal,
               values = values,
@@ -264,15 +253,9 @@ handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
 
 # Creates a leaflet map based on user input
 handleMapCreation <- function(sizeInput, colorInput, mapData) {
-  if (length(sizeInput) == 0) {
-    return()
-  }
-  if (length(colorInput) == 0) {
-    return()
-  }
-  if (nrow(mapData) == 0) {
-    return()
-  }
+  if (length(sizeInput) == 0) {return()}
+  if (length(colorInput) == 0) {return()}
+  if (nrow(mapData) == 0) {return()}
   
   pal <- createPallete(mapData, colorInput)
   color <- createCircleColor(mapData, colorInput, pal)

@@ -5,7 +5,7 @@ library(leaflet)
 
 # Functions --------------------------------------------------------------------------------------------------------------
 # Create a pallete for the circles and the legend
-createPallete <- function(mapData, input = "occ_perc") {
+createPallete <- function(mapData, input = "total_sessions") {
   if (length(input) == 0) {return()}
   if (input == "charged_kwh") {
     values <- mapData$total_charged
@@ -49,7 +49,7 @@ createColors <- function(values) {
 }
 
 # Create the color of the circles
-createCircleColor <- function(mapData, input = "charged_kwh", pal) {
+createCircleColor <- function(mapData, input = "total_sessions", pal) {
   if (length(input) == 0) {return()}
 
   if (input == "charged_kwh") {
@@ -80,7 +80,7 @@ createCircleColor <- function(mapData, input = "charged_kwh", pal) {
 }
 
 # Create the radius of the circles
-createCircleSize <- function(mapData, input = "occ_perc") {
+createCircleSize <- function(mapData, input = "total_sessions") {
   logMultiplier <- 30
   if (length(input) == 0) {return()}
   
@@ -112,7 +112,7 @@ createCircleSize <- function(mapData, input = "occ_perc") {
 }
 
 # Create the values for the legend
-createLegendValues <- function(mapData, input = "charged_kwh") {
+createLegendValues <- function(mapData, input = "total_sessions") {
   if (length(input) == 0) {return()}
   if (input == "charged_kwh") {
     value <- mapData$total_charged
@@ -141,7 +141,7 @@ createLegendValues <- function(mapData, input = "charged_kwh") {
 }
 
 # Create the legend title
-createLegendTitle <- function(input = "charged_kwh") {
+createLegendTitle <- function(input = "total_sessions") {
   if (length(input) == 0) {return()}
   if (input == "charged_kwh") {
     title <- "Charged kWh"
