@@ -23,7 +23,6 @@ server <- function(input, output) {
   
   callModule(module = mapModule, id = "map", data = scData())
   
-  # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
   

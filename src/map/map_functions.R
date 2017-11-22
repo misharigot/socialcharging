@@ -23,30 +23,33 @@ createPallete <- function(mapData, input = "occ_perc") {
   }
   
   if (input == "occ_perc") {
-    values <- mapData$popularity_score / max(mapData$popularity_score) * 300
+    values <- mapData$popularity_score
+    # values <- round(values, digits = 2)
     pal <- createColors(values)
   }
   
   if (input == "eff_perc") {
-    values <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
+    values <- mapData$efficiency_score
     pal <- createColors(values)
   }
   
   if (input == "users_station") {
-    values <- mapData$total_users / max(mapData$total_users) * 300
-    pal <- createColors(values)
+    values <- mapData$total_users
+    pal <- createColors(values, input)
   }
   return(pal)
 }
 
 # Returns color values
-createColors <- function(values) {
+createColors <- function(values, input = "none") {
   if (length(unique(values)) > 1) { # can only make bins of more than 1 value
-    colorFactor("plasma", values)
-    # colorBin(palette = "plasma", domain = values, 5, pretty = TRUE)
+    if(input == "users_station"){
+      colorBin(palette = "plasma", domain = values, bins = 5, pretty = TRUE)
+    } else {
+      colorFactor("plasma", values)
+    }
   } else {
     colorNumeric(palette = "plasma", domain = values)
-    # colorFactor("plasma", values)
   }
 }
 
@@ -67,16 +70,15 @@ createCircleColor <- function(mapData, input = "charged_kwh", pal) {
   }
   
   if (input == "occ_perc") {
-    color <- pal(mapData$popularity_score / max(mapData$popularity_score) * 300)
+    color <- pal(mapData$popularity_score)
   }
   
   if (input == "eff_perc") {
-    color <- pal(mapData$efficiency_score / max(mapData$efficiency_score) * 300)
-    
+    color <- pal(mapData$efficiency_score)
   }
   
   if (input == "users_station") {
-    color <- pal(mapData$total_users / max(mapData$total_users) * 300)
+    color <- pal(mapData$total_users)
   }
   return(color)
 }
@@ -129,15 +131,16 @@ createLegendValues <- function(mapData, input = "charged_kwh") {
   }
   
   if (input == "occ_perc") {
-    value <- mapData$popularity_score / max(mapData$popularity_score) * 300
+    value <- mapData$popularity_score
+    # value <- round(value, digits = 2)
   }
   
   if (input == "eff_perc") {
-    value <- mapData$efficiency_score / max(mapData$efficiency_score) * 300
+    value <- mapData$efficiency_score
   }
   
   if (input == "users_station") {
-    value <- mapData$total_users / max(mapData$total_users) * 300
+    value <- mapData$total_users
   }
   return(value)
 }

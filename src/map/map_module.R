@@ -141,11 +141,6 @@ mapModule <- function(input, output, session, data) {
 
 # Functions -------------------------------------------------------------------------------------------------------
 
-# source(config$baseClean)
-# df <- read_csv2(config$scDataset, col_names = FALSE)
-# 
-# df <- cleanDataframe(df)
-
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(mapDf) {
   mapDf <- data.table(mapDf)
@@ -172,17 +167,6 @@ getMapData <- function(mapDf) {
   return(mapDf)
 }
 
-# temp <- getMapData(df)
-# temp <- temp %>%
-#   filter(!is.na(total_charged))
-# 
-# temp2 <- as.data.frame(fivenum(temp$total_charged))
-# temp2 <- temp2[-1]
-# temp3 <- as.data.frame(fivenum(temp$total_charged))
-# temp3 <- temp3[-nrow(temp3),]
-# formatted <- as.list(paste(temp2,temp3, sep = " - "))
-
-
 # Render functions ------------------------------------------------------------------------------------------------
 
 mapId <- "map"
@@ -198,14 +182,6 @@ handleDefaultMapCreation <-  function(sizeInput, colorInput, mapData) {
   radius <- createCircleSize(mapData, sizeInput)
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
-  
-  print(summary(values))
-  
-  # leftVal <- as.data.frame(fivenum(values))
-  # leftVal <- leftVal[-1]
-  # rightVal <- as.data.frame(fivenum(values))
-  # rightVal <- rightVal[-nrow(rightVal),]
-  # formatted <- as.list(paste(leftVal,rightVal, sep = " - "))
   
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
@@ -231,20 +207,26 @@ handleMapCreation <- function(sizeInput, colorInput, mapData) {
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
   
-  print(summary(values))
-  
+  # print(summary(values))
+  # 
   # leftVal <- as.data.frame(fivenum(values))
-  # leftVal <- leftVal[-1]
+  # leftVal <- leftVal[-1,]
   # rightVal <- as.data.frame(fivenum(values))
   # rightVal <- rightVal[-nrow(rightVal),]
-  # formatted <- as.list(paste(leftVal,rightVal, sep = " - "))
+  # formatted <- as.data.frame(paste(rightVal, leftVal, sep = " - "))
+  # colnames(formatted)[1] <- "range"
+  # formatted$identifier <- rightVal
+  
+  if(!colorInput == "users_station"){
+    values <- fivenum(values)
+  }
   
   leafletProxy(mapId, data = mapData) %>% 
     clearShapes() %>% 
     defaultCircles(mapData, radius, color) %>%
     addLegend("bottomright",
               pal = pal,
-              values = fivenum(values),
+              values = values,
               title = title,
               layerId = "colorLegend")
 }
