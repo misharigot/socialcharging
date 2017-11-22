@@ -188,14 +188,15 @@ mapModule <- function(input, output, session, data) {
 # Functions -------------------------------------------------------------------------------------------------------
 # Returns a data set prepared for the leaflet map, based on SC data
 prepTableData <- function(dataf) {
+  dataf <- data.table(dataf)
+  coordDivision <- 100000000
+  dataf[, longitude := longitude / coordDivision]
+  dataf[, latitude := latitude / coordDivision]
+  
   dataf <- dataf %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed)) %>%
     select(latitude, longitude, session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed)
-  
-  dataf$latitude <- sapply(dataf$latitude, formatCoordinate, "latitude")
-  dataf$longitude <- sapply(dataf$longitude, formatCoordinate, "longitude")
-  dataf$latitude <- as.numeric(dataf$latitude)
-  dataf$longitude <- as.numeric(dataf$longitude)
+
   return(dataf)
 }
 
