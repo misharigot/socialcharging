@@ -170,7 +170,11 @@ mapModule <- function(input, output, session, data) {
     isolate({
       sessions <- sessions %>%
         filter(latitude == input$map_shape_click$lat,
-               longitude == input$map_shape_click$lng)
+               longitude == input$map_shape_click$lng)%>%
+        mutate(start_date = ymd_hms(start_date),
+               end_date = ymd_hms(end_date))
+      sessions$start_date <- as.character(sessions$start_date)
+      sessions$end_date <- as.character(sessions$end_date)
       return(sessions)
     })
   })
@@ -195,7 +199,8 @@ prepTableData <- function(dataf) {
   
   dataf <- dataf %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed)) %>%
-    select(latitude, longitude, session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed)
+    select(latitude, longitude, session_id, user_id, start_date, end_date, charged_kwh, hours_elapsed,
+           user_class, user_pred, station_class, station_pred) 
 
   return(dataf)
 }

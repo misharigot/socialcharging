@@ -13,13 +13,6 @@ source(config$baseClean)
 source("src/map/map_module.R")
 source("src/models/regression_test.R")
 
-# df1 <- read_csv2(config$scDataset, col_names = FALSE)
-# df1 <- cleanDataframe(df1)
-# 
-# df2 <- read.csv2(config$dataFolder, sep = ",")
-# df2 <- changeStructures(df2)
-# str(df2)
-
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
   session$onSessionEnded(stopApp)

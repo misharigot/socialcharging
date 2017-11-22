@@ -40,8 +40,8 @@ cleanSecondDf <- function(df) {
 
 changeStructures <- function(df) {
   df$smart_charging <- as.character(df$smart_charging)
-  df$start_date <- as.Date(df$start_date)
-  df$end_date <- as.Date(df$end_date)
+  df$start_date <- as.POSIXct(df$start_date)
+  df$end_date <- as.POSIXct(df$end_date)
   df$ev_provider <- as.character(df$ev_provider)
   df$car <- as.character(df$car)
   df$corporate <- as.character(df$corporate)
