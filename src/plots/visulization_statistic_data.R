@@ -6,44 +6,140 @@ library(ggplot2)
 library(reshape2)
 library(tidyr)
 library(plotly)
-
+library(DataCombine)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-
-makeTable <- function(testDf){
-  name <- c("total","useable")
-  xname <- rep(name,16)
-  num <- c(1:16)
-  snum <- rep(num,each=2)
-  useable <- rep(0,32)
-  for(k in 1:16){
-    useable[k*2-1] <- nrow(testDf)
-    useable[k*2] <- useable[k*2-1] - sum(is.na(testDf[,k]))
+# 
+# df <- read_csv2(config$scDataset, col_names = FALSE)
+# df <- cleanDataframe(df)
+# columName <- names(df)
+# corrupt <- TRUE
+# corrupt
+makeTable <- function(df,columName,corrupt,session){
+  
+  select <- rep(0,length(columName))
+  totalData <- nrow(df)
+  
+  if(corrupt == TRUE){
+    df <- df %>% 
+      filter(!(start_date == end_date))
   }
-  result <- data.frame(x = xname, y = useable,stationNum= snum)
-  return(result)
+  
+  
+  if(session == TRUE){
+    count <- df %>% 
+      group_by(user_id) %>% 
+      summarise(sessionNum = n_distinct(session_id))
+    
+    df <- dMerge(df,count,by = 'user_id',dropDups = FALSE)
+    
+    df <- df %>% 
+      filter(sessionNum >= 10)
+  }
+  
+  
+  for(i in 1:length(columName)){
+    df <- df %>% 
+      filter(!is.na(df[,columName[i]]))
+  }
+
+  dataStat <- c("useable","unuseable")
+  data <- c("data","data")
+  num <- rep(0,2)
+  num[1] <- nrow(df)
+  num[2] <- totalData - nrow(df)
+  percentage <- rep(0,2)
+  percentage[1] <- paste0(round(num[1]/totalData*100,digit=2),'%')
+  percentage[2] <- paste0(round(num[2]/totalData*100,digit=2),'%')
+  dataTable <- data.frame(type = data, status = dataStat, count = num,percentage =percentage)
+  return(dataTable)
 }
-
-
-filterColums <- function(result,selectNum){
-  aa <-result %>% 
-    filter(stationNum == selectNum)
-  
-  p <- ggplot(data=aa, aes(x= x, y=y)) +
-    geom_line(stat = 'summary', fun.y=sum) +
-    stat_summary(fun.y =sum,geom ="line") +
-    geom_point() 
-  
-  p <- ggplotly(p)
+# test <- makeTable(df,columName,corrupt,session)
+dataStatusPlot <- function(dataTable) {
+  p <- ggplot(dataTable, aes(x = type, y=count, fill = status)) +
+    geom_bar(stat = "identity",position = "stack",width = 0.2) +
+    theme_void() +
+    geom_text(aes(label = percentage),
+              position = position_stack( vjust = 0.5 )) +
+    guides( fill = guide_legend(title = "Status")) +
+    theme( legend.justification = c(1, 0), legend.position = c(1, 0), legend.text = element_text(size = 18),
+           legend.title = element_text(size = 20)) +
+    ggtitle("Our Dataset Status") +
+    theme(plot.title = element_text( hjust = 0.5, size = 20))
+  # p <- ggplotly(p)
   return(p)
 }
 
-staticPlot <- function(scData,selectNum){
-  filterColums(makeTable(scData),selectNum)
+showDataStatusPlot <- function(scData,columName,corrupt,session){
+  dataStatusPlot(makeTable(scData,columName,corrupt,session))
 }
 
+# showDataStatusPlot(df,columName,corrupt,session)
+# session<- TRUE
+# aa <- df %>% 
+#   group_by(user_id) %>% 
+#   summarise(n_distinct(session_id))
 # 
+# 
+# aaa <- data.frame(name = c("apple","bpple","apple","bpple"),num = c(3,4,3,4))
+# bbb <- data.frame(name = c("apple","bpple"),count = c(1,2))
+# dMerge(aaa,bbb, by = 'name',dropDups = FALSE)
+# 
+# 
+# count <- df %>% 
+#   group_by(user_id) %>% 
+#   summarise(sessionNum = n_distinct(session_id))
+# 
+# df <- dMerge(df,count,by = 'user_id',dropDups = FALSE)
+# 
+# df <- df %>% 
+#   filter(sessionNum >= 10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# #user session
+# aaaa <- df %>%
+#   filter(!is.na(charged_kwh),!is.na(hours_elapsed)) %>%
+#   group_by(user_id) %>%
+#   summarise(number = n_distinct(session_id))
+# userPlot <- ggplot(aaaa, aes(x=user_id, y=number)) +
+#   geom_bar(stat ="identity")
+# userPlot
+# 
+# 
+# 
+# # test
+# 
+# source("src/models/user_class.R")
+# testdf <- sessionClassificationDf(cleanDf(df))
+# testdf <- testdf %>%
+#   filter(!is.na(charged_kwh)) %>%
+#   group_by(user_id) %>%
+#   summarise(count = n_distinct(class))
+# 
+# classPlot <- ggplot(testdf,aes(x=user_id, y= count)) +
+#   geom_bar(stat = "identity")+
+#   ylim(0,25) +
+#   geom_smooth()
+# classPlot
+# 
+# testdf$user_id <- as.character(testdf$user_id)
+# class(testdf$user_id)
+# 
+# 
+
+
 # df <- read_csv2(config$scDataset, col_names = FALSE)
 # df <- cleanDataframe(df)
 # 
@@ -57,87 +153,3 @@ staticPlot <- function(scData,selectNum){
 # }
 # 
 # show <- data.frame(column = nameve, usable = usable,unuseable= unuseable)
-# 
-# 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 
-# 
-# 
-# 
-# # miss going --------------------------------------------------------------
-# 
-# 
-# makePivotTable <-function(df){
-#   testDf <- df
-#   testDf <- testDf %>% 
-#     filter(!is.na(charged_kwh)) %>% 
-#     mutate(start_date = sapply(start_date,function(x) { substr(x,1,7)}))
-#   pivotTable <- dcast(testDf,user_id~start_date,value.var = "charged_kwh",sum)
-#   return(pivotTable)
-# }
-# 
-# selectUser <- function(pivotTablse,x){
-#   a <- x
-#   selectUser <- pivotTable %>% 
-#     filter(user_id == a) %>% 
-#     mutate(user_id = as.character(user_id))
-#   changeStructure <- gather(selectUser,year,kwh,-user_id)
-#   return(changeStructure)
-# }
-# 
-# makePlot <- function(changeStructure){
-#   p <- ggplot(data=changeStructure, aes(x= year, y=kwh)) +
-#     geom_line(stat = 'summary', fun.y=sum) +
-#     stat_summary(fun.y =sum,geom ="line") +
-#     geom_point() 
-#   
-#   p <- ggplotly(p)
-#   return(p)
-# }
-# 
-# pivotTable <- makePivotTable(df)
-# changeStructure <- selectUser(pivotTable,2259)
-# makePlot(changeStructure)
-# 
-# 
-# finalplot <- function(scData,text){
-#   makePlot(selectUser(makePivotTable(scData),text))
-# }
-# 
-# finalplot(df,2259)
-# 
-# # p <- ggplot(data=changeStructure, aes(x= year, y=kwh)) +
-# #   geom_line(stat = 'summary', fun.y=sum) +
-# #   stat_summary(fun.y =sum,geom ="line") +
-# #   geom_point()
-# # 
-# # p <- ggplotly(p)
-# # p
-# # 
-# # sary <- summary(pivotTable)
-# # head(sary)
-# # sary[4, ]
-# # 
-# # 
-# # 
-# # 
-# # 
-# # ss <- gather(sary[4,],year,mean,-user_id)
-# # 
-# # dim(sary)
-# # head(sary)
-# # class(sary[4, ])
-# # sary[4]

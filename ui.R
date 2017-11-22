@@ -149,30 +149,26 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "static",
               fluidRow(
+                box(h4("Delete NA data"),
+                    uiOutput("columnName"),
+                    h4("Corrupted data"),
+                    # checkboxGroupInput("checkGroup", 
+                    #                    h3("Checkbox group"), 
+                    #                    choices = list("corrupt" = TRUE, 
+                    #                                   "session" = TRUE),
+                    #                    selected = 1)),
+                    checkboxInput("corrupt", "delete", value = FALSE),
+                    h4("Have low session under 10"),
+                    checkboxInput("session", "delete", value = FALSE),
+                    actionButton("action", "Action"),width = 2),
+                # box(
+                #   checkboxGroupInput("checkGroup",
+                #                      h3("Checkbox group"),
+                #                      choices = list("user_id" = "user_id",
+                #                                     "session_id" = "session_id"))
+                # ),
                 box(
-                 
-                  checkboxGroupInput("checkGroup", 
-                                     h3("Checkbox"), 
-                                     choices = list("session_id" = 1, 
-                                                    "user_id" = 2,
-                                                    "smart_charging" = 3,
-                                                    "start_date" = 4,
-                                                    "end_date" = 5,
-                                                    "ev_provider" = 6,
-                                                    "car" = 7,
-                                                    "corporate" = 8,
-                                                    "evse_id" = 9,
-                                                    "latitude" = 10,
-                                                    "longitude" = 11,
-                                                    "address" = 12,
-                                                    "kw_charge_point_speed" = 13,
-                                                    "outlets" = 14,
-                                                    "charged_kwh" = 15,
-                                                    "hours_elapsed" = 16),
-                                     selected = 1),width = 3
-                  ),
-                box(
-                  withSpinner(plotlyOutput("plot11")),
+                  withSpinner(plotOutput("plot11")),
                   title = "static data ")
               )
               )

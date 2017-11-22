@@ -20,6 +20,11 @@ server <- function(input, output) {
     return(df)
   })
   
+  # Returns the name of de for static visulization
+  namesDf <- reactive({
+    return(names(scData()))
+  })
+  
   callModule(module = mapModule, id = "map", data = scData())
   
   # maybe a javascript to reset the ranges variable on active view change?
@@ -27,6 +32,10 @@ server <- function(input, output) {
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   # Output ----------------------------------------------------------------------------------------------------------
+  
+  output$columnName <- renderUI({
+    selectInput("columnN", textOutput("minimumReq"), as.list(namesDf()), multiple = TRUE)
+  })
   
   output$table1 <- renderDataTable({
     scData()
@@ -67,9 +76,10 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
-  output$plot11 <- renderPlotly({
+  output$plot11 <- renderPlot({
     source("src/plots/visulization_statistic_data.R")
-    return(staticPlot(scData(),input$checkGroup))
+    if(input$action ==TRUE){
+    return(showDataStatusPlot(scData(),input$columnN,input$corrupt,input$session))}
   })
   
 # Prediction plots ------------------------------------------------------------------------------------------------
