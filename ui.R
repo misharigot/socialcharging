@@ -5,6 +5,7 @@ library(shinycssloaders)
 library(plotly)
 
 source("src/map/map_module.R")
+source("src/corrupted_explorer/corrupted_explorer_module.R")
 
 ui <- dashboardPage(
   skin = ("green"),
@@ -30,7 +31,7 @@ ui <- dashboardPage(
                menuSubItem("Correlation", tabName = "predtab5")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe")),
-      menuItem("Static", tabName = "static", icon = icon("table"))
+      menuItem("Static", tabName = "corruptTab", icon = icon("table"))
     )
   ),
   dashboardBody(
@@ -147,31 +148,35 @@ ui <- dashboardPage(
       tabItem(tabName = "mapTab",
               mapModuleUI(id = "map")
       ),
-      tabItem(tabName = "static",
-              fluidRow(
-                box(h4("Delete NA data"),
-                    uiOutput("columnName"),
-                    h4("Corrupted data"),
-                    # checkboxGroupInput("checkGroup", 
-                    #                    h3("Checkbox group"), 
-                    #                    choices = list("corrupt" = TRUE, 
-                    #                                   "session" = TRUE),
-                    #                    selected = 1)),
-                    checkboxInput("corrupt", "delete", value = FALSE),
-                    h4("Have low session under 10"),
-                    checkboxInput("session", "delete", value = FALSE),
-                    actionButton("action", "Action"),width = 2),
-                # box(
-                #   checkboxGroupInput("checkGroup",
-                #                      h3("Checkbox group"),
-                #                      choices = list("user_id" = "user_id",
-                #                                     "session_id" = "session_id"))
-                # ),
-                box(
-                  withSpinner(plotOutput("plot11")),
-                  title = "static data ")
-              )
-              )
+      tabItem(tabName = "corruptTab",
+              corruptedExplorerModuleUI(id = "corrupt")
+      )
+
+      # tabItem(tabName = "static",
+      #         fluidRow(
+      #           box(h4("Delete NA data"),
+      #               uiOutput("columnName"),
+      #               h4("Corrupted data"),
+      #               # checkboxGroupInput("checkGroup", 
+      #               #                    h3("Checkbox group"), 
+      #               #                    choices = list("corrupt" = TRUE, 
+      #               #                                   "session" = TRUE),
+      #               #                    selected = 1)),
+      #               checkboxInput("corrupt", "delete", value = FALSE),
+      #               h4("Have low session under 10"),
+      #               checkboxInput("session", "delete", value = FALSE),
+      #               actionButton("action", "Action"),width = 2),
+      #           # box(
+      #           #   checkboxGroupInput("checkGroup",
+      #           #                      h3("Checkbox group"),
+      #           #                      choices = list("user_id" = "user_id",
+      #           #                                     "session_id" = "session_id"))
+      #           # ),
+      #           box(
+      #             withSpinner(plotOutput("plot11")),
+      #             title = "static data ")
+      #         )
+      # )
     )
   )
 )

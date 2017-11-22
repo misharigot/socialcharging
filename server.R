@@ -10,6 +10,7 @@ library(plotly)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
+source("src/corrupted_explorer/corrupted_explorer_module.R")
 
 server <- function(input, output) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
@@ -20,22 +21,18 @@ server <- function(input, output) {
     return(df)
   })
   
-  # Returns the name of de for static visulization
-  namesDf <- reactive({
-    return(names(scData()))
-  })
-  
   callModule(module = mapModule, id = "map", data = scData())
+  callModule(module = corruptedExplorerModule, id = "corrupt", data = scData())
   
   # maybe a javascript to reset the ranges variable on active view change?
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
   
   # Output ----------------------------------------------------------------------------------------------------------
-  
-  output$columnName <- renderUI({
-    selectInput("columnN", textOutput("minimumReq"), as.list(namesDf()), multiple = TRUE)
-  })
+  # 
+  # output$columnName <- renderUI({
+  #   selectInput("columnN", textOutput("minimumReq"), as.list(namesDf()), multiple = TRUE)
+  # })
   
   output$table1 <- renderDataTable({
     scData()
@@ -76,11 +73,12 @@ server <- function(input, output) {
     return(multiplotUserTimeframes(scData()))
   })
   
-  output$plot11 <- renderPlot({
-    source("src/plots/visulization_statistic_data.R")
-    if(input$action ==TRUE){
-    return(showDataStatusPlot(scData(),input$columnN,input$corrupt,input$session))}
-  })
+  # output$plot11 <- renderPlot({
+  #   source("src/plots/visulization_statistic_data.R")
+  #   if (input$action) {
+  #     return(showDataStatusPlot(scData(), input$columnN, input$corrupt, input$session))
+  #   }
+  # })
   
 # Prediction plots ------------------------------------------------------------------------------------------------
 

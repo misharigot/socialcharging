@@ -1,67 +1,71 @@
 # 91 visulization statistic data
-
 library(config)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(tidyr)
 library(plotly)
-library(DataCombine)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-# 
+
 # df <- read_csv2(config$scDataset, col_names = FALSE)
 # df <- cleanDataframe(df)
-# columName <- names(df)
-# corrupt <- TRUE
-# corrupt
-makeTable <- function(df,columName,corrupt,session){
+
+# Returns a list with 2 spaces: 1. df filtered by user input and 2. the amount of rows unfiltered
+applyFilters <- function(df, columnName, corrupt, session) {
+  totalNRow <- nrow(df)
   
-  select <- rep(0,length(columName))
-  totalData <- nrow(df)
-  
-  if(corrupt == TRUE){
+  if (corrupt) {
     df <- df %>% 
       filter(!(start_date == end_date))
   }
   
-  
-  if(session == TRUE){
+  if (session) {
     count <- df %>% 
       group_by(user_id) %>% 
       summarise(sessionNum = n_distinct(session_id))
     
-    df <- dMerge(df,count,by = 'user_id',dropDups = FALSE)
+    df <- base::merge(df, count, by = "user_id", dropDups = FALSE)
     
     df <- df %>% 
       filter(sessionNum >= 10)
   }
   
-  
-  for(i in 1:length(columName)){
-    df <- df %>% 
-      filter(!is.na(df[,columName[i]]))
+  if (length(columnName) > 0) {
+    for (i in 1:length(columnName)) {
+      df <- df %>% 
+        filter(!is.na(df[,columnName[i]]))
+    }
   }
+  resultList <- list(df, totalNRow)
+  return(resultList)
+}
 
-  dataStat <- c("useable","unuseable")
-  data <- c("data","data")
-  num <- rep(0,2)
+# Create the table that the barchart plot expects
+createResultTable <- function(resultList) {
+  df <- resultList[[1]]
+  totalNRow <- resultList[[2]]
+  
+  dataStat <- c("useable", "unuseable")
+  data <- c("data", "data")
+  num <- rep(0, 2)
   num[1] <- nrow(df)
-  num[2] <- totalData - nrow(df)
+  num[2] <- totalNRow - nrow(df)
   percentage <- rep(0,2)
-  percentage[1] <- paste0(round(num[1]/totalData*100,digit=2),'%')
-  percentage[2] <- paste0(round(num[2]/totalData*100,digit=2),'%')
-  dataTable <- data.frame(type = data, status = dataStat, count = num,percentage =percentage)
+  percentage[1] <- paste0(round(num[1] / totalNRow * 100, digits = 2), '%')
+  percentage[2] <- paste0(round(num[2] / totalNRow * 100, digits = 2), '%')
+  dataTable <- data.frame(type = data, status = dataStat, count = num, percentage = percentage)
   return(dataTable)
 }
-# test <- makeTable(df,columName,corrupt,session)
+
+# Create the barchart plot
 dataStatusPlot <- function(dataTable) {
-  p <- ggplot(dataTable, aes(x = type, y=count, fill = status)) +
-    geom_bar(stat = "identity",position = "stack",width = 0.2) +
+  p <- ggplot(dataTable, aes(x = type, y = count, fill = status)) +
+    geom_bar(stat = "identity", position = "stack", width = 0.2) +
     theme_void() +
     geom_text(aes(label = percentage),
-              position = position_stack( vjust = 0.5 )) +
+              position = position_stack(vjust = 0.5)) +
     guides( fill = guide_legend(title = "Status")) +
     theme( legend.justification = c(1, 0), legend.position = c(1, 0), legend.text = element_text(size = 18),
            legend.title = element_text(size = 20)) +
@@ -71,8 +75,8 @@ dataStatusPlot <- function(dataTable) {
   return(p)
 }
 
-showDataStatusPlot <- function(scData,columName,corrupt,session){
-  dataStatusPlot(makeTable(scData,columName,corrupt,session))
+showDataStatusPlot <- function(scData, columName = c(), corrupt = FALSE, session = FALSE){
+  dataStatusPlot(createResultTable(applyFilters(scData, columName, corrupt, session)))
 }
 
 # showDataStatusPlot(df,columName,corrupt,session)
