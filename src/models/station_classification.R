@@ -73,7 +73,7 @@ countClass <- function(df){
 showDistribution <- function(scData){
   ggplot(scData, aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
-    coord_flip() +
+    coord_flip() + theme_light() +
     ggtitle("Show the station Class number")
 }
 

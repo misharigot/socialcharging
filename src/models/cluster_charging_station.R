@@ -1,6 +1,5 @@
 # User classification model
 library(readr)
-library(ggplot2)
 library(config)
 library(purrr)
 library(tidyr)
@@ -17,10 +16,10 @@ cleanDataFrame <- function(df) {
   df <- df %>%
     filter(!is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed))
   
-  df$latitude <- sapply(df$latitude, formatCoordinate, "latitude")
-  df$longitude <- sapply(df$longitude, formatCoordinate, "longitude")
-  df$latitude <- as.numeric(df$latitude)
-  df$longitude <- as.numeric(df$longitude)
+  df <- data.table(df)
+  coordDivision <- 100000000
+  df[, longitude := longitude / coordDivision]
+  df[, latitude := latitude / coordDivision]
   
   df <- df %>%
     group_by(longitude, latitude) %>%

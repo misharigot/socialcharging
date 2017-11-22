@@ -30,7 +30,7 @@ averageChargingPerCar <- function(scData){
 plotPercentagePerCar <- function(scData){
   ggplot(kindOfCar(scData), aes(x = car, y = per)) +
   geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
-  coord_flip() +
+  coord_flip() + theme_light() +
   labs(x = "car", y = "percentage") +
   ggtitle("Percentage per car")
 }
@@ -39,7 +39,7 @@ plotPercentagePerCar <- function(scData){
 plotAverageChargedKwhPerCar <- function(scData){
   ggplot(averageChargingPerCar(scData), aes(x = car, y = chargingpercar)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
-    coord_flip() +
+    coord_flip() + theme_light() +
     labs(x = "car", y = "Total Charging") +
     ggtitle("Average Charged kwh per car")
 }

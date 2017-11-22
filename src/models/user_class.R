@@ -152,7 +152,7 @@ classDistributionDf <- function(sessionClassificationDf) {
 plotClassCount <- function(sessionClassificationDf) {
   ggplot(classDistributionDf(sessionClassificationDf),
          aes(x = class, y = n)) +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     labs(x = "class", y = "amount") +
     ggtitle("Amount total most dominant classes") +

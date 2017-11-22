@@ -27,7 +27,6 @@ ui <- dashboardPage(
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Session clustering", tabName = "predtab3"),
                menuSubItem("Station clustering", tabName = "predtab6"),
-               menuSubItem("Linear model", tabName = "predtab4"),
                menuSubItem("Correlation", tabName = "predtab5")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe"))
@@ -48,7 +47,7 @@ ui <- dashboardPage(
         fluidRow(
           box(
             title = "Social Charging dataset", status = "success", solidHeader = TRUE, width = 12,
-            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1")), type = 4)
+            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1"), type = 4), type = 4)
           )
         )
       ),
@@ -126,11 +125,6 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab3",
               fluidRow(
                 box(withSpinner(plotlyOutput("pred3"), type = 4), width = 12)
-              )
-      ),
-      tabItem(tabName = "predtab4",
-              fluidRow(
-                box(withSpinner(plotOutput("pred4"), type = 4), width = 12)
               )
       ),
       tabItem(tabName = "predtab5",
