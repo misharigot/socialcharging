@@ -29,9 +29,10 @@ applyFilters <- function(df, filters) {
     df <- df %>% 
       filter(sessionNum >= 10)
   }
-  
+  print(filters)
   valuesNA <- filters[["valuesNA"]]
-  if (!is.na(valuesNA)) {
+  print(valuesNA)
+  if (!is.null(valuesNA)) {
     if (length(valuesNA) > 0) {
       for (i in 1:length(valuesNA)) {
         df <- df %>% 

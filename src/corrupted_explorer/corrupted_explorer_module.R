@@ -64,8 +64,8 @@ corruptedExplorerModule <- function(input, output, session, data) {
 }
 
 defaultPlot <- function(data) {
-  filters <- c(
-    "valuesNA" = c(),
+  filters <- list(
+    "valuesNA" = NULL,
     "corruptDate" = FALSE,
     "session" = FALSE
   )
