@@ -18,22 +18,14 @@ df <- cleanSecondDf(df)
 
 # Data preperation --------------------------------------------------------
 
-prepareDataForLM <- function(df, userClass){
+prepareDataForUserPred <- function(df){
   
   # Create dataframe with user classifications 
   userClassifications <- userClassificationDf(sessionClassificationDf(cleanDf(df)))
   
   # Add user classifications to df
   df$user_class <- userClassifications$class[match(df$user_id, userClassifications$user_id)]
-  
-  # Makes subset of the sessions for the specified user classification
-  if (userClass != 0) {
-    specificUserSessions <- subset(userClassifications, userClassifications$class == userClass)
-    # filter on users with chosen classification
-    df <- df %>%
-      filter(user_id %in% specificUserSessions$user_id )
-  }
-  
+ 
   # Filter corrupted data
   df <- df %>%
     filter(
@@ -55,7 +47,7 @@ prepareDataForLM <- function(df, userClass){
 
 # Create linear model ----------------------------------------------------
 
-createLinearModelData <- function(df, isTest){
+createLinearModelDataUser <- function(df, isTest){
   minimumSessions <- 10
   # if the prediction has to be made for all classifications individually
   i <- 1
@@ -72,7 +64,7 @@ createLinearModelData <- function(df, isTest){
     
     if (nrow(sessionsWithSpecificClass) > minimumSessions) {
       # Create linear model
-      lm_df <- lm(hours_elapsed ~ charged_kwh, data = sessionsWithSpecificClass)
+      lm_df <- lm(hours_elapsed ~ hour + charged_kwh, data = sessionsWithSpecificClass)
       
       # Add predictions to sessions
       sessionsWithSpecificClass$user_pred <- predict(lm_df, sessionsWithSpecificClass)
