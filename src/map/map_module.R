@@ -29,28 +29,28 @@ mapModuleUI <- function(id) {
                     selectInput(ns("size"),
                                  "", 
                                  choices = c(
+                                   "Amount of sessions" = "total_sessions",
                                    "Charged kWh" = "charged_kwh",
                                    "Elapsed hours" = "total_hours_elapsed",
-                                   "Amount of sessions" = "total_sessions",
                                    "Occupation percentage" = "occ_perc",
                                    "Efficiency percentage" =  "eff_perc",
                                    "Users per station" = "users_station"
                                  ),
-                                selected = "occ_perc"
+                                selected = "total_sessions"
                     ),
                     tags$hr(),
                     h3("Color"),
                     selectInput(ns("color"),
                                  "", 
                                  choices = c(
+                                   "Amount of sessions" = "total_sessions",
                                    "Charged kWh" = "charged_kwh",
                                    "Elapsed hours" = "total_hours_elapsed",
-                                   "Amount of sessions" = "total_sessions",
                                    "Occupation percentage" = "occ_perc",
                                    "Efficiency percentage" =  "eff_perc",
                                    "Users per station" = "users_station"
                                  ),
-                                selected = "charged_kwh"
+                                selected = "total_sessions"
                     ),
                     tags$hr(),
                     h3("Filter controls"),
@@ -183,7 +183,7 @@ handleDefaultMapCreation <-  function(mapData) {
   leaflet() %>%
     addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
     setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
-    defaultCircles(mapData, radius, pal(mapData$total_charged)) %>%
+    defaultCircles(mapData, radius, color) %>%
     addLegend("bottomright",
               pal = pal,
               values = values,
