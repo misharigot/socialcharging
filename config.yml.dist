@@ -1,5 +1,8 @@
 default:
   scDataset: "path_to_csv"
-  baseClean: "/absolute_path_to/base_clean.R" # Absolute path to base_clean.R
-  multiplotHelper: "/absolute_path_to/multiplotHelper.R" # Absolute path to multiplotHelper.R
-
+  baseClean: "/my/path/to/socialcharging/base_clean.R" # Absolute path to base_clean.R
+  multiplotHelper: "/my/path/to/socialcharging/multiplotHelper.R" # Absolute path to multiplotHelper.R
+  pathToShiny: "/my/path/to/socialcharging/shiny"
+  fileToLint: "/my/path/to/socialcharging/file_to_lint.R"
+  userClass: "/my/path/to/socialcharging/src/models/user_class.R"
+  dataFolder: "/my/path/to/socialcharging/src/data/results.csv" # This should end with '/results.csv'!
