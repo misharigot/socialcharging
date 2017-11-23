@@ -14,24 +14,23 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Welcome", tabName = "home", selected = TRUE, icon = icon("home")),
       menuItem("Data table", tabName = "table", icon = icon("table")),
+      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table")),
       menuItem("Plots", tabName = "charts", icon = icon("bar-chart"),
-               menuSubItem("Time vs kWh", tabName = "chart1"),
-               menuSubItem("Smart vs Non-smart", tabName = "chart2"),
-               menuSubItem("kWh vs Stations", tabName = "chart3"),
-               menuSubItem("Timeframe vs Sessions", tabName = "chart4"),
-               menuSubItem("Analyzing per Car", tabName = "chart7"),
-               menuSubItem("Timeframe vs users", tabName = "chart8")
+               menuSubItem("Effective charging", tabName = "chart1"),
+               menuSubItem("Weekly charging behaviour", tabName = "chart3"),
+               menuSubItem("Daily charging behaviour", tabName = "chart8"),
+               menuSubItem("Sessions per timeframe", tabName = "chart4"),
+               menuSubItem("Car distributions", tabName = "chart7"),
+               menuSubItem("Smart charging vs Non-smart", tabName = "chart2")
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
-               menuSubItem("User classification distribution", tabName = "predtab1"),
-               menuSubItem("Station classification distribution", tabName = "predtab7"),
+               menuSubItem("Correlation", tabName = "predtab5"),
+               menuSubItem("User class distribution", tabName = "predtab1"),
+               menuSubItem("Station class distribution", tabName = "predtab7"),
                menuSubItem("User clustering", tabName = "predtab2"),
-               menuSubItem("Session clustering", tabName = "predtab3"),
-               menuSubItem("Station clustering", tabName = "predtab6"),
-               menuSubItem("Correlation", tabName = "predtab5")
+               menuSubItem("Station clustering", tabName = "predtab6")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
-      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
   ),
   dashboardBody(
@@ -75,32 +74,30 @@ ui <- dashboardPage(
       tabItem(tabName = "chart4",
               fluidRow(
                 fluidRow(
-                  box(withSpinner(plotOutput("plot4"), type = 4), width = 12)
+                  box(withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750)
                 )
               )
       ),
       tabItem(tabName = "chart7",
               fluidRow(
                 box(
-                  title = "Controls", width = 5, solidHeader = TRUE, status = "primary",
                   selectInput(inputId = "plot7Input",
                               label = "Select a chart",
-                              choices = c("PersantagePerCar" = "0",
-                                          "AverageChargedKwhPerCar" = "1"
+                              choices = c("Car distribution" = "0",
+                                          "Average charged kWh per car" = "1"
                               )
                   )
                 )
               ),
               fluidRow(
                 box(
-                  withSpinner(plotOutput("plot7"), type = 4),
-                  title = "Analyzing per car ",
-                  width = 12)
+                  withSpinner(plotOutput("plot7", height = 700), type = 4),
+                  width = 12, height = 750)
               )
       ),
       tabItem(tabName = "chart8",
               fluidRow(
-                box(withSpinner(plotOutput("plot8"), type = 4), width = 12)
+                box(withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750)
               )
       ),
       tabItem(tabName = "chart9",
@@ -121,28 +118,43 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab2",
               fluidRow(
-                box(withSpinner(plotlyOutput("pred2"), type = 4), width = 12)
-              )
-      ),
-      tabItem(tabName = "predtab3",
-              fluidRow(
-                box(withSpinner(plotlyOutput("pred3"), type = 4), width = 12)
+                box(withSpinner(plotlyOutput("pred2", height = 700), type = 4), width = 12, height = 750)
               )
       ),
       tabItem(tabName = "predtab5",
               fluidRow(
                 box(uiOutput("corColumns")),
-                box(withSpinner(plotOutput("cor1")), width = 12)
+                box(withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750)
               )
       ),
       tabItem(tabName = "predtab6",
-              fluidRow(
-                box(withSpinner(plotlyOutput("pred6"), type = 4), width = 12)
-              )
+        fluidRow(
+          box(withSpinner(plotlyOutput("pred6", height = 700), type = 4), width = 12, height = 750)
+        )
       ),
       tabItem(tabName = "predtab7",
               fluidRow(
-                box(withSpinner(plotOutput("pred7")), width = 16)
+                box(withSpinner(plotOutput("pred7"), type = 4), width = 16)
+              ),
+              fluidRow(
+                #HLL  	MarriedToThisStation +
+                # HHL 	ParkingSpace +
+                #HHH	LadyOfTheEvening +
+                #LLL	ForeverAlone +
+                #LLH	PowerBank +
+                #LHH    WorkerBee +
+                #LHL	HitAndRun +
+                #HLH    LateNightCharging +
+                #      occPoint              userPoint                Charge point
+
+                valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
+                valueBox("ForeverAlone", "Low occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("PowerBank", "Low occupancy, Low user amount, High charging amount", icon = icon("list"), color = "green"),
+                valueBox("WorkerBee", "Low occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
+                valueBox("HitAndRun", "Low occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("LateNightCharging", "High occupancy, Low user amount, High charging amount", icon = icon("list"), color = "green")
               )
       ),
       # Map -------------------------------------------------------------------------------------------------------------

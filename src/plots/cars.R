@@ -28,20 +28,20 @@ averageChargingPerCar <- function(scData){
 
 # Plot the total car percentages
 plotPercentagePerCar <- function(scData){
-  ggplot(kindOfCar(scData), aes(x = car, y = per)) +
+  ggplot(kindOfCar(scData), aes(x = car, y = per *100)) +
   geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
-  coord_flip() +
-  labs(x = "car", y = "percentage") +
-  ggtitle("Percentage per car")
+  coord_flip() + theme_light() +
+  labs(x = "Car", y = "Percentage of total") +
+  ggtitle("Car distribution")
 }
 
 # Plot average charged kwh per car
 plotAverageChargedKwhPerCar <- function(scData){
   ggplot(averageChargingPerCar(scData), aes(x = car, y = chargingpercar)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
-    coord_flip() +
-    labs(x = "car", y = "Total Charging") +
-    ggtitle("Average Charged kwh per car")
+    coord_flip() + theme_light() +
+    labs(x = "Car", y = "Average charged kwh") +
+    ggtitle("Average charged kWh per car")
 }
 
 # Calls -------------------------------------------------------------------

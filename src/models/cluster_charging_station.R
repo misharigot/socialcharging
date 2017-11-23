@@ -1,6 +1,5 @@
 # User classification model
 library(readr)
-library(ggplot2)
 library(config)
 library(purrr)
 library(tidyr)

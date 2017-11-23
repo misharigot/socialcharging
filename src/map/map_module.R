@@ -8,7 +8,8 @@ source("src/map/map_functions.R")
 # UI --------------------------------------------------------------------------------------------------------------
 mapModuleUI <- function(id) {
   ns <- NS(id)
-  div(class = "outer",
+  div(
+    class = "outer",
     tags$head(
       # Include our custom CSS
       includeCSS("src/map/styles.css"),
@@ -17,68 +18,51 @@ mapModuleUI <- function(id) {
     useShinyjs(),
     # If not using custom CSS, set height of leafletOutput to a number instead of percent
     leafletOutput(ns("map"), width = "100%", height = "100%"),
-    absolutePanel(id = "controls",
-                  class = "panel panel-default",
-                  fixed = TRUE,
-                  draggable = FALSE,
-                  top = 60,
-                  left = "auto",
-                  right = 20,
-                  bottom = "auto",
-                  width = 330,
-                  height = "auto",
-                  h3("Size"),
-                  selectInput(ns("size"),
-                              "",
-                              choices = c(
-                                "Charged kWh" = "charged_kwh",
-                                "Elapsed hours" = "total_hours_elapsed",
-                                "Amount of sessions" = "total_sessions",
-                                "Occupation percentage" = "occ_perc",
-                                "Efficiency percentage" =  "eff_perc",
-                                "Users per station" = "users_station"
-                              ),
-                              selected = "occ_perc"
-                  ),
-                  tags$hr(),
-                  h3("Color"),
-                  selectInput(ns("color"),
-                              "",
-                              choices = c(
-                                "Charged kWh" = "charged_kwh",
-                                "Elapsed hours" = "total_hours_elapsed",
-                                "Amount of sessions" = "total_sessions",
-                                "Occupation percentage" = "occ_perc",
-                                "Efficiency percentage" =  "eff_perc",
-                                "Users per station" = "users_station"
-                              ),
-                              selected = "charged_kwh"
-                  ),
-                  tags$hr(),
-                  h3("Filter controls"),
-                  selectInput(
-                    ns("station_profiles"),
-                    "Station profiles",
-                    c(
-                      "All station profiles" = "all",
-                      "Profile based regression" = "profile_reg"
-                    )
-                  ),
-                  selectInput(
-                    ns("user_profiles"),
-                    "User profiles",
-                    c(
-                      "All user profiles" = "all",
-                      "User based regression" = "user_reg"
-                    )
-                  ),
-                  selectInput(
-                    ns("userId"),
-                    "Users",
-                    c("Show all" = "all")
-                    
-                  ),
-                  actionButton(ns("btnHide"), "Show/Hide Table")
+    absolutePanel(
+      id = "controls",
+      class = "panel panel-default",
+      fixed = TRUE,
+      draggable = FALSE,
+      top = 60,
+      left = "auto",
+      right = 20,
+      bottom = "auto",
+      width = 330,
+      height = "auto",
+      h3("Size"),
+      selectInput(
+        ns("size"),
+        "",
+        choices = c(
+          "Amount of sessions" = "total_sessions",
+          "Charged kWh" = "charged_kwh",
+          "Elapsed hours" = "total_hours_elapsed",
+          "Occupation percentage" = "occ_perc",
+          "Efficiency percentage" =  "eff_perc",
+          "Users per station" = "users_station"
+        ),
+        selected = "total_sessions"
+      ),
+      tags$hr(),
+      h3("Color"),
+      selectInput(
+        ns("color"),
+        "",
+        choices = c(
+          "Amount of sessions" = "total_sessions",
+          "Charged kWh" = "charged_kwh",
+          "Elapsed hours" = "total_hours_elapsed",
+          "Occupation percentage" = "occ_perc",
+          "Efficiency percentage" =  "eff_perc",
+          "Users per station" = "users_station"
+        ),
+        selected = "total_sessions"
+      ),
+      tags$hr(),
+      selectInput(ns("userId"),
+                  "Users",
+                  c("Show all" = "all")),
+      actionButton(ns("btnHide"), "Show/Hide Table")
     ),
     hidden(
       absolutePanel(
@@ -97,6 +81,7 @@ mapModuleUI <- function(id) {
       )
     )
   )
+  
 }
 
 # Server ----------------------------------------------------------------------------------------------------------
@@ -116,17 +101,8 @@ mapModule <- function(input, output, session, data) {
       getMapData(plainData())
     } else {
       plainData <- plainData()
-      if (input$userId != "all") {
-        plainData <- plainData %>% filter(user_id == input$userId)
-      }
-      if (input$station_profiles != "all") {
-        plainData <-
-          plainData %>% filter(station_profiles == input$station_profiles)
-      }
-      if (input$user_profiles != "all") {
-        plainData <-
-          plainData %>% filter(user_profile == input$user_profiles)
-      }
+      plainData <- plainData %>% filter(user_id == input$userId)
+      
       getMapData(plainData)
     }
   })
@@ -134,10 +110,7 @@ mapModule <- function(input, output, session, data) {
   # This reactive function should be called to use the data
   plainData <- reactive({
     data %>% filter(
-      !is.na(latitude),
-      !is.na(longitude),
-      !is.na(charged_kwh),
-      !is.na(hours_elapsed)
+      !is.na(latitude),!is.na(longitude),!is.na(charged_kwh),!is.na(hours_elapsed)
     )
   })
   
@@ -170,6 +143,7 @@ mapModule <- function(input, output, session, data) {
   
   # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
+    handlePopupCreation(input$map_shape_click, mapData = mapData())
     shinyjs::show("session-table", anim = TRUE, animType = "slide")
   })
   
@@ -193,7 +167,20 @@ mapModule <- function(input, output, session, data) {
   
   # WIP table output
   output$stationTable <- renderTable({
-    tableData()
+    tableDisplayData <- tableData() %>%
+      select(
+        session_id,
+        user_id,
+        start_date,
+        end_date,
+        charged_kwh,
+        hours_elapsed,
+        user_class,
+        user_pred,
+        station_class,
+        station_pred
+      )
+    tableDisplayData
   })
   
   observeEvent(input$btnHide, {
@@ -210,7 +197,10 @@ prepTableData <- function(dataf) {
   dataf[, latitude := latitude / coordDivision]
   
   dataf <- dataf %>%
-    filter(!is.na(latitude),!is.na(longitude),!is.na(charged_kwh),!is.na(hours_elapsed)) %>%
+    filter(!is.na(latitude),
+           !is.na(longitude),
+           !is.na(charged_kwh),
+           !is.na(hours_elapsed)) %>%
     select(
       latitude,
       longitude,
@@ -251,7 +241,7 @@ getMapData <- function(mapDf) {
       total_effective_charging = sum(effective_charging_hours)
     ) %>%
     mutate(
-      efficiency_score = round((total_effective_charging / total_hours_elapsed) * 100 + 10,
+      efficiency_score = round(100 / total_hours_elapsed * total_effective_charging,
                                digits = 0
       ),
       popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
@@ -287,7 +277,7 @@ handleDefaultMapCreation <-
       addLegend(
         "bottomright",
         pal = pal,
-        values = fivenum(values),
+        values = values,
         title = title,
         layerId = "colorLegend"
       )
@@ -311,9 +301,9 @@ handleMapCreation <- function(sizeInput, colorInput, mapData) {
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
   
-  if (!colorInput == "users_station") {
-    values <- fivenum(values)
-  }
+  # if (!colorInput == "users_station") {
+  #   values <- fivenum(values)
+  # }
   
   leafletProxy(mapId, data = mapData) %>%
     clearShapes() %>%
@@ -360,7 +350,7 @@ defaultCircles <- function(leaflet, mapData, radius, color) {
 
 # Adds a popup to leaflet map when a node is clicked
 chargingStationPopup <- function(id, lat, lng, mapData) {
-  selectedChargingPole <- mapData[id, ]
+  selectedChargingPole <- mapData[id,]
   content <- as.character(
     tagList(
       tags$h4("Location: ", selectedChargingPole$address),

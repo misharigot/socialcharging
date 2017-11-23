@@ -53,7 +53,7 @@ plotBarSmart <- function(scData) {
     geom_bar(width = 0.2) +
     geom_text(stat = "count", aes(label = paste0(round((..count..)/sum(..count..) * 100),'%')),
               position = position_stack( vjust = 0.5 )) +
-    theme_void() +
+    theme_void() + scale_fill_manual(values=c("#B22222", "#66bb6a")) +
     guides( fill = guide_legend(title = "Smart charging")) +
     theme( legend.justification = c(1, 0), legend.position = c(1, 0), legend.text = element_text(size = 18),
            legend.title = element_text(size = 20)) +
@@ -72,7 +72,7 @@ plotChargeTime <- function(scData) {
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL, y = "Average charging time in hours") +
     ggtitle("Average chargetime") +
-    theme_light() +
+    theme_light() + scale_fill_manual(values=c("#B22222", "#66bb6a")) +
     theme(plot.title = element_text(hjust = 0.5, size = 20), axis.title = element_text(size = 20),
           axis.text = element_text(size = 18)) +
     guides(fill = FALSE)
@@ -89,7 +89,7 @@ plotChargePercentage <- function(scData) {
               position = position_stack(vjust = 0.5)) +
     labs(x = NULL, y = "Effective % of total time car charging") +
     ggtitle("Effective time battery charged ") +
-    theme_light() +
+    theme_light() + scale_fill_manual(values=c("#B22222", "#66bb6a")) +
     theme(plot.title = element_text(hjust = 0.5, size = 20), axis.title = element_text(size = 20),
           axis.text = element_text(size = 18)) +
     guides(fill = FALSE)
