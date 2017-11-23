@@ -55,21 +55,6 @@ mapModuleUI <- function(id) {
                                 selected = "total_sessions"
                     ),
                     tags$hr(),
-                    h3("Filter controls"),
-                    selectInput(ns("station_profiles"),
-                                "Station profiles",
-                                c(
-                                  "All station profiles" = "all",
-                                  "Profile based regression" = "profile_reg"
-                                )
-                    ),
-                    selectInput(ns("user_profiles"),
-                                "User profiles",
-                                c(
-                                  "All user profiles" = "all",
-                                  "User based regression" = "user_reg"
-                                )
-                    ),
                     selectInput(ns("userId"),
                                 "Users",
                                 c("Show all" = "all")
@@ -112,15 +97,8 @@ mapModule <- function(input, output, session, data) {
       getMapData(plainData())
     } else {
       plainData <- plainData()
-      if (input$userId != "all") {
-        plainData <- plainData %>% filter(user_id == input$userId)
-      }
-      if (input$station_profiles != "all") {
-        plainData <- plainData %>% filter(station_profiles == input$station_profiles)
-      }
-      if (input$user_profiles != "all") {
-        plainData <- plainData %>% filter(user_profile == input$user_profiles)
-      }
+      plainData <- plainData %>% filter(user_id == input$userId)
+      
       getMapData(plainData)
     }
   })
