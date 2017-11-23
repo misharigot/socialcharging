@@ -1,15 +1,20 @@
-# Writes a csv to data folder with predictions
 library(config)
-
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
+
 source("./src/models/regression_user_class.R")
 source("./src/models/regression_station_class.R")
 
+# Writes a csv to data folder with predictions
 generatePredictionCsv <- function() {
+  if (file.exists(config$dataFolder)) {
+    file.remove(config$dataFolder) 
+  }
+  
   df <- read_csv2(config$scDataset, col_names = FALSE)
-  df <- cleanSecondDf(df)
+  df <- cleanDataframe(df)
+  
   # Creates a dataframe with predictions based on user classification 
   cleanDf <- prepareDataForUserPred(df)
   sessionsIdsWithPreds <- createLinearModelDataUser(cleanDf)
@@ -31,7 +36,6 @@ generatePredictionCsv <- function() {
 
 
 # Helper functions ----------------------------------------------------
-
 changeToDescriptiveName <- function(x) {
   res <- switch(x,
                 "1" = "MorningMorning",

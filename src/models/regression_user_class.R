@@ -47,13 +47,12 @@ prepareDataForUserPred <- function(df){
 
 # Create linear model ----------------------------------------------------
 
-createLinearModelDataUser <- function(df, isTest){
+createLinearModelDataUser <- function(df){
   minimumSessions <- 10
   # if the prediction has to be made for all classifications individually
   i <- 1
-  userClassificationsUnique <- unique(as.character(cleanDf$user_class))
-  print(userClassificationsUnique)
-  
+  userClassificationsUnique <- unique(as.character(df$user_class))
+
   idsWithPreds <- data.frame("session_id" = numeric(0), "user_pred" = numeric(0))
   
   # Predict session time for each profile
