@@ -133,6 +133,26 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab7",
               fluidRow(
                 box(withSpinner(plotOutput("pred7"), type = 4), width = 16)
+              ),
+              fluidRow(
+                #HLL  	MarriedToThisStation +
+                # HHL 	ParkingSpace +
+                #HHH	LadyOfTheEvening + 
+                #LLL	ForeverAlone +
+                #LLH	PowerBank +
+                #LHH    WorkerBee +
+                #LHL	HitAndRun +
+                #HLH    LateNightCharging +
+                #      occPoint              userPoint                Charge point
+                
+                valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
+                valueBox("ForeverAlone", "Low occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("PowerBank", "Low occupancy, Low user amount, High charging amount", icon = icon("list"), color = "green"),
+                valueBox("WorkerBee", "Low occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
+                valueBox("HitAndRun", "Low occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
+                valueBox("LateNightCharging", "High occupancy, Low user amount, High charging amount", icon = icon("list"), color = "green")
               )
       ),
 # Map -------------------------------------------------------------------------------------------------------------
