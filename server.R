@@ -26,7 +26,9 @@ server <- function(input, output, session) {
 
   regressionData <- reactive({
     df <- read.csv2(config$dataFolder, sep = ",")
+    head(df)
     df <- changeStructures(df)
+    head(df)
     return(df)
   })
 

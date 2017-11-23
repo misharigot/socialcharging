@@ -83,7 +83,7 @@ ui <- dashboardPage(
                 box(
                   selectInput(inputId = "plot7Input",
                               label = "Select a chart",
-                              choices = c("Percentage per car" = "0",
+                              choices = c("Car distribution" = "0",
                                           "Average charged kWh per car" = "1"
                               )
                   )
