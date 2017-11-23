@@ -6,55 +6,87 @@ library(RColorBrewer)
 library(scales)
 library(lattice)
 library(plotly)
+library(corrplot)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
 source("src/corrupted_explorer/corrupted_explorer_module.R")
+source("src/models/regression_test.R")
 
 server <- function(input, output) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
-  
+
   scData <- reactive({
     df <- read_csv2(config$scDataset, col_names = FALSE)
     df <- cleanDataframe(df)
     return(df)
   })
-  
+
+  # Returns the numberfied dataframe
+  numberfiedDf <- reactive({
+    source("src/models/Interactive_correlation.R")
+    corDf <- convertDfToNumeric(sessionClassificationDf(cleanDf(scData())))
+    return(corDf)
+  })
+
+  # Returns the name of the numberfied dataframe
+  dfNames <- reactive({
+    return(names(numberfiedDf()))
+  })
+
   callModule(module = mapModule, id = "map", data = scData())
   callModule(module = corruptedExplorerModule, id = "corrupt", data = scData())
-  
-  # maybe a javascript to reset the ranges variable on active view change?
+
+  output$user_selection <- renderUI({
+    selectInput("users",
+                "Select a user",
+                isolate(as.vector(scData()$user_id))
+    )
+  })
+
   # Single zoomable plot
   ranges <- reactiveValues(x = NULL, y = NULL)
-  
+
   # Output ----------------------------------------------------------------------------------------------------------
-  
+
+  output$corColumns <- renderUI({
+      selectInput("columns", textOutput("minimumReq"), as.list(dfNames()), multiple = TRUE)
+  })
+
   output$table1 <- renderDataTable({
     scData()
   })
-  
+
+  output$minimumReq <- renderText({
+    if(length(input$columns) < 2){
+      "Select at least 2  columns"
+    } else {
+      "Select columns"
+    }
+  })
+
   output$plot1 <- renderPlot({
     source("src/plots/time_vs_kwh.R")
     return(plotTimeKwh(scData()) +
              coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE))
   })
-  
+
   output$plot2 <- renderPlot({
     source("src/plots/smart_charging_vs_kwh.R")
     return(plotMultiple(scData()))
   })
-  
+
   output$plot3 <- renderPlot({
     source("src/plots/kwh_vs_station.R")
     return(plotKwhPerStationPerDay(scData()))
   })
-  
+
   output$plot4 <- renderPlot({
     source("src/plots/timeframe_vs_sessions.R")
     return(multiplotTimeframes(scData()))
   })
-  
+
   output$plot7 <- renderPlot({
     source("src/plots/cars.R")
     if (input$plot7Input == "0") {
@@ -63,19 +95,19 @@ server <- function(input, output) {
       plotAverageChargedKwhPerCar(scData())
     }
   })
-  
+
   output$plot8 <- renderPlot({
     source("src/plots/timeframe_vs_users.R")
     return(multiplotUserTimeframes(scData()))
   })
-  
+
 # Prediction plots ------------------------------------------------------------------------------------------------
 
   output$pred1 <- renderPlot({
     source("src/models/user_class.R")
     return(plotClassCountShiny(scData()))
   })
-  
+
   output$pred2 <- renderPlotly({
     source("src/models/user_clust.R")
     return(plotUserCluster1(scData()))
@@ -85,24 +117,33 @@ server <- function(input, output) {
     source("src/models/user_clust.R")
     return(plotUserCluster2(scData()))
   })
-  
+
   output$pred4 <- renderPlot({
     source("src/models/regression_test.R")
     return(plotLinearModelsResult(scData()))
   })
-  
+
   output$cor1 <- renderPlot({
-    source("src/models/regression_test.R")
-    return(plotCorrelationResult(scData()))
+    if(length(input$columns) < 2) {
+      source("src/models/Interactive_correlation.R")
+      return(plotCorrelationplot(scData()))
+    } else {
+      return(corrplot.mixed(cor(numberfiedDf()[,input$columns])))
+    }
   })
-  
+
   output$pred6 <- renderPlotly({
     source("src/models/cluster_charging_station.R")
     return(createStationClusterPlot(scData()))
   })
-  
+
+  output$pred7 <- renderPlot({
+    source("src/models/station_classification.R")
+    return(showDistributionPlot(scData()))
+  })
+
   # Observers -------------------------------------------------------------------------------------------------------
-  
+
   # When a double-click happens, check if there's a brush on the plot.
   # If so, zoom to the brush bounds; if not, reset the zoom.
   observeEvent(input$dblclick, {
@@ -115,12 +156,12 @@ server <- function(input, output) {
       ranges$y <- NULL
     }
   })
-  
+
   observeEvent(input$reset_input, {
     ranges$x <- NULL
     ranges$y <- NULL
   })
-  
+
   observeEvent(input$reset_input_1, {
     ranges$x <- NULL
     ranges$y <- NULL

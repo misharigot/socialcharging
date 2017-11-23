@@ -12,8 +12,8 @@ ui <- dashboardPage(
   dashboardHeader(title = "Social Charging"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Welcome", tabName = "dash", selected = TRUE, icon = icon("home")),
-      menuItem("Data table", tabName = "raw", icon = icon("table")),
+      menuItem("Welcome", tabName = "home", selected = TRUE, icon = icon("home")),
+      menuItem("Data table", tabName = "table", icon = icon("table")),
       menuItem("Plots", tabName = "charts", icon = icon("bar-chart"),
                menuSubItem("Time vs kWh", tabName = "chart1"),
                menuSubItem("Smart vs Non-smart", tabName = "chart2"),
@@ -24,6 +24,7 @@ ui <- dashboardPage(
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
                menuSubItem("User classification distribution", tabName = "predtab1"),
+               menuSubItem("Station classification distribution", tabName = "predtab7"),
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Session clustering", tabName = "predtab3"),
                menuSubItem("Station clustering", tabName = "predtab6"),
@@ -36,7 +37,7 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
-      tabItem(tabName = "dash",
+      tabItem(tabName = "home",
               fluidRow(
                 box(width = 6, align = "center",
                     h2("Welcome to our presentation"),
@@ -45,11 +46,11 @@ ui <- dashboardPage(
               )
       ),
       tabItem(
-        tabName = "raw",
+        tabName = "table",
         fluidRow(
           box(
             title = "Social Charging dataset", status = "success", solidHeader = TRUE, width = 12,
-            div(style = "overflow-x: scroll", dataTableOutput("table1"))
+            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1")))
           )
         )
       ),
@@ -136,6 +137,7 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab5",
               fluidRow(
+                box(uiOutput("corColumns")),
                 box(withSpinner(plotOutput("cor1")), width = 12)
               )
       ),
@@ -144,9 +146,14 @@ ui <- dashboardPage(
           box(withSpinner(plotlyOutput("pred6")), width = 12)
         )
       ),
+      tabItem(tabName = "predtab7",
+              fluidRow(
+                box(withSpinner(plotOutput("pred7")), width = 16)
+              )
+      ),
 # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
-              mapModuleUI(id = "map")
+              withSpinner(mapModuleUI(id = "map"))
       ),
       tabItem(tabName = "corruptTab",
               corruptedExplorerModuleUI(id = "corrupt")
