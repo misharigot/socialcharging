@@ -14,23 +14,23 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Welcome", tabName = "home", selected = TRUE, icon = icon("home")),
       menuItem("Data table", tabName = "table", icon = icon("table")),
+      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table")),
       menuItem("Plots", tabName = "charts", icon = icon("bar-chart"),
                menuSubItem("Effective charging", tabName = "chart1"),
-               menuSubItem("Smart charging vs Non-smart", tabName = "chart2"),
                menuSubItem("Weekly charging behaviour", tabName = "chart3"),
-               menuSubItem("Sessions per timeframe", tabName = "chart4"),
                menuSubItem("Daily charging behaviour", tabName = "chart8"),
-               menuSubItem("Car distributions", tabName = "chart7")
+               menuSubItem("Sessions per timeframe", tabName = "chart4"),
+               menuSubItem("Car distributions", tabName = "chart7"),
+               menuSubItem("Smart charging vs Non-smart", tabName = "chart2")
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
+               menuSubItem("Correlation", tabName = "predtab5"),
                menuSubItem("User class distribution", tabName = "predtab1"),
                menuSubItem("Station class distribution", tabName = "predtab7"),
                menuSubItem("User clustering", tabName = "predtab2"),
-               menuSubItem("Station clustering", tabName = "predtab6"),
-               menuSubItem("Correlation", tabName = "predtab5")
+               menuSubItem("Station clustering", tabName = "predtab6")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
-      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
     )
   ),
   dashboardBody(
