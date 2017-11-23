@@ -53,5 +53,3 @@ changeToDescriptiveName <- function(x) {
                 "-1" = "Longer24Hours")
   return(res)
 }
-
-

@@ -1,85 +1,102 @@
 library(shiny)
 library(ggplot2)
 library(leaflet)
+library(shinyjs)
 library(data.table)
 source("src/map/map_functions.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
 mapModuleUI <- function(id) {
   ns <- NS(id)
-  div(
-    class = "outer",
+  div(class = "outer",
     tags$head(
       # Include our custom CSS
       includeCSS("src/map/styles.css"),
       includeScript("src/map/gomap.js")
     ),
+    useShinyjs(),
     # If not using custom CSS, set height of leafletOutput to a number instead of percent
     leafletOutput(ns("map"), width = "100%", height = "100%"),
-    absolutePanel(
-      id = "controls",
-      class = "panel panel-default",
-      fixed = TRUE,
-      draggable = FALSE,
-      top = 60,
-      left = "auto",
-      right = 20,
-      bottom = "auto",
-      width = 330,
-      height = "auto",
-      h3("Size"),
-      selectInput(
-        ns("size"),
-        "",
-        choices = c(
-          "Charged kWh" = "charged_kwh",
-          "Elapsed hours" = "total_hours_elapsed",
-          "Amount of sessions" = "total_sessions",
-          "Occupation percentage" = "occ_perc",
-          "Efficiency percentage" =  "eff_perc",
-          "Users per station" = "users_station"
-        ),
-        selected = "occ_perc"
-      ),
-      tags$hr(),
-      h3("Color"),
-      selectInput(
-        ns("color"),
-        "",
-        choices = c(
-          "Charged kWh" = "charged_kwh",
-          "Elapsed hours" = "total_hours_elapsed",
-          "Amount of sessions" = "total_sessions",
-          "Occupation percentage" = "occ_perc",
-          "Efficiency percentage" =  "eff_perc",
-          "Users per station" = "users_station"
-        ),
-        selected = "charged_kwh"
-      ),
-      tags$hr(),
-      h3("Filter controls"),
-      selectInput(
-        ns("station_profiles"),
-        "Station profiles",
-        c(
-          "All station profiles" = "all",
-          "Profile based regression" = "profile_reg"
-        )
-      ),
-      selectInput(
-        ns("user_profiles"),
-        "User profiles",
-        c(
-          "All user profiles" = "all",
-          "User based regression" = "user_reg"
-        )
-      ),
-      selectInput(ns("userId"),
-                  "Users",
-                  c("Show all" = "all"))
+    absolutePanel(id = "controls",
+                  class = "panel panel-default",
+                  fixed = TRUE,
+                  draggable = FALSE,
+                  top = 60,
+                  left = "auto",
+                  right = 20,
+                  bottom = "auto",
+                  width = 330,
+                  height = "auto",
+                  h3("Size"),
+                  selectInput(ns("size"),
+                              "",
+                              choices = c(
+                                "Charged kWh" = "charged_kwh",
+                                "Elapsed hours" = "total_hours_elapsed",
+                                "Amount of sessions" = "total_sessions",
+                                "Occupation percentage" = "occ_perc",
+                                "Efficiency percentage" =  "eff_perc",
+                                "Users per station" = "users_station"
+                              ),
+                              selected = "occ_perc"
+                  ),
+                  tags$hr(),
+                  h3("Color"),
+                  selectInput(ns("color"),
+                              "",
+                              choices = c(
+                                "Charged kWh" = "charged_kwh",
+                                "Elapsed hours" = "total_hours_elapsed",
+                                "Amount of sessions" = "total_sessions",
+                                "Occupation percentage" = "occ_perc",
+                                "Efficiency percentage" =  "eff_perc",
+                                "Users per station" = "users_station"
+                              ),
+                              selected = "charged_kwh"
+                  ),
+                  tags$hr(),
+                  h3("Filter controls"),
+                  selectInput(
+                    ns("station_profiles"),
+                    "Station profiles",
+                    c(
+                      "All station profiles" = "all",
+                      "Profile based regression" = "profile_reg"
+                    )
+                  ),
+                  selectInput(
+                    ns("user_profiles"),
+                    "User profiles",
+                    c(
+                      "All user profiles" = "all",
+                      "User based regression" = "user_reg"
+                    )
+                  ),
+                  selectInput(
+                    ns("userId"),
+                    "Users",
+                    c("Show all" = "all")
+                    
+                  ),
+                  actionButton(ns("btnHide"), "Show/Hide Table")
+    ),
+    hidden(
+      absolutePanel(
+        id = ns("session-table"),
+        class = "panel panel-default",
+        fixed = TRUE,
+        draggable = FALSE,
+        top = "auto",
+        left = 300,
+        right = "auto",
+        bottom = 10,
+        width = 1300,
+        height = "auto",
+        h3("Station sessions"),
+        div(style = "height: 200px; overflow-y: auto;", tableOutput(ns("stationTable")))
+      )
     )
   )
-  
 }
 
 # Server ----------------------------------------------------------------------------------------------------------
@@ -87,6 +104,10 @@ mapModule <- function(input, output, session, data) {
   # The default data without filters
   defaultMapData <- reactive({
     getMapData(plainData())
+  })
+  
+  prepTableDf <- reactive({
+    prepTableData(plainData())
   })
   
   # Converts raw SC data into data prepped for the leaflet map
@@ -149,11 +170,64 @@ mapModule <- function(input, output, session, data) {
   
   # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
-    handlePopupCreation(input$map_shape_click, mapData = mapData())
+    shinyjs::show("session-table", anim = TRUE, animType = "slide")
+  })
+  
+  tableData <- reactive({
+    if (is.null(input$map_shape_click)) {
+      return(NULL)
+    }
+    print(input$map_shape_click)
+    sessions <- prepTableDf()
+    isolate({
+      sessions <- sessions %>%
+        filter(latitude == input$map_shape_click$lat,
+               longitude == input$map_shape_click$lng) %>%
+        mutate(start_date = ymd_hms(start_date),
+               end_date = ymd_hms(end_date))
+      sessions$start_date <- as.character(sessions$start_date)
+      sessions$end_date <- as.character(sessions$end_date)
+      return(sessions)
+    })
+  })
+  
+  # WIP table output
+  output$stationTable <- renderTable({
+    tableData()
+  })
+  
+  observeEvent(input$btnHide, {
+    shinyjs::toggle("session-table", anim = TRUE, animType = "slide")
   })
 }
 
 # Functions -------------------------------------------------------------------------------------------------------
+# Returns a data set prepared for the leaflet map, based on SC data
+prepTableData <- function(dataf) {
+  dataf <- data.table(dataf)
+  coordDivision <- 100000000
+  dataf[, longitude := longitude / coordDivision]
+  dataf[, latitude := latitude / coordDivision]
+  
+  dataf <- dataf %>%
+    filter(!is.na(latitude),!is.na(longitude),!is.na(charged_kwh),!is.na(hours_elapsed)) %>%
+    select(
+      latitude,
+      longitude,
+      session_id,
+      user_id,
+      start_date,
+      end_date,
+      charged_kwh,
+      hours_elapsed,
+      user_class,
+      user_pred,
+      station_class,
+      station_pred
+    )
+  
+  return(dataf)
+}
 
 # Returns a data set prepared for the leaflet map, based on SC data
 getMapData <- function(mapDf) {
@@ -196,7 +270,9 @@ mapId <- "map"
 # Creates the default leaflet map without user input
 handleDefaultMapCreation <-
   function(mapData) {
-    if (nrow(mapData) == 0) {return()}
+    if (nrow(mapData) == 0) {
+      return()
+    }
     
     pal <- createPallete(mapData)
     color <- createCircleColor(mapData, pal = pal)
