@@ -241,7 +241,7 @@ getMapData <- function(mapDf) {
       total_effective_charging = sum(effective_charging_hours)
     ) %>%
     mutate(
-      efficiency_score = round((total_effective_charging / total_hours_elapsed) * 100 + 10,
+      efficiency_score = round(100 / total_hours_elapsed * total_effective_charging,
                                digits = 0
       ),
       popularity_score = round(((total_hours_elapsed / as.numeric(totalHours))
@@ -277,7 +277,7 @@ handleDefaultMapCreation <-
       addLegend(
         "bottomright",
         pal = pal,
-        values = fivenum(values),
+        values = values,
         title = title,
         layerId = "colorLegend"
       )
@@ -301,9 +301,9 @@ handleMapCreation <- function(sizeInput, colorInput, mapData) {
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
   
-  if (!colorInput == "users_station") {
-    values <- fivenum(values)
-  }
+  # if (!colorInput == "users_station") {
+  #   values <- fivenum(values)
+  # }
   
   leafletProxy(mapId, data = mapData) %>%
     clearShapes() %>%
