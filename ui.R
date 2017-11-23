@@ -5,6 +5,7 @@ library(shinycssloaders)
 library(plotly)
 
 source("src/map/map_module.R")
+source("src/corrupted_explorer/corrupted_explorer_module.R")
 
 ui <- dashboardPage(
   skin = ("green"),
@@ -30,7 +31,8 @@ ui <- dashboardPage(
                menuSubItem("Linear model", tabName = "predtab4"),
                menuSubItem("Correlation", tabName = "predtab5")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
+      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table"))
     )
   ),
   dashboardBody(
@@ -152,6 +154,9 @@ ui <- dashboardPage(
 # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
               withSpinner(mapModuleUI(id = "map"))
+      ),
+      tabItem(tabName = "corruptTab",
+              corruptedExplorerModuleUI(id = "corrupt")
       )
     )
   )
