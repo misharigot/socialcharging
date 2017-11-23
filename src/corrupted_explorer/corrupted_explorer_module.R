@@ -20,7 +20,7 @@ corruptedExplorerModuleUI <- function(id) {
               checkboxInput(ns("zeroCharged"), "Remove sessions with 0 charged kWh", value = FALSE),
               checkboxInput(ns("session"), "Remove sessions with users having less than 10 total sessions", value = FALSE),
               checkboxInput(ns("normalHoursElapsed"), "Remove sessions with more than 100 hours elapsed", value = FALSE),
-              actionButton(ns("action"), "Action"),
+              actionButton(ns("action"), "Filter"),
               width = 5
             ),
             # Data 
