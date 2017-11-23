@@ -5,6 +5,7 @@ library(shinycssloaders)
 library(plotly)
 
 source("src/map/map_module.R")
+source("src/corrupted_explorer/corrupted_explorer_module.R")
 
 ui <- dashboardPage(
   skin = ("green"),
@@ -28,7 +29,8 @@ ui <- dashboardPage(
                menuSubItem("Station clustering", tabName = "predtab6"),
                menuSubItem("Correlation", tabName = "predtab5")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
+      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table"))
     )
   ),
   dashboardBody(
@@ -46,17 +48,17 @@ ui <- dashboardPage(
         fluidRow(
           box(
             title = "Social Charging dataset", status = "success", solidHeader = TRUE, width = 12,
-            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1"), type = 4), type = 4)
+            div(style = "overflow-x: scroll", withSpinner(dataTableOutput("table1")), type = 4)
           )
         )
       ),
       tabItem(tabName = "chart1",
               fluidRow(box(withSpinner(plotOutput("plot1", height = 400,
-                                      dblclick = "dblclick",
-                                      brush = brushOpts(
-                                        id = "brush",
-                                        resetOnNew = TRUE
-                                      )), type = 4), width = 12)),
+                                                  dblclick = "dblclick",
+                                                  brush = brushOpts(
+                                                    id = "brush",
+                                                    resetOnNew = TRUE
+                                                  )), type = 4), width = 12)),
               actionButton("reset_input", "Reset")
       ),
       tabItem(tabName = "chart2",
@@ -108,7 +110,7 @@ ui <- dashboardPage(
                 box(withSpinner(plotOutput("plot10"), type = 4), width = 12)
               )
       ),
-# Pred plots ------------------------------------------------------------------------------------------------------
+      # Pred plots ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "predtab1",
               fluidRow(
                 box(withSpinner(plotOutput("pred1"), type = 4), width = 12)
@@ -137,14 +139,14 @@ ui <- dashboardPage(
               fluidRow(
                 #HLL  	MarriedToThisStation +
                 # HHL 	ParkingSpace +
-                #HHH	LadyOfTheEvening + 
+                #HHH	LadyOfTheEvening +
                 #LLL	ForeverAlone +
                 #LLH	PowerBank +
                 #LHH    WorkerBee +
                 #LHL	HitAndRun +
                 #HLH    LateNightCharging +
                 #      occPoint              userPoint                Charge point
-                
+
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
@@ -155,9 +157,12 @@ ui <- dashboardPage(
                 valueBox("LateNightCharging", "High occupancy, Low user amount, High charging amount", icon = icon("list"), color = "green")
               )
       ),
-# Map -------------------------------------------------------------------------------------------------------------
+      # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
-                mapModuleUI(id = "map")
+              withSpinner(mapModuleUI(id = "map"))
+      ),
+      tabItem(tabName = "corruptTab",
+              corruptedExplorerModuleUI(id = "corrupt")
       )
     )
   )

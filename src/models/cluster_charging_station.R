@@ -5,6 +5,7 @@ library(purrr)
 library(tidyr)
 library(clValid)
 library(plotly)
+library(data.table)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)

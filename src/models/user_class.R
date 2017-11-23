@@ -1,3 +1,4 @@
+
 # User classification model
 library(readr)
 library(ggplot2)
@@ -10,9 +11,9 @@ set.seed(100)
 
 # Constants
 minUserSessions <- 10
-
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanSecondDf(df)
+#
+# df <- read_csv2(config$scDataset, col_names = FALSE)
+# df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
 
@@ -152,16 +153,42 @@ classDistributionDf <- function(sessionClassificationDf) {
 plotClassCount <- function(sessionClassificationDf) {
   ggplot(classDistributionDf(sessionClassificationDf),
          aes(x = class, y = n)) +
-    geom_bar(stat = "identity", fill = "#66bb6a") +
+    geom_bar(stat = "identity") +
     geom_smooth() +
-    labs(x = "User classification", y = "Amount") +
-    ggtitle("User classification distribution") +
+    labs(x = "class", y = "amount") +
+    ggtitle("Amount total most dominant classes") +
     coord_flip() +
     theme_light()
 }
 
+changeToDescriptiveName <- function(x) {
+  res <- switch(x,
+                "1" = "MorningMorning",
+                "2" = "MorningAfternoon",
+                "3" = "MorningEvening",
+                "4" = "MorningNight",
+                "5" = "AfternoonMorning",
+                "6" = "AfternoonAfternoon",
+                "7" = "AfternoonEvening",
+                "8" = "AfternoonNight",
+                "9" = "EveningMorning",
+                "10" = "EveningAfternoon",
+                "11" = "EveningEvening",
+                "12" = "EveningNight",
+                "13" = "NightMorning",
+                "14" = "NightAfternoon",
+                "15" = "NightEvening",
+                "16" = "NightNight",
+                "-1" = "Longer24Hours")
+  return(res)
+}
+
 plotClassCountShiny <- function(scData) {
-  plotClassCount(sessionClassificationDf(cleanDf(scData)))
+  clean <- cleanDf(df)
+  sessionClassDf <- sessionClassificationDf(clean)
+  sessionClassDf$class <- as.character(sessionClassDf$class)
+  sessionClassDf$class <- sapply(sessionClassDf$class, changeToDescriptiveName)
+  plotClassCount(sessionClassDf)
 }
 
 # Clustering for exploration purposes -----------------------------------------------------------------------------
@@ -195,4 +222,3 @@ doClustering <- function() {
   plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster,
        xlab = "start timeframe (hour)", ylab = "hours elapsed in session")
 }
-
