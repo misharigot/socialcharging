@@ -74,7 +74,7 @@ ui <- dashboardPage(
       tabItem(tabName = "chart4",
               fluidRow(
                 fluidRow(
-                  box(withSpinner(plotOutput("plot4"), type = 4), width = 12)
+                  box(withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750)
                 )
               )
       ),
@@ -91,13 +91,13 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(
-                  withSpinner(plotOutput("plot7"), type = 4),
-                  width = 12)
+                  withSpinner(plotOutput("plot7", height = 700), type = 4),
+                  width = 12, height = 750)
               )
       ),
       tabItem(tabName = "chart8",
               fluidRow(
-                box(withSpinner(plotOutput("plot8"), type = 4), width = 12)
+                box(withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750)
               )
       ),
       tabItem(tabName = "chart9",
@@ -118,18 +118,18 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab2",
               fluidRow(
-                box(withSpinner(plotlyOutput("pred2"), type = 4), width = 12)
+                box(withSpinner(plotlyOutput("pred2", height = 700), type = 4), width = 12, height = 750)
               )
       ),
       tabItem(tabName = "predtab5",
               fluidRow(
                 box(uiOutput("corColumns")),
-                box(withSpinner(plotOutput("cor1"), type = 4), width = 12)
+                box(withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750)
               )
       ),
       tabItem(tabName = "predtab6",
         fluidRow(
-          box(withSpinner(plotlyOutput("pred6"), type = 4), width = 12)
+          box(withSpinner(plotlyOutput("pred6", height = 700), type = 4), width = 12, height = 750)
         )
       ),
       tabItem(tabName = "predtab7",
