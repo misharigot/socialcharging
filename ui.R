@@ -31,7 +31,7 @@ ui <- dashboardPage(
                menuSubItem("Correlation", tabName = "predtab5")
       ),
       menuItem("Map", tabName = "mapTab", icon = icon("globe")),
-      menuItem("Static", tabName = "corruptTab", icon = icon("table"))
+      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table"))
     )
   ),
   dashboardBody(
