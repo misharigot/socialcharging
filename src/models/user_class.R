@@ -10,9 +10,9 @@ set.seed(100)
 
 # Constants
 minUserSessions <- 10
-
-df <- read_csv2(config$scDataset, col_names = FALSE)
-df <- cleanSecondDf(df)
+# 
+# df <- read_csv2(config$scDataset, col_names = FALSE)
+# df <- cleanSecondDf(df)
 
 # Classification --------------------------------------------------------------------------------------------------
 
@@ -160,8 +160,34 @@ plotClassCount <- function(sessionClassificationDf) {
     theme_light()
 }
 
+changeToDescriptiveName <- function(x) {
+  res <- switch(x,
+                "1" = "MorningMorning",
+                "2" = "MorningAfternoon",
+                "3" = "MorningEvening",
+                "4" = "MorningNight",
+                "5" = "AfternoonMorning",
+                "6" = "AfternoonAfternoon",
+                "7" = "AfternoonEvening",
+                "8" = "AfternoonNight",
+                "9" = "EveningMorning",
+                "10" = "EveningAfternoon",
+                "11" = "EveningEvening",
+                "12" = "EveningNight",
+                "13" = "NightMorning",
+                "14" = "NightAfternoon",
+                "15" = "NightEvening",
+                "16" = "NightNight",
+                "-1" = "Longer24Hours")
+  return(res)
+}
+
 plotClassCountShiny <- function(scData) {
-  plotClassCount(sessionClassificationDf(cleanDf(scData)))
+  clean <- cleanDf(df)
+  sessionClassDf <- sessionClassificationDf(clean)
+  sessionClassDf$class <- as.character(sessionClassDf$class)
+  sessionClassDf$class <- sapply(sessionClassDf$class, changeToDescriptiveName)
+  plotClassCount(sessionClassDf)
 }
 
 # Clustering for exploration purposes -----------------------------------------------------------------------------
