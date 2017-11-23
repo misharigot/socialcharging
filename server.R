@@ -123,11 +123,6 @@ server <- function(input, output, session) {
     return(plotUserCluster2(scData()))
   })
   
-  output$pred4 <- renderPlot({
-    source("src/models/regression_test.R")
-    return(plotLinearModelsResult(scData()))
-  })
-  
   output$cor1 <- renderPlot({
     if(length(input$columns) < 2) {
       source("src/models/Interactive_correlation.R")
