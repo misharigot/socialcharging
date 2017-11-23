@@ -154,8 +154,8 @@ plotClassCount <- function(sessionClassificationDf) {
          aes(x = class, y = n)) +
     geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
-    labs(x = "class", y = "amount") +
-    ggtitle("Amount total most dominant classes") +
+    labs(x = "User classification", y = "Amount") +
+    ggtitle("User classification distribution") +
     coord_flip() +
     theme_light()
 }

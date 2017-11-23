@@ -74,7 +74,8 @@ showDistribution <- function(scData){
   ggplot(scData, aes(x = stationClass, y = num)) +
     geom_bar(position = "dodge", stat = "identity", fill = "#66bb6a") +
     coord_flip() + theme_light() +
-    ggtitle("Show the station Class number")
+    labs(x = "Amount", y = "Station classification") +
+    ggtitle("Station classification distribution")
 }
 
 # call --------------------------------------------------------------------
