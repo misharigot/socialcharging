@@ -11,6 +11,7 @@ library(corrplot)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
+source("src/corrupted_explorer/corrupted_explorer_module.R")
 source("src/models/regression_test.R")
 
 server <- function(input, output, session) {
@@ -42,11 +43,12 @@ server <- function(input, output, session) {
   })
   
   callModule(module = mapModule, id = "map", data = regressionData())
+  callModule(module = corruptedExplorerModule, id = "corrupt", data = scData())
   
   output$user_selection <- renderUI({
     selectInput("users",
                 "Select a user",
-                isolate(as.vector(regressionData()$user_id))
+                isolate(as.vector(scData()$user_id))
     )
   })
   

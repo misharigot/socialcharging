@@ -5,6 +5,7 @@ library(shinycssloaders)
 library(plotly)
 
 source("src/map/map_module.R")
+source("src/corrupted_explorer/corrupted_explorer_module.R")
 
 ui <- dashboardPage(
   skin = ("green"),
@@ -30,7 +31,8 @@ ui <- dashboardPage(
                menuSubItem("Linear model", tabName = "predtab4"),
                menuSubItem("Correlation", tabName = "predtab5")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
+      menuItem("Corruption Explorer", tabName = "corruptTab", icon = icon("table"))
     )
   ),
   dashboardBody(
@@ -54,11 +56,11 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart1",
               fluidRow(box(withSpinner(plotOutput("plot1", height = 400,
-                                      dblclick = "dblclick",
-                                      brush = brushOpts(
-                                        id = "brush",
-                                        resetOnNew = TRUE
-                                      )), type = 4), width = 12)),
+                                                  dblclick = "dblclick",
+                                                  brush = brushOpts(
+                                                    id = "brush",
+                                                    resetOnNew = TRUE
+                                                  )), type = 4), width = 12)),
               actionButton("reset_input", "Reset")
       ),
       tabItem(tabName = "chart2",
@@ -112,7 +114,7 @@ ui <- dashboardPage(
                 box(withSpinner(plotOutput("plot10"), type = 4), width = 12)
               )
       ),
-# Pred plots ------------------------------------------------------------------------------------------------------
+      # Pred plots ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "predtab1",
               fluidRow(
                 box(withSpinner(plotOutput("pred1"), type = 4), width = 12)
@@ -140,18 +142,21 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "predtab6",
-        fluidRow(
-          box(withSpinner(plotlyOutput("pred6"), type = 4), width = 12)
-        )
+              fluidRow(
+                box(withSpinner(plotlyOutput("pred6"), type = 4), width = 12)
+              )
       ),
       tabItem(tabName = "predtab7",
               fluidRow(
                 box(withSpinner(plotOutput("pred7")), width = 16)
               )
       ),
-# Map -------------------------------------------------------------------------------------------------------------
+      # Map -------------------------------------------------------------------------------------------------------------
       tabItem(tabName = "mapTab",
-                mapModuleUI(id = "map")
+              withSpinner(mapModuleUI(id = "map"))
+      ),
+      tabItem(tabName = "corruptTab",
+              corruptedExplorerModuleUI(id = "corrupt")
       )
     )
   )
