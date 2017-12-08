@@ -21,8 +21,3 @@ chargingSessionFactory <- R6Class(
   ),
   active = list()
 )
-
-# Check if object is an instance of class ChargingSession and R6
-is.ChargingSession = function(object) {
-  "ChargingSession" %in% class(object) & "R6" %in% class(object)
-}
