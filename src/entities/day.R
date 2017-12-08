@@ -22,7 +22,12 @@ dayFactory <- R6Class(
     },
     # Add a charging session to this day by providing a chargingSession object
     addChargingSession = function(chargingSession) {
-      private$..chargingSessions <- c(private$..chargingSessions, chargingSession)
+      if (is.ChargingSession(chargingSession)) {
+        private$..chargingSessions <- c(private$..chargingSessions, chargingSession)
+      } else {
+        message("Error: object given was not of class 'ChargingSession'.")
+      }
+      invisible(self)
     }
   ),
   active = list(
@@ -42,9 +47,3 @@ dayFactory <- R6Class(
     }
   )
 )
-
-a <- list(a = "hi")
-a
-b <- list()
-length(a)
-length(b)

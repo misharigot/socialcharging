@@ -21,3 +21,8 @@ chargingSessionFactory <- R6Class(
   ),
   active = list()
 )
+
+# Check if object is an instance of class ChargingSession and R6
+is.ChargingSession = function(object) {
+  class(object)[[1]] == "ChargingSession" & class(object)[[2]] == "R6"
+}

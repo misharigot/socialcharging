@@ -35,11 +35,7 @@ weekScheduleFactory <- R6Class(
     addChargingSession = function(day, chargingSession) {
       index <- paste("..", day, sep = "")
       private[[index]]$addChargingSession(chargingSession)
+      invisible(self)
     }
   )
 )
-
-week <- weekScheduleFactory$new()
-week$addChargingSession("monday", chargingSessionFactory$new(1,2,3))
-week$addChargingSession("monday", chargingSessionFactory$new(3,4,5))
-week$print()
