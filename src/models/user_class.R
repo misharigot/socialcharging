@@ -29,6 +29,7 @@ cleanDf <- function(df) {
   df %>%
   filter(!is.na(hours_elapsed),
          hours_elapsed > 0.00,
+         !is.na(charged_kwh),
          !is.na(start_date),
          !is.na(end_date),
          user_id %in% usersWithEnoughSessions$user_id) %>%
@@ -65,6 +66,66 @@ isEvening <- function(x) {
 
 isNight <- function(x) {
   return(x == "00-06")
+}
+
+classifyElapsed <- function(elapsed) {
+  if (elapsed <= 1) {
+    return(1)
+  } else if (elapsed > 1 & elapsed <= 2) {
+    return(2)
+  } else if (elapsed > 2 & elapsed <= 4) {
+    return(3)
+  } else if (elapsed > 4 & elapsed <= 6) {
+    return(4)
+  } else if (elapsed > 6 & elapsed <= 8) {
+    return(5)
+  } else if (elapsed > 8 & elapsed <= 10) {
+    return(6)
+  } else if (elapsed > 10 & elapsed <= 12) {
+    return(7)
+  } else if (elapsed > 12 & elapsed <= 14) {
+    return(8)
+  } else if (elapsed > 14 & elapsed <= 16) {
+    return(9)
+  } else if (elapsed > 16 & elapsed <= 18) {
+    return(10)
+  } else if (elapsed > 18 & elapsed <= 20) {
+    return(11)
+  } else if (elapsed > 20 & elapsed <= 22) {
+    return(12)
+  } else if (elapsed > 22 & elapsed <= 24) {
+    return(13)
+  } else {
+    return(-1)
+  }
+}
+
+classifyKwh <- function(kwh) {
+  if (kwh > 0 & kwh <= 1) {
+    return(1)
+  } else if (kwh > 1 & kwh <= 2) {
+    return(2)
+  } else if (kwh > 2 & kwh <= 4) {
+    return(3)
+  } else if (kwh > 4 & kwh <= 6) {
+    return(4)
+  } else if (kwh > 8 & kwh <= 10) {
+    return(5)
+  } else if (kwh > 10 & kwh <= 15) {
+    return(6)
+  } else if (kwh > 15 & kwh <= 20) {
+    return(7)
+  } else if (kwh > 20 & kwh <= 25) {
+    return(8)
+  } else if (kwh > 25 & kwh <= 35) {
+    return(9)
+  } else if (kwh > 35 & kwh <= 45) {
+    return(10)
+  } else if (kwh > 45) {
+    return(11)
+  } else {
+    return(-1)
+  }
 }
 
 ## Returns the classification a session belongs to
@@ -125,24 +186,52 @@ sessionClassificationDf <- function(cleanDf) {
     mutate(start_tf = map(start_date_hour, classifyTf), end_tf = map(end_date_hour, classifyTf)) %>%
     mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf))) %>%
     rowwise() %>%
-    mutate(class = getSessionClass(start_tf, end_tf, hours_elapsed))
-  sessionClassifications$class <- as.factor(sessionClassifications$class)
+    mutate(tfClass = getSessionClass(start_tf, end_tf, hours_elapsed),
+           heClass = map(hours_elapsed, classifyElapsed),
+           kwhClass = map(charged_kwh, classifyKwh))
+  
+  sessionClassifications$tfClass <- as.factor(sessionClassifications$tfClass)
+  sessionClassifications$heClass <- as.factor(unlist(sessionClassifications$heClass))
+  sessionClassifications$kwhClass <- as.factor(unlist(sessionClassifications$kwhClass))
   return(sessionClassifications)
 }
 
+
 # Classify users by their most dominant timeframe
 userClassificationDf <- function(sessionClassification) {
-  userClassifications <- sessionClassification %>%
-    count(user_id, class) %>%
+  tfClassifications <- sessionClassification %>%
+    count(user_id, tfClass) %>%
     group_by(user_id) %>%
     slice(which.max(n))
+  
+  heClassifications <- sessionClassification %>%
+    count(user_id, heClass) %>%
+    group_by(user_id) %>%
+    slice(which.max(n))
+  
+  kwhClassifications <- sessionClassification %>%
+    count(user_id, kwhClass) %>%
+    group_by(user_id) %>%
+    slice(which.max(n))
+  
+  mergedDf <- base::merge(tfClassifications, heClassifications, by = "user_id")
+  mergedDf <- base::merge(mergedDf, kwhClassifications, by = "user_id")
+  mergedDf$n.x <- NULL
+  mergedDf$n.y <- NULL
+  mergedDf$n <- NULL
+  
+  return(mergedDf)
 }
 
-# Summarise count for each timeframe
+df <- read_csv2(config$scDataset, col_names = FALSE)
+df <- cleanDataframe(df)
+df <- sessionClassificationDf(cleanDf(df))
+userDf <- userClassificationDf(df)
 
+# Summarise count for each timeframe
 classDistributionDf <- function(sessionClassificationDf) {
   classDistribution <- sessionClassificationDf %>%
-    count(user_id, class) %>%
+    count(user_id, TfClass) %>%
     group_by(user_id) %>%
     slice(which.max(n)) %>%
     group_by(class) %>%
@@ -151,8 +240,8 @@ classDistributionDf <- function(sessionClassificationDf) {
 
 # Barchart: count for each timeframe
 plotClassCount <- function(sessionClassificationDf) {
-  ggplot(classDistributionDf(sessionClassificationDf),
-         aes(x = class, y = n)) +
+  ggplot(classDistributionDfHE(sessionClassificationDf),
+         aes(x = tfClass, y = n)) +
     geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     labs(x = "class", y = "amount") +
