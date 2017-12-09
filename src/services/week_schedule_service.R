@@ -7,8 +7,8 @@ source("src/entities/charging_session.R")
 
 # PUBLIC API ------------------------------------------------------------------------------------------------------
 
-# Converts a df containing the predictions for a typical week for a user class to a week schedule object.
-convertClassWeekToSchedule <- function(dfWithWeekPredictions) {
+# Converts a df containing the predictions for a week for a user classification to a WeekSchedule object.
+convertWeekPredToSchedule <- function(dfWithWeekPredictions) {
   weekschedule <- weekScheduleFactory$new()
   for (index in 1:nrow(dfWithWeekPredictions)) {
     dayAsString <- numericToDayString(dfWithWeekPredictions[index, "day_of_week"])
@@ -25,19 +25,19 @@ convertClassWeekToSchedule <- function(dfWithWeekPredictions) {
 # Create dummy session predictions
 createDummyWeekForClass <- function() {
   amountOfDummySessions = 7
-  dontTouchMe = FALSE
+  canContainDuplicates = FALSE
   if (amountOfDummySessions > 7) {
-    dontTouchMe = TRUE
+    canContainDuplicates = TRUE
   }
   data.frame(user_class = sample(1, amountOfDummySessions, replace = TRUE),
-             day_of_week = sample(1:7, amountOfDummySessions, replace = dontTouchMe),
+             day_of_week = sample(1:7, amountOfDummySessions, replace = canContainDuplicates),
              start_time = (sample.int(2400, amountOfDummySessions, replace = TRUE)) / 100, 
              hours_elapsed = (sample.int(2400, amountOfDummySessions, replace = TRUE)) / 100,
              charged_kwh = (sample.int(3000, amountOfDummySessions, replace = TRUE)) / 100
              )
 }
 
-# Convert a number between 1 and 7 to the corresponding day as string.
+# Convert a number between 1 and 7 to the corresponding day as a string.
 numericToDayString <- function(numeric) {
   if (numeric < 1 | numeric > 7) {
     warning("Invalid number, give number between 1 and 7.")
@@ -65,6 +65,6 @@ convertRowsToChargingSessions <- function(rows) {
 # Test the functionality
 test <- function() {
   dummyDf <- createDummyWeekForClass()
-  schedulesForClassOne <- convertClassWeekToSchedule(dummyDf)
+  schedulesForClassOne <- convertWeekPredToSchedule(dummyDf)
   print(schedulesForClassOne)
 }
