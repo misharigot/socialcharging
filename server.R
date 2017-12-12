@@ -145,6 +145,37 @@ server <- function(input, output, session) {
     source("src/models/station_classification.R")
     return(showDistributionPlot(scData()))
   })
+  
+  output$timeline <- renderTimevis({
+    source("src/week_schedule/week_schedule.R")
+    validate(
+      need(input$dates[2] >= input$dates[1], "end date is earlier than start date"
+      )
+    )
+    config <- list(
+      editable = TRUE,
+      align = "center",
+      orientation = "top",
+      snap = NULL,
+      margin = list(item = 30, axis = 50)
+    )
+    if (input$action) {
+      isolate(timevis(showTimevis(regressionData(), input$text, input$dates), zoomFactor = 1, options = config))
+    }else{
+      timevis(options = config)
+      }
+    # timevis(showTimevis(regressionData(), input$text, input$dates), zoomFactor = 1, options = config)
+    # timevis(showTimevis(regressionData(),input$text,input$dates))
+  })
+  
+  output$table2 <- renderTable({
+    source("src/week_schedule/week_schedule.R")
+    if (input$action) {
+      isolate(selectData(regressionData(), input$text, input$dates))
+    }
+  })
+  
+  
 
   # Observers -------------------------------------------------------------------------------------------------------
 

@@ -3,6 +3,7 @@ library(shinydashboard)
 library(leaflet)
 library(shinycssloaders)
 library(plotly)
+library(timevis)
 
 source("src/map/map_module.R")
 source("src/corrupted_explorer/corrupted_explorer_module.R")
@@ -30,7 +31,8 @@ ui <- dashboardPage(
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Station clustering", tabName = "predtab6")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
+      menuItem("Calendar", tabName = "calendar", icon = icon("calendar"))
     )
   ),
   dashboardBody(
@@ -163,6 +165,22 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "corruptTab",
               corruptedExplorerModuleUI(id = "corrupt")
+      ),
+      tabItem(tabName = "calendar",
+              fluidRow(
+                box(withSpinner(timevisOutput("timeline"), type = 4), width = 12)
+              ),
+              fluidRow(
+                  box(
+                      title = "select Data", status = "success", solidHeader = TRUE,
+                      textInput("text", h4("User Id"), value = "Enter userId number"),
+                      dateRangeInput("dates", h4("Period")),
+                      br(),
+                      actionButton("action",Position = "right", "Action"), width = 6),
+                  box(
+                      title = "schedule data", status = "success", solidHeader = TRUE,
+                      withSpinner(tableOutput("table2")), type = 4, width = 6)
+                )
       )
     )
   )
