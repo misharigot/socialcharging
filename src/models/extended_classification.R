@@ -6,10 +6,6 @@ library(data.table)
 library(dplyr)
 config <- config::get(file = "config.yml")
 
-minUserSessions <- 5
-
-df <- read.csv(config$dataFolder)
-
 # Classification --------------------------------------------------------------------------------------------------
 
 # Filter and select only relevant rows/columns
@@ -180,8 +176,12 @@ getSessionClass <- function(stf, etf, hrs) {
 # Classify sessions on timeframes
 sessionClassificationDf <- function(cleanDf) {
   sessionClassifications <- cleanDf %>%
-    mutate(start_date_hour = hour(start_date), end_date_hour = hour(end_date)) %>%
-    mutate(start_tf = map(start_date_hour, classifyTf),end_tf = map(end_date_hour, classifyTf)) %>%
+    mutate(start_date_hour = hour(start_date),
+           end_date_hour = hour(end_date)) %>%
+    mutate(
+      start_tf = map(start_date_hour, classifyTf),
+      end_tf = map(end_date_hour, classifyTf)
+    ) %>%
     mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf))) %>%
     rowwise() %>%
     mutate(
@@ -228,49 +228,70 @@ userClassificationDf <- function(sessionClassification) {
   return(mergedDf)
 }
 
-total_df <- sessionClassificationDf(cleanDf(df))
 
-total_df$tfClass <- as.numeric(total_df$tfClass)
-total_df$heClass <- as.numeric(total_df$heClass)
-total_df$kwhClass <- as.numeric(total_df$kwhClass)
+# Test function -----------------------------------------------------------
 
-total_df$dayOfWeek <-
-  weekdays(as.Date(total_df$start_date))
-
-lm_df_connectionTime <-
-  lm(hours_elapsed ~ tfClass + heClass + kwhClass + dayOfWeek ,
-     data = total_df)
-
-lm_df_kwh <- lm(charged_kwh ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
-
-lm_df_startTime <- lm(start_date_hour ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
-
-lm_df_endTime <- lm(end_date_hour ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
-
-summary(lm_df_connectionTime)
-summary(lm_df_kwh)
-summary(lm_df_startTime)
-summary(lm_df_endTime)
-
-total_df$EstConnectionTimeHours <-
-  predict(lm_df_connectionTime, total_df)
-total_df$EstChargedKWh <- predict(lm_df_kwh, total_df)
-total_df$EstStartTime <- predict(lm_df_startTime, total_df)
-total_df$EstEndTime <- predict(lm_df_endTime, total_df)
-
-total_df <- total_df %>%
-  filter(!is.na(EstConnectionTimeHours),
-         !is.na(EstChargedKWh),
-         !is.na(EstStartTime),
-         !is.na(EstEndTime))
-
-total_df$diffEstConnectionTime <- total_df$hours_elapsed - total_df$EstConnectionTimeHours
-total_df$diffChargedKWh <- total_df$charged_kwh - total_df$EstChargedKWh
-total_df$diffStartTime <- total_df$start_date_hour - total_df$EstStartTime
-total_df$diffEndTime <- total_df$end_date_hour - total_df$EstEndTime
-
-source("src/models/regression_test.R")
-statsConnectionTime <- testPrediction(total_df$diffEstConnectionTime, 1)
-statsChargedKWh <- testPrediction(total_df$diffChargedKWh, 1)
-statsStartTime <- testPrediction(total_df$diffStartTime, 1)
-statsEndTime <- testPrediction(total_df$diffEndTime, 1)
+# Just CTRL + Enter inside this function to test it.
+testExtendedPrediction <- function() {
+  
+  minUserSessions <- 5
+  
+  df <- read.csv(config$dataFolder)
+  
+  total_df <- sessionClassificationDf(cleanDf(df))
+  
+  total_df$tfClass <- as.numeric(total_df$tfClass)
+  total_df$heClass <- as.numeric(total_df$heClass)
+  total_df$kwhClass <- as.numeric(total_df$kwhClass)
+  
+  total_df$dayOfWeek <-
+    weekdays(as.Date(total_df$start_date))
+  
+  lm_df_connectionTime <-
+    lm(hours_elapsed ~ tfClass + heClass + kwhClass + dayOfWeek ,
+       data = total_df)
+  
+  lm_df_kwh <-
+    lm(charged_kwh ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
+  
+  lm_df_startTime <-
+    lm(start_date_hour ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
+  
+  lm_df_endTime <-
+    lm(end_date_hour ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
+  
+  summary(lm_df_connectionTime)
+  summary(lm_df_kwh)
+  summary(lm_df_startTime)
+  summary(lm_df_endTime)
+  
+  total_df$EstConnectionTimeHours <-
+    predict(lm_df_connectionTime, total_df)
+  total_df$EstChargedKWh <- predict(lm_df_kwh, total_df)
+  total_df$EstStartTime <- predict(lm_df_startTime, total_df)
+  total_df$EstEndTime <- predict(lm_df_endTime, total_df)
+  
+  total_df <- total_df %>%
+    filter(
+      !is.na(EstConnectionTimeHours),
+      !is.na(EstChargedKWh),
+      !is.na(EstStartTime),
+      !is.na(EstEndTime)
+    )
+  
+  total_df$diffEstConnectionTime <-
+    total_df$hours_elapsed - total_df$EstConnectionTimeHours
+  total_df$diffChargedKWh <-
+    total_df$charged_kwh - total_df$EstChargedKWh
+  total_df$diffStartTime <-
+    total_df$start_date_hour - total_df$EstStartTime
+  total_df$diffEndTime <-
+    total_df$end_date_hour - total_df$EstEndTime
+  
+  source("src/models/regression_test.R")
+  statsConnectionTime <-
+    testPrediction(total_df$diffEstConnectionTime, 1)
+  statsChargedKWh <- testPrediction(total_df$diffChargedKWh, 1)
+  statsStartTime <- testPrediction(total_df$diffStartTime, 1)
+  statsEndTime <- testPrediction(total_df$diffEndTime, 1)
+}

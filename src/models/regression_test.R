@@ -115,10 +115,10 @@ testStationClassBasedPrediction <- function() {
 
 # Function calls ----------------------------------------------------
 
-testUserClassBasedPrediction()
-testStationClassBasedPrediction()
-
-df <- df %>% filter(!(hours_elapsed < 1))
-df <- df %>% filter(!(hours_elapsed > 12))
-plot(df$hour, df$hours_elapsed)
+# testUserClassBasedPrediction()
+# testStationClassBasedPrediction()
+# 
+# df <- df %>% filter(!(hours_elapsed < 1))
+# df <- df %>% filter(!(hours_elapsed > 12))
+# plot(df$hour, df$hours_elapsed)
 
