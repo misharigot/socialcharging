@@ -153,16 +153,17 @@ server <- function(input, output, session) {
       )
     )
     config <- list(
-      editable = TRUE,
-      align = "center",
+      editable = FALSE,
       orientation = "top",
       snap = NULL,
-      margin = list(item = 30, axis = 50)
+      margin = list(item = 20, axis = 80),
+      height = 350,
+      showCurrentTime = FALSE
     )
     if (input$action) {
       isolate(timevis(showTimevis(regressionData(), input$text, input$dates), zoomFactor = 1, options = config))
     }else{
-      timevis(options = config)
+      timevis(options = config)%>% setWindow(Sys.Date() - 3, Sys.Date() + 4)
       }
     # timevis(showTimevis(regressionData(), input$text, input$dates), zoomFactor = 1, options = config)
     # timevis(showTimevis(regressionData(),input$text,input$dates))

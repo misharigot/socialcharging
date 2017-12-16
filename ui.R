@@ -168,6 +168,9 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "calendar",
               fluidRow(
+                tags$head(
+                  includeCSS("src/week_schedule/timvisCss.css")
+                ),
                 box(withSpinner(timevisOutput("timeline"), type = 4), width = 12)
               ),
               fluidRow(
