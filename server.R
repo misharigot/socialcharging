@@ -7,6 +7,7 @@ library(scales)
 library(lattice)
 library(plotly)
 library(corrplot)
+library(googleVis)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -146,27 +147,77 @@ server <- function(input, output, session) {
     return(showDistributionPlot(scData()))
   })
   
-  output$timeline <- renderTimevis({
-    source("src/week_schedule/week_schedule.R")
-    validate(
-      need(input$dates[2] >= input$dates[1], "end date is earlier than start date"
-      )
-    )
-    config <- list(
-      editable = FALSE,
-      orientation = "top",
-      snap = NULL,
-      margin = list(item = 20, axis = 80),
-      height = 350,
-      showCurrentTime = FALSE
-    )
-    if (input$action) {
-      isolate(timevis(showTimevis(regressionData(), input$text, input$dates), zoomFactor = 1, options = config))
-    }else{
-      timevis(options = config)%>% setWindow(Sys.Date() - 3, Sys.Date() + 4)
-      }
+# Timeline --------------------------------------------------------------------------------------------------------
+  
+  output$timeline <- renderGvis({
+    # source("src/week_schedule/week_schedule.R")
+    
+    # validate(
+    #   need(input$dates[2] >= input$dates[1], "end date is earlier than start date")
+    # )
+    # 
+    # config <- list(
+    #   editable = FALSE,
+    #   orientation = "top",
+    #   snap = NULL,
+    #   margin = list(item = 20, axis = 80),
+    #   height = 350,
+    #   showCurrentTime = FALSE,
+    #   zoomable = FALSE,
+    #   moveable = FALSE
+    # )
+    # 
+    # data <- data.frame(
+    #   content = c("0 chargedKwh"),
+    #   start   = c("2017-12-02 10:00:00"),
+    #   end     = c("2017-12-02 18:00:00")
+    # )
+    # 
+    # timevis(data, showZoom = FALSE, fit = TRUE, options = config) %>%
+    #   setWindow("2017-12-01", "2017-12-08", options = list(animation = FALSE))
+    dat <- data.frame(Day=c("Sessions", "Sessions"),
+                      Charged=c(
+                        "1kWh",
+                        "1kWh"
+                      ),
+                      start=as.POSIXct(c(
+                        "1970-01-05 17:15",
+                        "1970-01-05 16:30"
+                      )),
+                      end=as.POSIXct(c(
+                        "1970-01-06 08:00",
+                        "1970-01-05 18:00"
+                      )))
+    
+    gvisTimeline(data = dat, 
+                 rowlabel = "Day",
+                 barlabel = "Charged",
+                 start = "start",
+                 end = "end",
+                 options = list(timeline = "{groupByRowLabel:true, showRowLabels:false}",
+                                width = 1000,
+                                hAxis = "{
+                                  minValue: new Date(1970, 0, 5, 0, 0, 0),
+                                  maxValue: new Date(1970, 0, 11, 23, 59, 59),
+                                  format: 'EEE HH:mm',
+                                  gridlines:{ color: '#ffc107'}
+                                }")
+                 )
+    
+
+    # if (input$action) {
+    #   isolate(timevis(
+    #     getTimevisData(regressionData(), input$text, input$dates),
+    #     zoomFactor = 1,
+    #     showZoom = FALSE,
+    #     options = config
+    #   ))
+    # } else {
+      # timevis(showZoom = FALSE, options = config) %>% setWindow(Sys.Date() - 3, Sys.Date() + 4)
+    # }
     # timevis(showTimevis(regressionData(), input$text, input$dates), zoomFactor = 1, options = config)
-    # timevis(showTimevis(regressionData(),input$text,input$dates))
+    
+    
   })
   
   output$table2 <- renderTable({
@@ -176,8 +227,6 @@ server <- function(input, output, session) {
     }
   })
   
-  
-
   # Observers -------------------------------------------------------------------------------------------------------
 
   # When a double-click happens, check if there's a brush on the plot.

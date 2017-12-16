@@ -11,7 +11,7 @@ source(config$baseClean)
 # df <- cleanDataframe(df)
 
 # make df for selected user and selected date 
-selectData <- function(df, user, dates){
+selectData <- function(df, user, dates) {
   df %>%
     filter(user_id == user & start_date >= dates[1] & end_date <= dates[2]) %>%
     mutate(start_date = as.character(start_date), end_date = as.character(end_date)) %>% 
@@ -19,7 +19,7 @@ selectData <- function(df, user, dates){
 }
 
 # by using above df it makes data.frame for timevis
-makeDf <- function(selectData, dates){
+makeDf <- function(selectData, dates) {
   # this if is for when there is no data in selected date
   if (nrow(selectData) == 0) {
     data <- data.frame(
@@ -28,7 +28,7 @@ makeDf <- function(selectData, dates){
       end = dates[2]
     )
     return(data)
-  }else{
+  } else {
     data <- data.frame(
       id = 1:nrow(selectData),
       content = paste0(selectData$charged_kwh, " kwh"),
@@ -39,6 +39,7 @@ makeDf <- function(selectData, dates){
   }
 }
 
-showTimevis <- function(scData, user, dates){
+# Returns a df with the data used by timevis
+getTimevisData <- function(scData, user, dates) {
   makeDf(selectData(scData, user, dates), dates)
 }

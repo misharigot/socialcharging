@@ -171,7 +171,7 @@ ui <- dashboardPage(
                 tags$head(
                   includeCSS("src/week_schedule/timvisCss.css")
                 ),
-                box(withSpinner(timevisOutput("timeline"), type = 4), width = 12)
+                box(withSpinner(htmlOutput("timeline"), type = 4), width = 12)
               ),
               fluidRow(
                   box(
@@ -179,7 +179,7 @@ ui <- dashboardPage(
                       textInput("text", h4("User Id"), value = "Enter userId number"),
                       dateRangeInput("dates", h4("Period")),
                       br(),
-                      actionButton("action",Position = "right", "Action"), width = 6),
+                      actionButton("action", Position = "right", "Action"), width = 6),
                   box(
                       title = "schedule data", status = "success", solidHeader = TRUE,
                       withSpinner(tableOutput("table2")), type = 4, width = 6)
