@@ -31,6 +31,11 @@ server <- function(input, output, session) {
     head(df)
     return(df)
   })
+  
+  dummySessions <- reactive({
+    source("src/helpers/data_helper.R")
+    getDummyPredictedSessions()
+  })
 
   # Returns the numberfied dataframe
   numberfiedDf <- reactive({
@@ -154,6 +159,8 @@ server <- function(input, output, session) {
     
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
+    
+    df <- dummySessions()
 
     config <- list(
       editable = FALSE,
@@ -167,9 +174,10 @@ server <- function(input, output, session) {
       min = nextMonday,
       max = nextSunday + 1
     )
-
+    
+    # ToDo: Put clean data in here
     data <- data.frame(
-      content = c("3 kWh"),
+      content = df$pred_kwh,
       start   = c("2017-12-02 10:00:00"),
       end     = c("2017-12-02 18:00:00"),
       title = c("Start time: 10:00:00
@@ -179,7 +187,6 @@ Charged kWh: 3 kWh")
     
     timevis(data, showZoom = TRUE, fit = TRUE, options = config) %>%
       setWindow(nextMonday, nextSunday + 1, options = list(animation = FALSE))
-    
   })
   
   output$table2 <- renderTable({

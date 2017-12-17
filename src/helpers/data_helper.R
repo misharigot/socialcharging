@@ -1,10 +1,12 @@
 library(config)
+library(dplyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source(config$multiplotHelper)
 
 source("./src/models/regression_user_class.R")
 source("./src/models/regression_station_class.R")
+source("src/helpers/date_helper.R")
 
 # Writes a csv to data folder with predictions
 generatePredictionCsv <- function() {
@@ -57,3 +59,25 @@ changeToDescriptiveName <- function(x) {
                 "-1" = "Longer24Hours")
   return(res)
 }
+
+# Returns a data frame with dummy predicted sessions to fill the timeline with.
+getDummyPredictedSessions <- function() {
+  df <- data.frame("start_time_class" = rNum(10, 300), 
+                   "hours_elapsed_class" = rNum(10, 300),
+                   "kwh_class" = rNum(10, 300),
+                   "day" = rNum(7, 300),
+                   "pred_start_time" = rNum(24, 300),
+                   "pred_hours_elapsed" = rNum(24, 300),
+                   "pred_kwh" = rNum(10, 300))
+}
+
+# Returns a vector of random numbers between 1 and x.
+rNum <- function(x, size) {
+  sample(1:x, size, replace = T)
+}
+
+# ToDo: Finish this function
+convertSessionsToTimelineData <- function(df) {
+  df %>% mutate(start = )
+}
+
