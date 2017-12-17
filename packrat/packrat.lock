@@ -31,6 +31,7 @@ Hash: e8805df54c65ac96d50235c44a82615c
 Package: backports
 Source: CRAN
 Version: 1.1.2
+Hash: 5ae7b3466e529e4400951ca18c137e40
 
 Package: base64enc
 Source: CRAN
@@ -160,7 +161,7 @@ Package: htmlwidgets
 Source: CRAN
 Version: 0.9
 Hash: 7514f6ea9f3bef6d9b6c945095275302
-Requires: jsonlite, yaml, htmltools
+Requires: htmltools, jsonlite, yaml
 
 Package: httpuv
 Source: CRAN
@@ -194,7 +195,7 @@ Package: knitr
 Source: CRAN
 Version: 1.17
 Hash: f6b2bf543ee3e25f5b92bb46f9958c5f
-Requires: digest, highr, yaml, markdown, stringr, evaluate
+Requires: digest, evaluate, highr, markdown, stringr, yaml
 
 Package: labeling
 Source: CRAN
@@ -336,12 +337,14 @@ Hash: c17b638e3282aa222a47112d7a60bc66
 Package: rmarkdown
 Source: CRAN
 Version: 1.8
-Requires: base64enc, jsonlite, mime, yaml, htmltools, stringr,
-    evaluate, knitr, rprojroot
+Hash: 2a7842e3cee62a79dd737d17e9e9d86b
+Requires: base64enc, evaluate, htmltools, jsonlite, knitr, mime,
+    rprojroot, stringr, yaml
 
 Package: rprojroot
 Source: CRAN
 Version: 1.2
+Hash: fdcac51a7f47decd60556ceefc3c26b1
 Requires: backports
 
 Package: rstudioapi
@@ -360,8 +363,8 @@ Package: shiny
 Source: CRAN
 Version: 1.0.5
 Hash: 4d47532a807122bfd6bc3818310f9d2e
-Requires: R6, digest, jsonlite, mime, sourcetools, xtable, httpuv,
-    htmltools
+Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
+    xtable
 
 Package: shinycssloaders
 Source: CRAN
@@ -435,7 +438,8 @@ Requires: Rcpp, glue, purrr, rlang
 Package: timevis
 Source: CRAN
 Version: 0.4
-Requires: jsonlite, magrittr, htmltools, htmlwidgets, shiny, rmarkdown
+Hash: d32ce479b7c8e1dd36ce504cf1679859
+Requires: htmltools, htmlwidgets, jsonlite, magrittr, rmarkdown, shiny
 
 Package: viridis
 Source: CRAN

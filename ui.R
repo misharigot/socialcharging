@@ -171,7 +171,7 @@ ui <- dashboardPage(
                 tags$head(
                   includeCSS("src/week_schedule/timvisCss.css")
                 ),
-                box(withSpinner(htmlOutput("timeline"), type = 4), width = 12)
+                box(withSpinner(timevisOutput("timeline"), type = 4), width = 12, title = "Weekly sessions", footer = "This is a future week. This date isn't actually meaningful.")
               ),
               fluidRow(
                   box(
