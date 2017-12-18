@@ -1,10 +1,14 @@
+# To retreive the data you need to run the following code with a dataframe as paramater:
+# df <- testExtendedPrediction(df)
+
 library(purrr)
 library(tidyr)
 library(readr)
 library(lubridate)
 library(data.table)
 library(dplyr)
-config <- config::get(file = "config.yml")
+
+minUserSessions <- 5
 
 # Classification --------------------------------------------------------------------------------------------------
 
@@ -23,6 +27,9 @@ cleanDf <- function(df) {
       hours_elapsed > 0.00,!is.na(start_date),!is.na(end_date),
       user_id %in% usersWithEnoughSessions$user_id
     ) %>%
+    filter(!is.na(start_date),
+           !is.na(charged_kwh),
+           !is.na(hours_elapsed)) %>%
     select(session_id,
            user_id,
            start_date,
@@ -31,18 +38,37 @@ cleanDf <- function(df) {
            hours_elapsed)
 }
 
-# Returns the bucket a POSIXct datetime belongs to
-classifyTf <- function(datetime) {
-  # datetime <- hour(datetime)
-  if (datetime >= 12 & datetime < 18) {
-    return("12-18")
-  } else if (datetime >= 18 & datetime < 24) {
-    return("18-00")
-  } else if (datetime >= 0 & datetime < 6) {
-    return("00-06")
-  } else if (datetime >= 6 & datetime < 12) {
-    return("06-12")
+# Returns the calssification or bucketed start time
+classifyTf <- function(time) {
+  
+  if (time >= 0 & time < 2) {
+    return(1)
+  } else if (time >= 2 & time < 4) {
+    return(2)
+  } else if (time >= 4 & time < 6) {
+    return(3)
+  } else if (time >= 6 & time < 8) {
+    return(4)
+  } else if (time >= 8 & time < 10) {
+    return(5)
+  } else if (time >= 10 & time < 12) {
+    return(6)
+  } else if (time >= 12 & time < 14) {
+    return(7)
+  } else if (time >= 14 & time < 16) {
+    return(8)
+  } else if (time >= 16 & time < 18) {
+    return(9)
+  } else if (time >= 18 & time < 20) {
+    return(10)
+  } else if (time >= 20 & time < 22) {
+    return(11)
+  } else if (time >= 22 & time < 24) {
+    return(12)
+  } else {
+    return(-1)
   }
+  
 }
 
 # Boolean checks
@@ -63,6 +89,7 @@ isNight <- function(x) {
 }
 
 classifyElapsed <- function(elapsed) {
+  
   if (elapsed <= 1) {
     return(1)
   } else if (elapsed > 1 & elapsed <= 2) {
@@ -95,6 +122,7 @@ classifyElapsed <- function(elapsed) {
 }
 
 classifyKwh <- function(kwh) {
+  
   if (kwh > 0 & kwh <= 1) {
     return(1)
   } else if (kwh > 1 & kwh <= 2) {
@@ -126,94 +154,91 @@ classifyKwh <- function(kwh) {
 # stf: start_tf
 # etf: end_tf
 # hrs: hours_elapsed
-getSessionClass <- function(stf, etf, hrs) {
-  # stf: Morning
-  if (isMorning(stf) & isMorning(etf) & hrs < 24) {
-    return(1)
-  } else if (isMorning(stf) & isAfternoon(etf) & hrs < 24) {
-    return(2)
-  } else if (isMorning(stf) & isEvening(etf) & hrs < 24) {
-    return(3)
-  } else if (isMorning(stf) & isNight(etf) & hrs < 24) {
-    return(4)
-  }
-  
-  # stf: Afternoon
-  if (isAfternoon(stf) & isMorning(etf) & hrs < 24) {
-    return(5)
-  } else if (isAfternoon(stf) & isAfternoon(etf) & hrs < 24) {
-    return(6)
-  } else if (isAfternoon(stf) & isEvening(etf) & hrs < 24) {
-    return(7)
-  } else if (isAfternoon(stf) & isNight(etf) & hrs < 24) {
-    return(8)
-  }
-  
-  # stf: Evening
-  if (isEvening(stf) & isMorning(etf) & hrs < 24) {
-    return(9)
-  } else if (isEvening(stf) & isAfternoon(etf) & hrs < 24) {
-    return(10)
-  } else if (isEvening(stf) & isEvening(etf) & hrs < 24) {
-    return(11)
-  } else if (isEvening(stf) & isNight(etf) & hrs < 24) {
-    return(12)
-  }
-  
-  # stf: Night
-  if (isNight(stf) & isMorning(etf) & hrs < 24) {
-    return(13)
-  } else if (isNight(stf) & isAfternoon(etf) & hrs < 24) {
-    return(14)
-  } else if (isNight(stf) & isEvening(etf) & hrs < 24) {
-    return(15)
-  } else if (isNight(stf) & isNight(etf) & hrs < 24) {
-    return(16)
-  }
-  return(-1) # Greater than 24 hours elapsed
-}
+# getSessionClass <- function(stf, etf, hrs) {
+#   # stf: Morning
+#   if (isMorning(stf) & isMorning(etf) & hrs < 24) {
+#     return(1)
+#   } else if (isMorning(stf) & isAfternoon(etf) & hrs < 24) {
+#     return(2)
+#   } else if (isMorning(stf) & isEvening(etf) & hrs < 24) {
+#     return(3)
+#   } else if (isMorning(stf) & isNight(etf) & hrs < 24) {
+#     return(4)
+#   }
+#   
+#   # stf: Afternoon
+#   if (isAfternoon(stf) & isMorning(etf) & hrs < 24) {
+#     return(5)
+#   } else if (isAfternoon(stf) & isAfternoon(etf) & hrs < 24) {
+#     return(6)
+#   } else if (isAfternoon(stf) & isEvening(etf) & hrs < 24) {
+#     return(7)
+#   } else if (isAfternoon(stf) & isNight(etf) & hrs < 24) {
+#     return(8)
+#   }
+#   
+#   # stf: Evening
+#   if (isEvening(stf) & isMorning(etf) & hrs < 24) {
+#     return(9)
+#   } else if (isEvening(stf) & isAfternoon(etf) & hrs < 24) {
+#     return(10)
+#   } else if (isEvening(stf) & isEvening(etf) & hrs < 24) {
+#     return(11)
+#   } else if (isEvening(stf) & isNight(etf) & hrs < 24) {
+#     return(12)
+#   }
+#   
+#   # stf: Night
+#   if (isNight(stf) & isMorning(etf) & hrs < 24) {
+#     return(13)
+#   } else if (isNight(stf) & isAfternoon(etf) & hrs < 24) {
+#     return(14)
+#   } else if (isNight(stf) & isEvening(etf) & hrs < 24) {
+#     return(15)
+#   } else if (isNight(stf) & isNight(etf) & hrs < 24) {
+#     return(16)
+#   }
+#   return(-1) # Greater than 24 hours elapsed
+# }
 
 # Classify sessions on timeframes
 sessionClassificationDf <- function(cleanDf) {
-  sessionClassifications <- cleanDf %>%
-    mutate(start_date_hour = hour(start_date),
-           end_date_hour = hour(end_date)) %>%
-    mutate(
-      start_tf = map(start_date_hour, classifyTf),
-      end_tf = map(end_date_hour, classifyTf)
-    ) %>%
-    mutate(start_tf = as.factor(unlist(start_tf)), end_tf = as.factor(unlist(end_tf))) %>%
-    rowwise() %>%
-    mutate(
-      tfClass = getSessionClass(start_tf, end_tf, hours_elapsed),
-      heClass = map(hours_elapsed , classifyElapsed),
-      kwhClass = map(charged_kwh, classifyKwh)
-    )
   
-  sessionClassifications$tfClass <-
-    as.factor(sessionClassifications$tfClass)
-  sessionClassifications$heClass <-
-    as.factor(unlist(sessionClassifications$heClass))
-  sessionClassifications$kwhClass <-
-    as.factor(unlist(sessionClassifications$kwhClass))
+  sessionClassifications <- cleanDf %>%
+    mutate(
+      start_date_hour = hour(start_date))
+  
+  sessionClassifications <- sessionClassifications %>%
+    mutate(
+      start_time_class = map(start_date_hour, classifyTf),
+      hours_elapsed_class = map(hours_elapsed , classifyElapsed),
+      kwh_class = map(charged_kwh, classifyKwh))
+  
+  sessionClassifications$start_time_class <-
+    as.factor(unlist(sessionClassifications$start_time_class))
+  sessionClassifications$hours_elapsed_class <-
+    as.factor(unlist(sessionClassifications$hours_elapsed_class))
+  sessionClassifications$kwh_class <-
+    as.factor(unlist(sessionClassifications$kwh_class))
+  
   return(sessionClassifications)
 }
 
-
 #Classify users by their most dominant timeframe
 userClassificationDf <- function(sessionClassification) {
+  
   tfClassifications <- sessionClassification %>%
-    count(user_id, tfClass) %>%
+    count(user_id, start_time_class) %>%
     group_by(user_id) %>%
     slice(which.max(n))
   
   heClassifications <- sessionClassification %>%
-    count(user_id, heClass) %>%
+    count(user_id, hours_elapsed_class) %>%
     group_by(user_id) %>%
     slice(which.max(n))
   
   kwhClassifications <- sessionClassification %>%
-    count(user_id, kwhClass) %>%
+    count(user_id, kwh_class) %>%
     group_by(user_id) %>%
     slice(which.max(n))
   
@@ -228,70 +253,47 @@ userClassificationDf <- function(sessionClassification) {
   return(mergedDf)
 }
 
+# Test function regression --------------------------------------------------------------------------
 
-# Test function -----------------------------------------------------------
-
-# Just CTRL + Enter inside this function to test it.
-testExtendedPrediction <- function() {
-  
-  minUserSessions <- 5
-  
-  df <- read.csv(config$dataFolder)
+testExtendedPrediction <- function(df) {
   
   total_df <- sessionClassificationDf(cleanDf(df))
   
-  total_df$tfClass <- as.numeric(total_df$tfClass)
-  total_df$heClass <- as.numeric(total_df$heClass)
-  total_df$kwhClass <- as.numeric(total_df$kwhClass)
+  total_df$start_time_class <- as.numeric(total_df$start_time_class)
+  total_df$hours_elapsed_class <- as.numeric(total_df$hours_elapsed_class)
+  total_df$kwh_class <- as.numeric(total_df$kwh_class)
   
-  total_df$dayOfWeek <-
-    weekdays(as.Date(total_df$start_date))
+  total_df$day <-
+    strftime(as.Date(total_df$start_date), format = "%u")
   
   lm_df_connectionTime <-
-    lm(hours_elapsed ~ tfClass + heClass + kwhClass + dayOfWeek ,
+    lm(hours_elapsed ~ start_time_class + hours_elapsed_class + kwh_class + day ,
        data = total_df)
   
   lm_df_kwh <-
-    lm(charged_kwh ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
+    lm(charged_kwh ~ start_time_class + hours_elapsed_class + kwh_class + day, data = total_df)
   
   lm_df_startTime <-
-    lm(start_date_hour ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
-  
-  lm_df_endTime <-
-    lm(end_date_hour ~ tfClass + heClass + kwhClass + dayOfWeek, data = total_df)
+    lm(start_date_hour ~ start_time_class + hours_elapsed_class + kwh_class + day, data = total_df)
   
   summary(lm_df_connectionTime)
   summary(lm_df_kwh)
   summary(lm_df_startTime)
-  summary(lm_df_endTime)
   
-  total_df$EstConnectionTimeHours <-
+  total_df$pred_hours_elapsed <-
     predict(lm_df_connectionTime, total_df)
-  total_df$EstChargedKWh <- predict(lm_df_kwh, total_df)
-  total_df$EstStartTime <- predict(lm_df_startTime, total_df)
-  total_df$EstEndTime <- predict(lm_df_endTime, total_df)
+  total_df$pred_kwh <- predict(lm_df_kwh, total_df)
+  total_df$pred_start_time <- predict(lm_df_startTime, total_df)
   
   total_df <- total_df %>%
     filter(
-      !is.na(EstConnectionTimeHours),
-      !is.na(EstChargedKWh),
-      !is.na(EstStartTime),
-      !is.na(EstEndTime)
-    )
-  
-  total_df$diffEstConnectionTime <-
-    total_df$hours_elapsed - total_df$EstConnectionTimeHours
-  total_df$diffChargedKWh <-
-    total_df$charged_kwh - total_df$EstChargedKWh
-  total_df$diffStartTime <-
-    total_df$start_date_hour - total_df$EstStartTime
-  total_df$diffEndTime <-
-    total_df$end_date_hour - total_df$EstEndTime
-  
-  source("src/models/regression_test.R")
-  statsConnectionTime <-
-    testPrediction(total_df$diffEstConnectionTime, 1)
-  statsChargedKWh <- testPrediction(total_df$diffChargedKWh, 1)
-  statsStartTime <- testPrediction(total_df$diffStartTime, 1)
-  statsEndTime <- testPrediction(total_df$diffEndTime, 1)
+      !is.na(pred_hours_elapsed),
+      !is.na(pred_kwh),
+      !is.na(pred_start_time)
+    ) %>%
+    group_by(start_time_class, hours_elapsed_class, kwh_class, day) %>%
+    summarise(pred_start_time = round(mean(pred_start_time)),
+           pred_hours_elapsed = mean(pred_hours_elapsed),
+           pred_kwh = mean(pred_kwh))
+  return(total_df)
 }
