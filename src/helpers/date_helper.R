@@ -24,5 +24,20 @@ toNextWeekStartDate <- function(hours, day) {
 # ToDo: Finish this function, converting prep_start_time, day and pred_hours_elapsed to an actual date for next week
 toNextWeekEndDate <- function(hours, day, elapsed) {
   # Return the end date as next week's date
+  nextMonday <- nextWeekday(1)
+  if (hours + elapsed > 24) {
+    date <- nextMonday + day
+    hours <- elapsed - (24 - hours)
+  }else {
+    date <- nextMonday + day - 1
+    hours <- hours + elapsed
+  }
+  hms <- hms(paste0(hours, ":00:00"))
+  ymd_hms(paste(date, hms, sep = "-"))
 }
+
+toShowKwh <- function(kwh){
+  paste0(kwh," kwh")
+}
+
 
