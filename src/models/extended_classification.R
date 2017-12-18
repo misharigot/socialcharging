@@ -1,12 +1,12 @@
-# To retreive the data you need to run the following code with a dataframe as paramater:
-# df <- testExtendedPrediction(df)
-
+# To retrieve the predicted data, you need to run the following function with a csv DF cleaned by base_clean as the argument:
+# getPredictedValuesDf(df)
 library(purrr)
 library(tidyr)
 library(readr)
 library(lubridate)
 library(data.table)
 library(dplyr)
+config <- config::get(file = "config.yml")
 
 minUserSessions <- 5
 
@@ -40,7 +40,6 @@ cleanDf <- function(df) {
 
 # Returns the calssification or bucketed start time
 classifyTf <- function(time) {
-  
   if (time >= 0 & time < 2) {
     return(1)
   } else if (time >= 2 & time < 4) {
@@ -68,28 +67,10 @@ classifyTf <- function(time) {
   } else {
     return(-1)
   }
-  
 }
 
-# Boolean checks
-isMorning <- function(x) {
-  return(x == "06-12")
-}
-
-isAfternoon <- function(x) {
-  return(x == "12-18")
-}
-
-isEvening <- function(x) {
-  return(x == "18-00")
-}
-
-isNight <- function(x) {
-  return(x == "00-06")
-}
 
 classifyElapsed <- function(elapsed) {
-  
   if (elapsed <= 1) {
     return(1)
   } else if (elapsed > 1 & elapsed <= 2) {
@@ -122,7 +103,6 @@ classifyElapsed <- function(elapsed) {
 }
 
 classifyKwh <- function(kwh) {
-  
   if (kwh > 0 & kwh <= 1) {
     return(1)
   } else if (kwh > 1 & kwh <= 2) {
@@ -150,60 +130,8 @@ classifyKwh <- function(kwh) {
   }
 }
 
-## Returns the classification a session belongs to
-# stf: start_tf
-# etf: end_tf
-# hrs: hours_elapsed
-# getSessionClass <- function(stf, etf, hrs) {
-#   # stf: Morning
-#   if (isMorning(stf) & isMorning(etf) & hrs < 24) {
-#     return(1)
-#   } else if (isMorning(stf) & isAfternoon(etf) & hrs < 24) {
-#     return(2)
-#   } else if (isMorning(stf) & isEvening(etf) & hrs < 24) {
-#     return(3)
-#   } else if (isMorning(stf) & isNight(etf) & hrs < 24) {
-#     return(4)
-#   }
-#   
-#   # stf: Afternoon
-#   if (isAfternoon(stf) & isMorning(etf) & hrs < 24) {
-#     return(5)
-#   } else if (isAfternoon(stf) & isAfternoon(etf) & hrs < 24) {
-#     return(6)
-#   } else if (isAfternoon(stf) & isEvening(etf) & hrs < 24) {
-#     return(7)
-#   } else if (isAfternoon(stf) & isNight(etf) & hrs < 24) {
-#     return(8)
-#   }
-#   
-#   # stf: Evening
-#   if (isEvening(stf) & isMorning(etf) & hrs < 24) {
-#     return(9)
-#   } else if (isEvening(stf) & isAfternoon(etf) & hrs < 24) {
-#     return(10)
-#   } else if (isEvening(stf) & isEvening(etf) & hrs < 24) {
-#     return(11)
-#   } else if (isEvening(stf) & isNight(etf) & hrs < 24) {
-#     return(12)
-#   }
-#   
-#   # stf: Night
-#   if (isNight(stf) & isMorning(etf) & hrs < 24) {
-#     return(13)
-#   } else if (isNight(stf) & isAfternoon(etf) & hrs < 24) {
-#     return(14)
-#   } else if (isNight(stf) & isEvening(etf) & hrs < 24) {
-#     return(15)
-#   } else if (isNight(stf) & isNight(etf) & hrs < 24) {
-#     return(16)
-#   }
-#   return(-1) # Greater than 24 hours elapsed
-# }
-
 # Classify sessions on timeframes
 sessionClassificationDf <- function(cleanDf) {
-  
   sessionClassifications <- cleanDf %>%
     mutate(
       start_date_hour = hour(start_date))
@@ -226,7 +154,6 @@ sessionClassificationDf <- function(cleanDf) {
 
 #Classify users by their most dominant timeframe
 userClassificationDf <- function(sessionClassification) {
-  
   tfClassifications <- sessionClassification %>%
     count(user_id, start_time_class) %>%
     group_by(user_id) %>%
@@ -253,10 +180,9 @@ userClassificationDf <- function(sessionClassification) {
   return(mergedDf)
 }
 
-# Test function regression --------------------------------------------------------------------------
+# Public API ------------------------------------------------------------------------------------------------------
 
-testExtendedPrediction <- function(df) {
-  
+getPredictedValuesDf <- function(df) {
   total_df <- sessionClassificationDf(cleanDf(df))
   
   total_df$start_time_class <- as.numeric(total_df$start_time_class)
@@ -275,10 +201,6 @@ testExtendedPrediction <- function(df) {
   
   lm_df_startTime <-
     lm(start_date_hour ~ start_time_class + hours_elapsed_class + kwh_class + day, data = total_df)
-  
-  summary(lm_df_connectionTime)
-  summary(lm_df_kwh)
-  summary(lm_df_startTime)
   
   total_df$pred_hours_elapsed <-
     predict(lm_df_connectionTime, total_df)
