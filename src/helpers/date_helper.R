@@ -24,7 +24,7 @@ toNextWeekStartDate <- function(startingHour, day) {
 # Returns the end date time of a session, based on the starting hour, the day (1-7) and the time elapsed (hour decimal).
 toNextWeekEndDate <- function(startingHour, day, elapsed) {
   startDate <- toNextWeekStartDate(startingHour, day)
-  endDate <- startDate + startingHour(floor(elapsed)) + minutes(getMinutes(elapsed))
+  endDate <- startDate + hours(floor(elapsed)) + minutes(getMinutes(elapsed))
 }
 
 # Returns the minutes of a decimal hour (hours = 1.1 returns 6 minutes)
@@ -43,6 +43,6 @@ isDecimal <- function(number) {
   number %% 1 != 0
 }
 
-toShowKwh <- function(kwh){
-  paste0(kwh," kwh")
+formatKwh <- function(kwh){
+  paste0(kwh, " kwh")
 }

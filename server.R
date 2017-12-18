@@ -156,11 +156,12 @@ server <- function(input, output, session) {
   output$timeline <- renderTimevis({
     source("src/week_schedule/week_schedule.R")
     source("src/helpers/date_helper.R")
-    
+
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
     
-    df <- dummySessions()
+    dummySessions <- dummySessions()
+    timelineData <- convertSessionsToTimelineData(dummySessions)
 
     config <- list(
       editable = FALSE,
@@ -177,12 +178,12 @@ server <- function(input, output, session) {
     
     # ToDo: Put clean data in here
     data <- data.frame(
-      content = df$pred_kwh,
-      start   = c("2017-12-02 10:00:00"),
-      end     = c("2017-12-02 18:00:00"),
-      title = c("Start time: 10:00:00
-End time: 18:00:00
-Charged kWh: 3 kWh")
+      content = timelineData$formatted_kwh, # 10 kwh
+      start   = timelineData$start_datetime, # 2017-12-26 10:00:00
+      end     = timelineData$end_datetime, # 2017-12-26 13:32:00
+      title = c(paste0("Start time: ", timelineData$start_datetime,
+" \nEnd time: ", timelineData$end_datetime,
+" \nCharged kWh: ", timelineData$formatted_kwh))
     )
     
     timevis(data, showZoom = TRUE, fit = TRUE, options = config) %>%

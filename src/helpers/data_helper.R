@@ -76,8 +76,11 @@ rNum <- function(x, size) {
   sample(1:x, size, replace = T)
 }
 
-# ToDo: Finish this function
 convertSessionsToTimelineData <- function(df) {
-  df %>% mutate(start = )
+  df %>% 
+    filter(pred_hours_elapsed > 0) %>%
+    mutate(start_datetime = toNextWeekStartDate(pred_start_time, day),
+                end_datetime = toNextWeekEndDate(pred_start_time, day, pred_hours_elapsed),
+                formatted_kwh = formatKwh(pred_kwh)
+                )
 }
-
