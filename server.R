@@ -32,9 +32,9 @@ server <- function(input, output, session) {
     return(df)
   })
   
-  dummySessions <- reactive({
-    source("src/helpers/data_helper.R")
-    getDummyPredictedSessions()
+  predictedValuesDf <- reactive({
+    source("src/models/extended_classification.R")
+    getPredictedValuesDf(scData())
   })
 
   # Returns the numberfied dataframe
@@ -160,8 +160,10 @@ server <- function(input, output, session) {
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
     
-    dummySessions <- dummySessions()
-    timelineData <- convertSessionsToTimelineData(dummySessions)
+    # NOTE the head() call: Displaying the predicted data in the weekschedule works. Now needs to only load and convert the sessions for the selected class only.
+    predictedValuesDf <- head(predictedValuesDf())
+    
+    timelineData <- convertSessionsToTimelineData(predictedValuesDf)
 
     config <- list(
       editable = FALSE,

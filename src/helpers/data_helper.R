@@ -78,6 +78,7 @@ rNum <- function(x, size) {
 
 convertSessionsToTimelineData <- function(df) {
   df %>% 
+    mutate(day = as.numeric(day)) %>%
     filter(pred_hours_elapsed > 0) %>%
     mutate(start_datetime = toNextWeekStartDate(pred_start_time, day),
                 end_datetime = toNextWeekEndDate(pred_start_time, day, pred_hours_elapsed),

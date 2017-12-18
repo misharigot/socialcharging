@@ -15,10 +15,14 @@ nextWeekday <- function(wday) {
 
 # Returns the start date time of a session, based on the starting hour and the day (1-7).
 toNextWeekStartDate <- function(startingHour, day) {
-  nextMonday <- nextWeekday(1)
-  date <- nextMonday + day - 1
-  hms <- hms(paste0(startingHour, ":00:00"))
-  ymd_hms(paste(date, hms, sep = "-"))
+  date <- nextWeekday(day)
+  if (startingHour != 0) {
+    hms <- hms(paste0(startingHour, ":00:00"))
+  } else {
+    hms <- "00:00:00"
+  }
+  dateString <- paste(date, hms, sep = "-")
+  ymd_hms(dateString)
 }
 
 # Returns the end date time of a session, based on the starting hour, the day (1-7) and the time elapsed (hour decimal).
