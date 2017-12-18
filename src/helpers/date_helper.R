@@ -7,7 +7,7 @@ nextWeekday <- function(wday) {
   if (wday > 0 & wday < 8) {
     today <- date(now())
     nextWeekDay <- today + 7
-    ceiling_date(nextWeekDay, unit = "day") + wday - 1
+    ceiling_date(nextWeekDay, unit = "day") + wday - wday(today)
   } else {
     warning("Please give a number between 1 (monday) and 7 (sunday)")
   }
