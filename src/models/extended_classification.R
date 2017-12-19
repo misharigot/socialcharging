@@ -7,6 +7,7 @@ library(readr)
 library(lubridate)
 library(data.table)
 library(dplyr)
+config <- config::get(file = "config.yml")
 
 minUserSessions <- 5
 
