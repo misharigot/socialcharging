@@ -1,3 +1,62 @@
 .vis-item.vis-range .vis-item-content {
     font-size: 11px;
 }
+
+.vis-item.vis-range .vis-item-content {
+  position: relative;
+  display: block;
+}
+
+.efficiency {
+  padding: 3px;
+  height: 100%;
+  width: 100%;
+}
+
+.box-footer {
+  margin-top: 15px;
+}
+
+.eff-0 {
+  background-color: #E5D500;
+}
+
+.eff-10 {
+  background-color: #CED009;
+}
+
+.eff-20 {
+  background-color: #B7CB12;
+}
+
+.eff-30 {
+  background-color: #A0C61B;
+}
+
+.eff-40 {
+  background-color: #89C224;
+}
+
+.eff-50 {
+  background-color: #72BD2D;
+}
+
+.eff-60 {
+  background-color: #5BB836;
+}
+
+.eff-70 {
+  background-color: #44B43F;
+}
+
+.eff-80 {
+  background-color: #2DAF48;
+}
+
+.eff-90 {
+  background-color: #16AA51;
+}
+
+.eff-100 {
+  background-color: #00A65A;
+}

@@ -85,7 +85,8 @@ convertSessionsToTimelineData <- function(predictedSessions) {
     mutate(start_datetime = toNextWeekStartDate(pred_start_time, day),
                 end_datetime = toNextWeekEndDate(pred_start_time, day, pred_hours_elapsed),
                 formatted_kwh = formatKwh(pred_kwh),
-                efficiency = 100 / (pred_hours_elapsed * 11) * pred_kwh # 11 is the charging speed
+                efficiency = 100 / (pred_hours_elapsed * 11) * pred_kwh, # 11 is the charging speed
+                rounded_efficiency = paste0("eff-",plyr::round_any(efficiency, 10, f = ceiling))
                 )
 }
 

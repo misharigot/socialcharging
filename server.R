@@ -170,7 +170,7 @@ server <- function(input, output, session) {
       timelineData <- convertSessionsToTimelineData(selectedValues)
   
       data <- data.frame(
-        content = templateCharging(timelineData$formatted_kwh, timelineData$efficiency, 
+        content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh, 
                                    timelineData$start_datetime, timelineData$end_datetime),
         start   = timelineData$start_datetime, # 2017-12-26 10:00:00
         end     = timelineData$end_datetime, # 2017-12-26 13:32:00
