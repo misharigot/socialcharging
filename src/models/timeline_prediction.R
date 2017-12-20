@@ -1,4 +1,3 @@
-# Classification
 
 library(purrr)
 library(tidyr)
@@ -10,8 +9,8 @@ source(config$baseClean)
 
 minUserSessions <- 5
 
+# Data cleaning -----------------------------------------------------------
 cleanDf <- function(df) {
-  # Users id's that have sessions >= minUserSessions
   usersWithEnoughSessions <- df %>%
     group_by(user_id) %>%
     summarise(count = n()) %>%
@@ -45,7 +44,6 @@ cleanDf <- function(df) {
 }
 
 getClustersOfUsers <- function(clusterDf) {
-  
   tfCluster <- clusterDf %>%
     count(userId, start_hour_cluster) %>%
     group_by(userId) %>%
@@ -72,6 +70,7 @@ getClustersOfUsers <- function(clusterDf) {
   return(mergedDf)
 }
 
+# Clustering --------------------------------------------------------------
 setClusters <- function(df) {
   df <- cleanDf(df)
   
@@ -102,13 +101,14 @@ setClusters <- function(df) {
       userId=df_start_sessions$user_id,
       day=df_start_sessions$day,
       start_hour=df_start_sessions$start_date_hour
-
         )
       )
   
   return(df)
 }
 
+
+# Test envoirement --------------------------------------------------------
 df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanDataframe(df)
 clusters <- setClusters(df)
