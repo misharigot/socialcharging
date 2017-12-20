@@ -1,4 +1,4 @@
-## Quick start
+# Quick start
 1. Checkout this project via a Git GUI or preferably via the command line:
 
 > Via https: `$ git checkout https://github.com/misharigot/socialcharging.git`
@@ -12,12 +12,12 @@
 ---
 
 # General Info
-## Packrat
+### Packrat
 [Packrat](https://rstudio.github.io/packrat/walkthrough.html) is a package/dependency manager for R.
 Run the `deploy.R` script via RStudio.
 This will make Packrat install the dependencies and put them in the `/packrat` folder, based off of the dependencies/packages that are described in `packrat/packrat.lock`.
 
-## R Shiny
+### R Shiny
 To run R Shiny, open the `server.R` or `ui.R` file in RStudio and click on **Run App** (ctrl/cmd + shift + enter).
 
 # In depth look of the project
@@ -48,7 +48,7 @@ This folder contains the core functionality of the Shiny App. Each of these file
 
 The `/src/base_clean.R` script cleans the CSV that Social Charging provided in the most generic manner, making the data fairly clean, ready to be used by other scripts throughout the project with the most basic cleaning already done.
 
-#### Corrupted Explorer
+### Corrupted Explorer
 ##### Location: `/src/corrupted_explorer`
 This module visualizes which data is 'usable' by our machine learning prediction models, based on several filters you can manually change.
 
@@ -57,11 +57,11 @@ This module visualizes which data is 'usable' by our machine learning prediction
 This module is located at `/src/corrupted_explorer/corrupted_explorer_module.R`. This script uses **Shiny Modules** to modularize Shiny code. A smaller version of `/server.R` and `/ui.R` are used, specifically for the logic of this module, so that `/server.R` and `/ui.R` stay clean and maintainable.
 For more information on Shiny Modules, see https://shiny.rstudio.com/articles/modules.html.
 
-#### CSS
+### CSS
 ##### Location: `/src/css`
 This directory holds css files. These files can be used in shiny's UI, by calling `tags$head(includeCSS("src/css/your_file_here.css"))`.
 
-#### Helpers
+### Helpers
 ##### Location: `/src/helpers`
 This directory holds all the helper scripts that contain utility functions.
 
@@ -69,7 +69,7 @@ This directory holds all the helper scripts that contain utility functions.
 - **helpers/date_helper.R** contains functions regarding date, containing custom functions that [lubridate](https://github.com/tidyverse/lubridate) doesn't provide. These functions are mainly used by our Week Schedule module.
 - **helpers/multiplot_helper.R** helps with displaying multiple plots as a single output.
 
-#### Map
+### Map
 ##### Location: `/src/map`
 This is where the map module exists. The map is being rendered by [leaflet](https://rstudio.github.io/leaflet/), a wrapper around a JavaScript map library.
 
@@ -78,7 +78,7 @@ This is where the map module exists. The map is being rendered by [leaflet](http
 - **map_functions.R** has functions that help create the objects within the leaflet map, like adding circles to the map, giving them color, different sizes based on data, or adding a legend to the map.
 - **map_module.R** is the [Shiny Module](https://shiny.rstudio.com/articles/modules.html) for the leaflet map. It outputs the map (and the table when clicking on a station). The output is sent to the UI. This module can then be used by `/ui.R` and `/server.R`.
 
-#### Models
+### Models
 ##### Location: `/src/models`
 This directory contains the machine learning models. These each have different visualizations, ranging from a bar chart showing the distribution of classes, to a 3d view of the different clusters.
 
@@ -96,13 +96,13 @@ We use clustering on stations (`cluster_charging_station.R`) and on users (`user
 ***Regression***
 Regression is also being used to predict charging sessions for both users (`regression_user_class.R`) and stations (`regression_station_class`), which are based off of our classification models. However, this is not shown in the Shiny App, since the accuracy is currently too low with the data given.
 
-#### Plots
+### Plots
 ##### Location: `/src/plots`
 Discovery plots are located here, each giving insight into the data by means of a visualization. Not all plots ended up being used within the Shiny application, but the project team decided to still keep them for reference.
 
 ![..](https://image.prntscr.com/image/ujX97016QhGDWkiQA_7hmg.png)
 
-#### Week Schedule
+### Week Schedule
 ##### Location: `/server.R`
 This view shows the predicted sessions for a future week for the selected user profile. These sessions are predicted by first classifying users and then using regression to predict the starting time, duration and charged kWh for sessions for each day of the week.
 
