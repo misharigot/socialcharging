@@ -7,6 +7,16 @@
   display: block;
 }
 
+.vis-item {
+  background-color: #FFFFFF;
+  border-color: #d2d6de;
+}
+
+.vis-item .vis-selected{
+  background-color: #FFFFFF;
+  border-color: #d2d6de;
+}
+
 .efficiency {
   padding: 3px;
   height: 100%;

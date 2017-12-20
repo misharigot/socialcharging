@@ -178,7 +178,7 @@ server <- function(input, output, session) {
         title = c(paste0("Start time: ", timelineData$start_datetime,
   " \nEnd time: ", timelineData$end_datetime,
   " \nCharged kWh: ", timelineData$formatted_kwh,
-  " \nPredict: ", timelineData$pred_hours_elapsed))
+  " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed)))
       )
     }
     
