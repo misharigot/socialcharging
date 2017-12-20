@@ -7,6 +7,7 @@ library(scales)
 library(lattice)
 library(plotly)
 library(corrplot)
+library(timevis)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
