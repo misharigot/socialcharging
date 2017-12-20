@@ -95,11 +95,14 @@ setClusters <- function(df) {
   
   df <- as.data.frame(
     cbind(
-      sessionId=df_start_sessions$session_id, userId=df_start_sessions$user_id, 
-                                     day=df_start_sessions$day, start_hour=df_start_sessions$start_date_hour, 
-                                     start_hour_cluster=cutree(hc_start_sessions, k=8), 
-                                     hours_elapsed_cluster=cutree(hc_hours_elapsed, k=8),
-                                     charged_kwh_cluster=cutree(hc_kwh, k=8)
+      start_hour_cluster=cutree(hc_start_sessions, k=8),
+      hours_elapsed_cluster=cutree(hc_hours_elapsed, k=8),
+      charged_kwh_cluster=cutree(hc_kwh, k=8),
+      sessionId=df_start_sessions$session_id,
+      userId=df_start_sessions$user_id,
+      day=df_start_sessions$day,
+      start_hour=df_start_sessions$start_date_hour
+
         )
       )
   
