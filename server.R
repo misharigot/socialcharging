@@ -171,7 +171,8 @@ server <- function(input, output, session) {
   
       data <- data.frame(
         content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh, 
-                                   timelineData$start_datetime, timelineData$end_datetime),
+                                   stripDate(timelineData$start_datetime, "%Y-%m-%d %H:%M:%S"), 
+                                   stripDate(timelineData$end_datetime, "%Y-%m-%d %H:%M:%S")),
         start   = timelineData$start_datetime, # 2017-12-26 10:00:00
         end     = timelineData$end_datetime, # 2017-12-26 13:32:00
         title = c(paste0("Start time: ", timelineData$start_datetime,
