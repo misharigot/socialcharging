@@ -3,6 +3,7 @@ library(shinydashboard)
 library(leaflet)
 library(shinycssloaders)
 library(plotly)
+library(timevis)
 
 source("src/map/map_module.R")
 source("src/corrupted_explorer/corrupted_explorer_module.R")
@@ -30,7 +31,8 @@ ui <- dashboardPage(
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Station clustering", tabName = "predtab6")
       ),
-      menuItem("Map", tabName = "mapTab", icon = icon("globe"))
+      menuItem("Map", tabName = "mapTab", icon = icon("globe")),
+      menuItem("Week Schedule", tabName = "weekschedule", icon = icon("calendar"))
     )
   ),
   dashboardBody(
@@ -128,9 +130,9 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "predtab6",
-        fluidRow(
-          box(withSpinner(plotlyOutput("pred6", height = 700), type = 4), width = 12, height = 750)
-        )
+              fluidRow(
+                box(withSpinner(plotlyOutput("pred6", height = 700), type = 4), width = 12, height = 750)
+              )
       ),
       tabItem(tabName = "predtab7",
               fluidRow(
@@ -146,7 +148,7 @@ ui <- dashboardPage(
                 #LHL	HitAndRun +
                 #HLH    LateNightCharging +
                 #      occPoint              userPoint                Charge point
-
+                
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
@@ -163,6 +165,29 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "corruptTab",
               corruptedExplorerModuleUI(id = "corrupt")
+      ),
+      # Week Schedule ---------------------------------------------------------------------------------------------------
+      tabItem(tabName = "weekschedule",
+              fluidRow(
+                box(selectInput(inputId = "wsProfileSelect", label = "Select a user profile", choices = c("Select a user profile")),
+                    width = 6),
+                box(title = "Profile explanation",
+                    tags$p("Each digit in a profile id is a separate profile for each feature in the data."),
+                    tags$p(tags$b("Example:")),
+                    tags$p("User profile ID '3-1-4'"),
+                    tags$p("3 = start time profile id 3"),
+                    tags$p("1 = hours elapsed profile id 1"),
+                    tags$p("4 = kwh charged profile id 4")
+                )
+              ),
+              fluidRow(
+                tags$head(includeCSS("src/css/weekschedule.css")),
+                box(withSpinner(timevisOutput("weekschedule", height = '150px')),
+                    type = 4 ,
+                    width = 12,
+                    title = "Predicted week schedule",
+                    footer = "This is a representation of the sessions for a future week for the selected user profile. The actual dates showed aren't meaningful and exist just for demonstration purposes.")
+              )
       )
     )
   )

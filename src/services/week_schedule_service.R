@@ -24,7 +24,7 @@ convertWeekPredToSchedule <- function(dfWithWeekPredictions) {
 
 # Create dummy session predictions
 createDummyWeekForClass <- function() {
-  amountOfDummySessions = 7
+  amountOfDummySessions = 15
   canContainDuplicates = FALSE
   if (amountOfDummySessions > 7) {
     canContainDuplicates = TRUE
@@ -68,3 +68,5 @@ test <- function() {
   schedulesForClassOne <- convertWeekPredToSchedule(dummyDf)
   print(schedulesForClassOne)
 }
+
+test()

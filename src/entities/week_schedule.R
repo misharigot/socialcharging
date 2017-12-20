@@ -44,6 +44,14 @@ weekScheduleFactory <- R6Class(
         bools <- c(bools, day$hasChargingSessions())
       }
       TRUE %in% bools
+    },
+    toDataVisDf = function() {
+      # 
+      # data.frame(
+      #   content = paste0(selectData$charged_kwh, " kwh"),
+      #   start = paste0("2017-12-", private$),
+      #   end = selectData$end_date
+      # )
     }
   ),
   active = list(

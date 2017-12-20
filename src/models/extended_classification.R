@@ -216,6 +216,7 @@ getPredictedValuesDf <- function(df) {
     group_by(start_time_class, hours_elapsed_class, kwh_class, day) %>%
     summarise(pred_start_time = round(mean(pred_start_time)),
            pred_hours_elapsed = mean(pred_hours_elapsed),
-           pred_kwh = mean(pred_kwh))
+           pred_kwh = mean(pred_kwh)) %>%
+    mutate(formatted_class = paste(start_time_class, hours_elapsed_class, kwh_class, sep = "-"))
   return(total_df)
 }
