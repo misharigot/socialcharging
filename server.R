@@ -157,6 +157,7 @@ server <- function(input, output, session) {
   output$weekschedule <- renderTimevis({
     source("src/helpers/date_helper.R")
     source("src/helpers/data_helper.R")
+    source("src/models/charging_template.R")
     
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
@@ -169,12 +170,14 @@ server <- function(input, output, session) {
       timelineData <- convertSessionsToTimelineData(selectedValues)
   
       data <- data.frame(
-        content = timelineData$formatted_kwh, # 10 kwh
+        content = templateCharging(timelineData$formatted_kwh, timelineData$efficiency, 
+                                   timelineData$start_datetime, timelineData$end_datetime),
         start   = timelineData$start_datetime, # 2017-12-26 10:00:00
         end     = timelineData$end_datetime, # 2017-12-26 13:32:00
         title = c(paste0("Start time: ", timelineData$start_datetime,
   " \nEnd time: ", timelineData$end_datetime,
-  " \nCharged kWh: ", timelineData$formatted_kwh))
+  " \nCharged kWh: ", timelineData$formatted_kwh,
+  " \nPredict: ", timelineData$pred_hours_elapsed))
       )
     }
     
