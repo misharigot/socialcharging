@@ -52,6 +52,7 @@ The `/src/base_clean.R` script cleans the CSV that Social Charging provided in t
 #### Corrupted Explorer
 ##### Location: `/src/corrupted_explorer`
 This module visualizes which data is 'usable' by our machine learning prediction models, based on several filters you can manually change.
+
 ![Corrupted Explorer](https://image.prntscr.com/image/JFMqMa9wRXuBitNapI7ukw.png)
 
 This module is located at `/src/corrupted_explorer/corrupted_explorer_module.R`. This script uses **Shiny Modules** to modularize Shiny code. A smaller version of `/server.R` and `/ui.R` are used, specifically for the logic of this module, so that `/server.R` and `/ui.R` stay clean and maintainable.
@@ -72,13 +73,16 @@ This directory holds all the helper scripts that contain utility functions.
 #### Map
 ##### Location: `/src/map`
 This is where the map module exists. The map is being rendered by [leaflet](https://rstudio.github.io/leaflet/), a wrapper around a JavaScript map library.
+
 ![..](https://image.prntscr.com/image/cAMkVgRTQtuHBpAiiIKnsg.png)
+
 - **map_functions.R** has functions that help create the objects within the leaflet map, like adding circles to the map, giving them color, different sizes based on data, or adding a legend to the map.
 - **map_module.R** is the [Shiny Module](https://shiny.rstudio.com/articles/modules.html) for the leaflet map. It outputs the map (and the table when clicking on a station). The output is sent to the UI. This module can then be used by `/ui.R` and `/server.R`.
 
 #### Models
 ##### Location: `/src/models`
 This directory contains the machine learning models. These each have different visualizations, ranging from a bar chart showing the distribution of classes, to a 3d view of the different clusters.
+
 ![..](https://image.prntscr.com/image/RnM2kxyfTYKVQgtDS7oSEQ.png)
 
 **Correlation**
@@ -104,4 +108,5 @@ Discovery plots are located here, each giving insight into the data by means of 
 This view shows the predicted sessions for a future week for the selected user profile. These sessions are predicted by first classifying users and then using regression to predict the starting time, duration and charged kWh for sessions for each day of the week.
 
 **Note:** The code for this module is located in `/server.R` under the comment `# Weekschedule ---`.
+
 ![..](https://image.prntscr.com/image/rJtT-VErTbmlbxxfncbI3Q.png)
