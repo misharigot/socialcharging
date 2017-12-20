@@ -73,8 +73,8 @@ server <- function(input, output, session) {
   })
 
   output$minimumReq <- renderText({
-    if(length(input$columns) < 2){
-      "Select at least 2  columns"
+    if (length(input$columns) < 2) {
+      "Select at least 2 columns"
     } else {
       "Select columns"
     }
@@ -133,7 +133,7 @@ server <- function(input, output, session) {
   })
 
   output$cor1 <- renderPlot({
-    if(length(input$columns) < 2) {
+    if (length(input$columns) < 2) {
       source("src/models/Interactive_correlation.R")
       return(plotCorrelationplot(scData()))
     } else {
@@ -151,41 +151,42 @@ server <- function(input, output, session) {
     return(showDistributionPlot(scData()))
   })
   
-# Timeline --------------------------------------------------------------------------------------------------------
+# Weekschedule ----------------------------------------------------------------------------------------------------
   
-  output$timeline <- renderTimevis({
-    source("src/week_schedule/week_schedule.R")
+  output$weekschedule <- renderTimevis({
     source("src/helpers/date_helper.R")
-
+    source("src/helpers/data_helper.R")
+    
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
     
-    # NOTE the head() call: Displaying the predicted data in the weekschedule works. Now needs to only load and convert the sessions for the selected class only.
-    predictedValuesDf <- head(predictedValuesDf())
+    predictedValuesDf <- predictedValuesDf()
+    data <- data.frame()
     
-    timelineData <- convertSessionsToTimelineData(predictedValuesDf)
-
+    if (!input$wsProfileSelect == "Select a user profile") {
+      selectedValues <- predictedValuesDf %>% filter(formatted_class == input$wsProfileSelect)
+      timelineData <- convertSessionsToTimelineData(selectedValues)
+  
+      data <- data.frame(
+        content = timelineData$formatted_kwh, # 10 kwh
+        start   = timelineData$start_datetime, # 2017-12-26 10:00:00
+        end     = timelineData$end_datetime, # 2017-12-26 13:32:00
+        title = c(paste0("Start time: ", timelineData$start_datetime,
+  " \nEnd time: ", timelineData$end_datetime,
+  " \nCharged kWh: ", timelineData$formatted_kwh))
+      )
+    }
+    
     config <- list(
       editable = FALSE,
       orientation = "top",
       snap = NULL,
-      margin = list(item = 20, axis = 80),
-      height = 200,
+      margin = list(item = 75, axis = 50),
       showCurrentTime = FALSE,
       zoomable = TRUE,
       moveable = TRUE,
       min = nextMonday,
       max = nextSunday + 1
-    )
-    
-    # ToDo: Put clean data in here
-    data <- data.frame(
-      content = timelineData$formatted_kwh, # 10 kwh
-      start   = timelineData$start_datetime, # 2017-12-26 10:00:00
-      end     = timelineData$end_datetime, # 2017-12-26 13:32:00
-      title = c(paste0("Start time: ", timelineData$start_datetime,
-" \nEnd time: ", timelineData$end_datetime,
-" \nCharged kWh: ", timelineData$formatted_kwh))
     )
     
     timevis(data, showZoom = TRUE, fit = TRUE, options = config) %>%
@@ -222,5 +223,12 @@ server <- function(input, output, session) {
   observeEvent(input$reset_input_1, {
     ranges$x <- NULL
     ranges$y <- NULL
+  })
+  
+  # Update the select input with unique user classifications/profiles to select from.
+  observe({
+    updateSelectInput(session,
+                      "wsProfileSelect",
+                      choices = isolate(distinct(predictedValuesDf())$formatted_class))
   })
 }

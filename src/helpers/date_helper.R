@@ -1,3 +1,4 @@
+# This class has several helper functions regarding date, containing custom functions that lubridate doesn't provide.
 library(lubridate)
 
 # Return a date string of the next weekday specified:
@@ -45,8 +46,4 @@ getMinutes <- function(hours) {
 # Check if a number is a decimal number
 isDecimal <- function(number) {
   number %% 1 != 0
-}
-
-formatKwh <- function(kwh){
-  paste0(kwh, " kwh")
 }
