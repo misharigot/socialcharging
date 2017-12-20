@@ -1,9 +1,10 @@
 ## Quick start
 1. Checkout this project via a Git GUI or preferably via the command line:
-Via HTTPS:
-`$ git checkout https://github.com/misharigot/socialcharging.git`
-or via SSH:
-`$ git checkout git@github.com:misharigot/socialcharging.git`
+
+> Via https: `$ git checkout https://github.com/misharigot/socialcharging.git`
+
+> or via ssh: `$ git checkout git@github.com:misharigot/socialcharging.git`
+
 2. Create a copy of `config.yml.dist` and rename it to `config.yml`.
 3. Change the parameter values to your own personal values.
 3. Run the `/deploy.R` script to install dependencies via Packrat and create a CSV with predicted data.
@@ -18,8 +19,6 @@ This will make Packrat install the dependencies and put them in the `/packrat` f
 
 ## R Shiny
 To run R Shiny, open the `server.R` or `ui.R` file in RStudio and click on **Run App** (ctrl/cmd + shift + enter).
-
----
 
 # In depth look of the project
 This project consists of several directories and files that each have a different purpose. In this section the majority of these directories, modules and files will be explained, sometimes with an accompanying screenshot of the functionality's view in the R Shiny application.
