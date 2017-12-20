@@ -1,10 +1,8 @@
 # Quick start
-1. Checkout this project via a Git GUI or preferably via the command line:
-
-> Via https: `$ git checkout https://github.com/misharigot/socialcharging.git`
-
-> or via ssh: `$ git checkout git@github.com:misharigot/socialcharging.git`
-
+1. Checkout this project via a Git GUI or preferably via the command line: 
+```
+$ git checkout https://github.com/misharigot/socialcharging.git
+```
 2. Create a copy of `config.yml.dist` and rename it to `config.yml`.
 3. Change the parameter values to your own personal values.
 3. Run the `/deploy.R` script to install dependencies via Packrat and create a CSV with predicted data.
