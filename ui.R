@@ -177,7 +177,30 @@ ui <- dashboardPage(
                     tags$p("User profile ID '3-1-4'"),
                     tags$p("3 = start time profile id 3"),
                     tags$p("1 = hours elapsed profile id 1"),
-                    tags$p("4 = kwh charged profile id 4")
+                    tags$p("4 = kwh charged profile id 4"),
+                    width = 3
+                ),
+                box(title = "Legend",
+                    tags$p("Colors range from orange (inefficient) to green (most efficient)"),
+                    tags$div(style = "
+                              background-color: #ff5722; 
+                              padding: 10px;
+                              font-weight: 500;
+                              margin-bottom: 10px;
+                              border-radius: 3px;
+                              width: 50%;
+                              box-shadow: 2px 2px 7px #0000004f;", 
+                             "Inefficient"),
+                    tags$div(style = "
+                              background-color: #4caf50; 
+                              padding: 10px;
+                              font-weight: 500;
+                              margin-bottom: 10px;
+                              border-radius: 3px;
+                              width: 50%;
+                              box-shadow: 2px 2px 7px #0000004f;",
+                             "Efficient"),
+                    width = 3
                 )
               ),
               fluidRow(
