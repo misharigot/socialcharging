@@ -47,3 +47,15 @@ getMinutes <- function(hours) {
 isDecimal <- function(number) {
   number %% 1 != 0
 }
+
+# Strips date and returns time
+stripDate <- function(datetime, dateTimeFormat){
+  x <- strptime(datetime, format = dateTimeFormat)
+  return(format(x, "%H:%M:%S"))
+}
+
+toHourAndMinutes <- function(decimal){
+  hourAndMinutes <- paste(floor(decimal), round((decimal - floor(decimal)) * 60), sep=":")
+  
+  return(paste0(hourAndMinutes, ":00"))
+}
