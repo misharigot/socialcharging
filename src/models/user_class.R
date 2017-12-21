@@ -1,3 +1,4 @@
+
 # User classification model
 library(readr)
 library(ggplot2)
@@ -10,7 +11,7 @@ set.seed(100)
 
 # Constants
 minUserSessions <- 10
-# 
+#
 # df <- read_csv2(config$scDataset, col_names = FALSE)
 # df <- cleanSecondDf(df)
 
@@ -152,7 +153,7 @@ classDistributionDf <- function(sessionClassificationDf) {
 plotClassCount <- function(sessionClassificationDf) {
   ggplot(classDistributionDf(sessionClassificationDf),
          aes(x = class, y = n)) +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", fill = "#66bb6a") +
     geom_smooth() +
     labs(x = "class", y = "amount") +
     ggtitle("Amount total most dominant classes") +
@@ -221,4 +222,3 @@ doClustering <- function() {
   plot(x = ctf$hr, y = ctf$hours_elapsed, col = sc_km$cluster,
        xlab = "start timeframe (hour)", ylab = "hours elapsed in session")
 }
-

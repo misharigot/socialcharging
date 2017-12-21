@@ -95,7 +95,7 @@ temp <- rbind(effectiveChargingHour, realchargingHour)
 # using pie chart and show the percentage (i want to show just 5 and the other just sum it )
 bp <- ggplot(devidedbycar, aes(x="",y=per,fill=car)) +
   geom_bar(width = 1, stat= "identity") +
-  coord_polar("y", start=0 ) +
+  coord_polar("y", start=0 ) + theme_light() +
   theme_void() +
   geom_text(aes(x=1, y=cumsum(per) - per/2, label=label ))
 
@@ -106,7 +106,7 @@ chargingbycar$car <-factor(chargingbycar$car, levels = chargingbycar$car[order(c
 
 plotTotalChargingPerCar <- ggplot(chargingbycar,aes(x=car,y=totalCharged))+
   geom_bar(position = "dodge", stat = "identity") +
-  labs(x = "car", y="Total Charging") +
+  labs(x = "car", y="Total Charging") + theme_light() +
   ggtitle("Total Charging by car")
   coord_flip()
 
@@ -117,7 +117,7 @@ devidedbycar$car <-factor(devidedbycar$car, levels = devidedbycar$car[order(devi
 
 plotPersantagePerCar <- ggplot(devidedbycar,aes(x=car,y=per)) +
   geom_bar(position= "dodge",stat= "identity") +
-  coord_flip() +
+  coord_flip() + theme_light() +
   labs(x="car", y="percentage")+
   ggtitle("Percentage per car")
 
@@ -131,7 +131,7 @@ carGapEffandReal$car <-factor(carGapEffandReal$car,levels = carGapEffandReal$car
 plotRealChargingPerCar <- ggplot(carGapEffandReal,aes(x=car,y=realChargingPerHour)) +
   geom_bar(position="dodge",stat ="identity")+
   labs(x= "Real Charging per Hour", y= "Car") +
-  ggtitle("Real Charging Per Car") +
+  ggtitle("Real Charging Per Car") + theme_light() +
   coord_flip()
 
 plotRealChargingPerCar

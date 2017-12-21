@@ -53,10 +53,16 @@ createColors <- function(values, input = "none") {
         pretty = TRUE
       )
     } else {
-      colorFactor("plasma", values)
+      # colorFactor("plasma", values)
+      colorBin(
+        palette = "plasma",
+        domain = values,
+        bins = 5,
+        pretty = TRUE
+        )
     }
   } else {
-    colorNumeric(palette = "plasma", domain = values)
+    colorFactor(palette = "plasma", domain = values)
   }
 }
 
