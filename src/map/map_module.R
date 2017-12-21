@@ -12,8 +12,7 @@ mapModuleUI <- function(id) {
     class = "outer",
     tags$head(
       # Include our custom CSS
-      includeCSS("src/map/styles.css"),
-      includeScript("src/map/gomap.js")
+      includeCSS("src/map/styles.css")
     ),
     useShinyjs(),
     # If not using custom CSS, set height of leafletOutput to a number instead of percent
@@ -81,7 +80,7 @@ mapModuleUI <- function(id) {
       )
     )
   )
-  
+
 }
 
 # Server ----------------------------------------------------------------------------------------------------------
@@ -90,11 +89,11 @@ mapModule <- function(input, output, session, data) {
   defaultMapData <- reactive({
     getMapData(plainData())
   })
-  
+
   prepTableDf <- reactive({
     prepTableData(plainData())
   })
-  
+
   # Converts raw SC data into data prepped for the leaflet map
   mapData <- reactive({
     if (input$userId == "all") {
@@ -102,51 +101,51 @@ mapModule <- function(input, output, session, data) {
     } else {
       plainData <- plainData()
       plainData <- plainData %>% filter(user_id == input$userId)
-      
+
       getMapData(plainData)
     }
   })
-  
+
   # This reactive function should be called to use the data
   plainData <- reactive({
     data %>% filter(
       !is.na(latitude),!is.na(longitude),!is.na(charged_kwh),!is.na(hours_elapsed)
     )
   })
-  
+
   # The rendered leaflet map
   output$map <- renderLeaflet({
     handleDefaultMapCreation(mapData = defaultMapData())
   })
-  
+
   # Update the user_id select input with the user_ids available
   observe({
     updateSelectInput(session,
                       "userId",
                       choices = c("Show all" = "all", plainData()$user_id))
   })
-  
+
   # Updates the map when userId input changes
   observeEvent(input$userId, {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
-  
+
   # Updates map when size input changes
   observeEvent(input$size, {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
-  
+
   # Updates map when color input changes
   observeEvent(input$color, {
     handleMapCreation(input$size, input$color, mapData = mapData())
   })
-  
+
   # Updates map with popup when a node is clicked
   observeEvent(input$map_shape_click, {
     handlePopupCreation(input$map_shape_click, mapData = mapData())
     shinyjs::show("session-table", anim = TRUE, animType = "slide")
   })
-  
+
   tableData <- reactive({
     if (is.null(input$map_shape_click)) {
       return(NULL)
@@ -164,7 +163,7 @@ mapModule <- function(input, output, session, data) {
       return(sessions)
     })
   })
-  
+
   # WIP table output
   output$stationTable <- renderTable({
     tableDisplayData <- tableData() %>%
@@ -182,7 +181,7 @@ mapModule <- function(input, output, session, data) {
       )
     tableDisplayData
   })
-  
+
   observeEvent(input$btnHide, {
     shinyjs::toggle("session-table", anim = TRUE, animType = "slide")
   })
@@ -195,7 +194,7 @@ prepTableData <- function(dataf) {
   coordDivision <- 100000000
   dataf[, longitude := longitude / coordDivision]
   dataf[, latitude := latitude / coordDivision]
-  
+
   dataf <- dataf %>%
     filter(!is.na(latitude),
            !is.na(longitude),
@@ -215,7 +214,7 @@ prepTableData <- function(dataf) {
       station_class,
       station_pred
     )
-  
+
   return(dataf)
 }
 
@@ -225,10 +224,10 @@ getMapData <- function(mapDf) {
   coordDivision <- 100000000
   mapDf[, longitude := longitude / coordDivision]
   mapDf[, latitude := latitude / coordDivision]
-  
+
   totalHours <-
     interval(min(mapDf$start_date), max(mapDf$end_date)) / 3600
-  
+
   mapDf <- mapDf %>%
     group_by(longitude, latitude) %>%
     summarise(
@@ -263,13 +262,13 @@ handleDefaultMapCreation <-
     if (nrow(mapData) == 0) {
       return()
     }
-    
+
     pal <- createPallete(mapData)
     color <- createCircleColor(mapData, pal = pal)
     radius <- createCircleSize(mapData)
     values <- createLegendValues(mapData)
     title <- createLegendTitle()
-    
+
     leaflet() %>%
       addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
       setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
@@ -294,17 +293,17 @@ handleMapCreation <- function(sizeInput, colorInput, mapData) {
   if (nrow(mapData) == 0) {
     return()
   }
-  
+
   pal <- createPallete(mapData, colorInput)
   color <- createCircleColor(mapData, colorInput, pal)
   radius <- createCircleSize(mapData, sizeInput)
   values <- createLegendValues(mapData, colorInput)
   title <- createLegendTitle(colorInput)
-  
+
   # if (!colorInput == "users_station") {
   #   values <- fivenum(values)
   # }
-  
+
   leafletProxy(mapId, data = mapData) %>%
     clearShapes() %>%
     defaultCircles(mapData, radius, color) %>%
@@ -376,6 +375,6 @@ chargingStationPopup <- function(id, lat, lng, mapData) {
       sprintf("Total users: %s", selectedChargingPole$total_users)
     )
   )
-  
+
   leafletProxy(mapId) %>% addPopups(lng, lat, content, layerId = id)
 }
