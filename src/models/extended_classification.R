@@ -14,11 +14,6 @@ minUserSessions <- 5
 
 # Filter and select only relevant rows/columns
 cleanDf <- function(df) {
-  print(" Hallloooooo2")
-  source(config$baseClean)
-  df <- read_csv2(config$scDataset, col_names = FALSE)
-  df <- cleanDataframe(df)
-  
   # Users ids that have sessions >= minUserSessions
   usersWithEnoughSessions <- df %>%
     group_by(user_id) %>%
@@ -48,7 +43,6 @@ cleanDf <- function(df) {
 # Public API ------------------------------------------------------------------------------------------------------
 
 getPredictedValuesDf <- function(df) {
-  print(" Hallloooooo1")
   total_df <- cleanDf(df)
   
   total_df$day <-
@@ -81,5 +75,3 @@ getPredictedValuesDf <- function(df) {
            pred_kwh = mean(pred_kwh))
   return(total_df)
 }
-
-newdf <- getPredictedValuesDf()
