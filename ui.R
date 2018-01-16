@@ -169,7 +169,7 @@ ui <- dashboardPage(
       # Week Schedule ---------------------------------------------------------------------------------------------------
       tabItem(tabName = "weekschedule",
               fluidRow(
-                box(selectInput(inputId = "wsProfileSelect", label = "Select a user profile", choices = c("Select a user profile")),
+                box(selectInput(inputId = "wsUserSelect", label = "Select a user", choices = c("Select a user")),
                     width = 6),
                 box(title = "Profile explanation",
                     tags$p("Each digit in a profile id is a separate profile for each feature in the data."),
