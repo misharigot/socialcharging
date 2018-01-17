@@ -136,7 +136,12 @@ ui <- dashboardPage(
       # Pred plots ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "predtab1",
               fluidRow(
-                box(withSpinner(plotOutput("pred1"), type = 4), width = 12)
+                box(h4("Social Charging dataset"),
+                  withSpinner(plotOutput("pred1"), type = 4), width = 12, align = "center"),
+                box(h4("HVA dataset"),
+                    img(src = "UserClassification.png",
+                        width = "100%", height = "100%"),
+                    width = 12, align = "center")
               )
       ),
       tabItem(tabName = "predtab2",
@@ -162,7 +167,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab7",
               fluidRow(
-                box(withSpinner(plotOutput("pred7"), type = 4), width = 16)
+                box(h4("Social Charging dataset"),
+                  withSpinner(plotOutput("pred7"), type = 4), width = 16, align = "center"),
+                box(h4("HVA dataset"),
+                    img(src = "StationClassification.png",
+                        width = "100%", height = "100%"),
+                    width = 12, align = "center")
               ),
               fluidRow(
                 #HLL  	MarriedToThisStation +
