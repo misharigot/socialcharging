@@ -43,7 +43,7 @@ ui <- dashboardPage(
                     h2("Welcome to our presentation"),
                     img(src = "Social-Charging-sheet-smaller.jpg", width = "100%", height = "100%")
                 )
-              )
+              ) 
       ),
       tabItem(
         tabName = "table",
@@ -55,30 +55,46 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "chart1",
-              fluidRow(box(withSpinner(plotOutput("plot1", height = 400,
+              fluidRow(box(h4("Social Charging dataset"),
+                withSpinner(plotOutput("plot1", height = 400,
                                                   dblclick = "dblclick",
                                                   brush = brushOpts(
                                                     id = "brush",
                                                     resetOnNew = TRUE
-                                                  )), type = 4), width = 12)),
+                                                  )), type = 4), width = 6),
+              box(h4("HVA dataset"),
+                  img(src = "EffectiveChargingHvA.png",
+                      width = "100%", height = "100%"),
+                      width = 6)
+              ),
               actionButton("reset_input", "Reset")
+              
       ),
       tabItem(tabName = "chart2",
               fluidRow(
-                box(withSpinner(plotOutput("plot2", height = 750), type = 4), width = 12, height = 800)
+                box(
+                  withSpinner(plotOutput("plot2", height = 750), type = 4), width = 12, height = 800)
               )
       ),
       tabItem(tabName = "chart3",
               fluidRow(
-                box(withSpinner(plotOutput("plot3"), type = 4), width = 12)
+                box(h4("Social Charging dataset"),
+                  withSpinner(plotOutput("plot3"), type = 4), width = 6),
+                box(h4("HVA dataset"),
+                    img(src = "WeeklyChargingBehaviour.png",
+                        width = "100%", height = "100%"),
+                    width = 6)
               )
       ),
       tabItem(tabName = "chart4",
-              fluidRow(
                 fluidRow(
-                  box(withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750)
+                  box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750),
+                  box(h4("HVA dataset"),
+                      img(src = "SessionsPerTimeframe.png",
+                          width = "100%", height = "100%"),
+                      width = 12)
                 )
-              )
       ),
       tabItem(tabName = "chart7",
               fluidRow(
@@ -99,7 +115,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart8",
               fluidRow(
-                box(withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750)
+                box(h4("Social Charging dataset"),
+                  withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750),
+                box(h4("HVA dataset"),
+                    img(src = "DailyChargingBehaviour.png",
+                        width = "100%", height = "100%"),
+                    width = 12)
               )
       ),
       tabItem(tabName = "chart9",
