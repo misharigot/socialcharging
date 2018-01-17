@@ -25,12 +25,12 @@ ui <- dashboardPage(
                menuSubItem("Smart charging vs Non-smart", tabName = "chart2")
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
-               menuSubItem("Correlation", tabName = "predtab5"),
                menuSubItem("User class distribution", tabName = "predtab1"),
                menuSubItem("Station class distribution", tabName = "predtab7"),
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Station clustering", tabName = "predtab6")
       ),
+      menuItem("Correlation Plots", tabName = "predtab5", icon = icon("bar-chart")),
       menuItem("Map", tabName = "mapTab", icon = icon("globe")),
       menuItem("Week Schedule", tabName = "weekschedule", icon = icon("calendar"))
     )
@@ -147,7 +147,12 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab5",
               fluidRow(
                 box(uiOutput("corColumns")),
-                box(withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750)
+                box(h4("Social Charging dataset"),
+                     withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750),
+                box(h4("HVA dataset"),
+                    img(src = "Social-Charging-sheet-smaller.jpg",
+                        width = "100%", height = "100%"),
+                    width = 6)
               )
       ),
       tabItem(tabName = "predtab6",
