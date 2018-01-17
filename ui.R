@@ -148,11 +148,11 @@ ui <- dashboardPage(
               fluidRow(
                 box(uiOutput("corColumns")),
                 box(h4("Social Charging dataset"),
-                     withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750),
+                     withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750, align = "center"),
                 box(h4("HVA dataset"),
-                    img(src = "Social-Charging-sheet-smaller.jpg",
-                        width = "100%", height = "100%"),
-                    width = 6)
+                    img(src = "CorrelationPlot.png",
+                        width = "50%", height = "50%"),
+                    width = 12, align = "center")
               )
       ),
       tabItem(tabName = "predtab6",
