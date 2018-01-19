@@ -171,36 +171,14 @@ ui <- dashboardPage(
               fluidRow(
                 box(selectInput(inputId = "wsUserSelect", label = "Select a user", choices = c("Select a user")),
                     width = 6),
-                box(title = "Profile explanation",
-                    tags$p("Each digit in a profile id is a separate profile for each feature in the data."),
-                    tags$p(tags$b("Example:")),
-                    tags$p("User profile ID '3-1-4'"),
-                    tags$p("3 = start time profile id 3"),
-                    tags$p("1 = hours elapsed profile id 1"),
-                    tags$p("4 = kwh charged profile id 4"),
+                box(title = "Disclaimer",
+                    tags$p("This is the visualisation of the predictions. These predictions are not accurate due to the lack of data. 
+                           Social charging needs to gather more data to make the predictions accurate."),
                     width = 3
                 ),
                 box(title = "Legend",
-                    tags$p("Colors range from orange (inefficient) to green (most efficient)"),
-                    tags$div(style = "
-                              background-color: #ff5722; 
-                              padding: 10px;
-                              font-weight: 500;
-                              margin-bottom: 10px;
-                              border-radius: 3px;
-                              width: 50%;
-                              box-shadow: 2px 2px 7px #0000004f;", 
-                             "Inefficient"),
-                    tags$div(style = "
-                              background-color: #4caf50; 
-                              padding: 10px;
-                              font-weight: 500;
-                              margin-bottom: 10px;
-                              border-radius: 3px;
-                              width: 50%;
-                              box-shadow: 2px 2px 7px #0000004f;",
-                             "Efficient"),
-                    width = 3
+                    img(src = "Legend.PNG", width = "50%", height = "50%"),
+                    width = 3, align = "center"
                 )
               ),
               fluidRow(
