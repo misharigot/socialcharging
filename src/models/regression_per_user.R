@@ -20,12 +20,12 @@ filterSessions <- function(df) {
 
 # Adds features (new columns) based on existing columns in df.
 addFeatures <- function(df) {
-  df %>% mutate(starting_hour = as.factor (paste0(hour(start_date), ".", ifelse(minute(start_date) < 30, 0, 5)) ),
+  day <- factor(seq(1,7))
+  df %>% mutate(starting_hour = as.factor(paste0(hour(start_date), ".", ifelse(minute(start_date) < 30, 0, 5)) ),
                 day = as.factor(getDay(start_date)),
                 weekend = as.logical(ifelse(day %in% c(6,7), 1, 0))
                 )
 }
-
 
 # Returns sessions where users have minimumSessions amount of sessions
 getSessions <- function(minimumSessions = 30) {
@@ -44,9 +44,8 @@ getSessions <- function(minimumSessions = 30) {
 }
 
 sessions <- getSessions(minimumSessions = 30)
-sessions2 <- getSessions(minimumSessions = 30) %>% group_by(user_id) %>% summarise(n = n())
 
-sessionsForUser <- sessions %>% filter(user_id == 2513)
+sessionsForUser <- sessions %>% filter(user_id == 1080)
 # sessionsForUser <- sessions %>% filter(user_id == 46) %>% filter(start_date >=  "2017-01-09", end_date <= "2017-01-17")
 
 summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
@@ -56,10 +55,7 @@ summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(co
 #   day = c(rep(1,24), rep(2,24), rep(3,24), rep(4,24), rep(5,24), rep(6,24), rep(7,24)),
 #   hour = c(seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23))
 # )
-weekDf <- data.frame(
-  day = c(seq(1,7)),
-  weekend = c(0,0,0,0,0,1,1)
-)
+
 
 getWeeksElapsed <- function(date1, date2) {
   as.numeric(round(abs(date1 - date2) / 7, 0))
@@ -69,19 +65,39 @@ getWeeksElapsed <- function(date1, date2) {
 # 2. For days with > 0 sessions, predict their starting_hour
 
 # sessionsOnMonday / totalMondays
-sessionsPerDay <- sessions %>% group_by(user_id, day) %>% summarise(amountOfSessions = n())
-
-date1 <- date("2017-01-01")
-date2 <- date("2017-03-01")
-weeksElapsed <- sessions %>% group_by(user_id) %>% summarise(min = min(start_date), max = max(start_date), totalWeeksElapsed = getWeeksElapsed(min, max))
-sessionsPerDay <- base::merge(sessionsPerDay, weeksElapsed[, c("user_id", "totalWeeksElapsed")], by = "user_id") %>% mutate(avgSessions = amountOfSessions/totalWeeksElapsed)
-summary(sessionsPerDay)
 
 # classifier <- naiveBayes(sessionsForUser, sessionsForUser$starting_hour, formula = starting_hour ~ day, laplace = 1)
-classifier <- naiveBayes(starting_hour ~ day + weekend, sessionsForUser, laplace = 1)
-pred <- predict(classifier, weekDf, type = "class")
-pred
-weekDf$pred <- predict(classifier, weekDf, type = "class")
+
+predictWeekForUser <- function(userId, sessions) {
+  userId = 1080
+  sessions <- sessions %>% filter(user_id == userId)
+  
+  classifier <- naiveBayes(starting_hour ~ day + weekend, sessions, laplace = 1)
+  
+  weekDf <- data.frame(
+    user_id = rep(userId, 7),
+    day = c(seq(1,7)),
+    weekend = c(0,0,0,0,0,1,1)
+  )
+  
+  sessionsPerDay <- sessions %>%
+    group_by(user_id, day) %>% 
+    summarise(amountOfSessions = n())
+  
+  weeksElapsed <- sessions %>% 
+    group_by(user_id) %>% 
+    summarise(min = min(start_date), max = max(start_date), totalWeeksElapsed = getWeeksElapsed(min, max))
+  
+  sessionsPerDay <- base::merge(sessionsPerDay, weeksElapsed[, c("user_id", "totalWeeksElapsed")], by = "user_id") %>% 
+    mutate(avgSessions = amountOfSessions/totalWeeksElapsed) %>%
+    filter(user_id == userId)
+  ?naiveBayes
+  pred <- predict(classifier, weekDf, type = "class")
+  weekDf$pred <- predict(classifier, weekDf, type = "class")
+  # weekDf <- base::merge(weekDf, sessionsPerDay[, c("day", "avgSessions")], by = "day")
+}
+
+predicted <- predictWeekForUser(1080, sessions)
 
 # Accuracy
 truth <- (as.double(as.character(pred)) -  as.double(as.character(sessionsForUser$starting_hour)) < .5)
