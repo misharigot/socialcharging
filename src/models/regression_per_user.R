@@ -3,11 +3,12 @@ library(config)
 library(readr)
 library(xgboost)
 library(lubridate)
-library(naivebayes)
+# library(naivebayes)
 library(e1071)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
+source("src/helpers/date_helper.R")
 
 df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
@@ -19,11 +20,12 @@ filterSessions <- function(df) {
 
 # Adds features (new columns) based on existing columns in df.
 addFeatures <- function(df) {
-  df %>% mutate(starting_hour = as.factor(hour(start_date)),
-                day = as.factor(strftime(as.Date(start_date), format = "%u")),
+  df %>% mutate(starting_hour = as.factor (paste0(hour(start_date), ".", ifelse(minute(start_date) < 30, 0, 5)) ),
+                day = as.factor(getDay(start_date)),
                 weekend = as.logical(ifelse(day %in% c(6,7), 1, 0))
                 )
 }
+
 
 # Returns sessions where users have minimumSessions amount of sessions
 getSessions <- function(minimumSessions = 30) {
@@ -44,7 +46,7 @@ getSessions <- function(minimumSessions = 30) {
 sessions <- getSessions(minimumSessions = 30)
 sessions2 <- getSessions(minimumSessions = 30) %>% group_by(user_id) %>% summarise(n = n())
 
-sessionsForUser <- sessions %>% filter(user_id == 742)
+sessionsForUser <- sessions %>% filter(user_id == 2513)
 # sessionsForUser <- sessions %>% filter(user_id == 46) %>% filter(start_date >=  "2017-01-09", end_date <= "2017-01-17")
 
 summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
@@ -61,12 +63,27 @@ weekDf <- data.frame(
 # classifier <- naiveBayes(sessionsForUser, sessionsForUser$starting_hour, formula = starting_hour ~ day, laplace = 1)
 classifier <- naiveBayes(starting_hour ~ day + weekend, sessionsForUser, laplace = 1)
 pred <- predict(classifier, sessionsForUser, type = "class")
+pred
 sessionsForUser$pred <- predict(classifier, sessionsForUser, type = "class")
 
 # Accuracy
-truth <- (as.numeric(pred) -  as.numeric(sessionsForUser$starting_hour) < 1)
+truth <- (as.double(as.character(pred)) -  as.double(as.character(sessionsForUser$starting_hour)) < .5)
 table(truth)
 trues <- sum(table(truth)["TRUE"])
 falses <- sum(table(truth)["FALSE"])
 total <- trues + falses
 trues / total
+
+dfWithTwoWeeks <- sessionsForUser[1:11, ]
+
+# Returns the sessions belonging to a random week in the df given.
+getRandomWeekData <- function(df) {
+  
+  randomRowIndex <- sample(nrow(df), 1)
+  randomWeek <- df %>% filter(myWeek(start_date) == myWeek(df[randomRowIndex, ]$start_date))
+  return(randomWeek)
+}  
+set.seed(13)
+validateRandomWeek <- getRandomWeekData(dfWithTwoWeeks)
+validateRandomWeek$weekNo <- myWeek(validateRandomWeek$start_date)
+
