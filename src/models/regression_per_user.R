@@ -3,7 +3,7 @@ library(config)
 library(readr)
 library(xgboost)
 library(lubridate)
-# library(naivebayes)
+library(naivebayes)
 library(e1071)
 
 config <- config::get(file = "config.yml")
@@ -26,6 +26,27 @@ addFeatures <- function(df) {
       day = factor(getDay(start_date), levels = seq(1, 7)),
       weekend = as.logical(ifelse(day %in% c(6, 7), 1, 0))
     )
+}
+
+# Adds the probability chance from naiveBase to a dataframe
+addProbability <- function(dataframe, probability) {
+  probabilityDf <- probability
+  
+  if(!is.data.frame(probabilityDf)) {
+    probabilityDf <- as.data.frame(probability)
+  }
+  
+  # Retrieves the max value and set it into a new column named "max"
+  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:48], 1, max)
+  
+  numberOfDays <- c(1:7)
+  
+  for (i in numberOfDays) {
+    rowNumber <- which(dataframe$day == i)
+    dataframe[rowNumber, "pred_acc"] <- probabilityDf[i, "max"]
+  }
+  
+  return(dataframe)
 }
 
 # Returns sessions where users have minimumSessions amount of sessions
@@ -99,7 +120,7 @@ predictWeekForUser <- function(userId, sessions) {
   # To Do: get this prob in a column
   filteredWeekDf$pred_acc <- 0
   probability <- predict(classifier, filteredWeekDf, type = "prob")
-
+  
   nonOccuringDays <- weekDf %>% filter(!(day %in% occuringDays$day))
   if (nrow(nonOccuringDays) > 0) {
     nonOccuringDays$pred_starting_hour <- NA
@@ -107,9 +128,10 @@ predictWeekForUser <- function(userId, sessions) {
     filteredWeekDf <- rbind(filteredWeekDf, nonOccuringDays) 
   }
   resultWeekDf <- base::merge(filteredWeekDf, sessionsPerDay[, c("day", "sessionChance")], by = "day", all = T)
+  resultWeekDf <- addProbability(resultWeekDf, probability)
 }
 
-predicted <- predictWeekForUser(184, sessions)
+predicted <- predictWeekForUser(1080, sessions)
 
 # Accuracy
 # truth <- (as.double(as.character(pred)) -  as.double(as.character(sessionsForUser$starting_hour)) < .5)
@@ -125,4 +147,3 @@ getRandomWeekData <- function(df) {
   randomWeek <- df %>% filter(getWeekNumber(start_date) == getWeekNumber(df[randomRowIndex, ]$start_date))
   return(randomWeek)
 }
-
