@@ -57,14 +57,31 @@ summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(co
 #   hour = c(seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23))
 # )
 weekDf <- data.frame(
-  day = c(seq(1,7))
+  day = c(seq(1,7)),
+  weekend = c(0,0,0,0,0,1,1)
 )
+
+getWeeksElapsed <- function(date1, date2) {
+  as.numeric(round(abs(date1 - date2) / 7, 0))
+}
+
+# 1. Predict the chance a session is going to happen on day x for user y.
+# 2. For days with > 0 sessions, predict their starting_hour
+
+# sessionsOnMonday / totalMondays
+sessionsPerDay <- sessions %>% group_by(user_id, day) %>% summarise(amountOfSessions = n())
+
+date1 <- date("2017-01-01")
+date2 <- date("2017-03-01")
+weeksElapsed <- sessions %>% group_by(user_id) %>% summarise(min = min(start_date), max = max(start_date), totalWeeksElapsed = getWeeksElapsed(min, max))
+sessionsPerDay <- base::merge(sessionsPerDay, weeksElapsed[, c("user_id", "totalWeeksElapsed")], by = "user_id") %>% mutate(avgSessions = amountOfSessions/totalWeeksElapsed)
+summary(sessionsPerDay)
 
 # classifier <- naiveBayes(sessionsForUser, sessionsForUser$starting_hour, formula = starting_hour ~ day, laplace = 1)
 classifier <- naiveBayes(starting_hour ~ day + weekend, sessionsForUser, laplace = 1)
-pred <- predict(classifier, sessionsForUser, type = "class")
+pred <- predict(classifier, weekDf, type = "class")
 pred
-sessionsForUser$pred <- predict(classifier, sessionsForUser, type = "class")
+weekDf$pred <- predict(classifier, weekDf, type = "class")
 
 # Accuracy
 truth <- (as.double(as.character(pred)) -  as.double(as.character(sessionsForUser$starting_hour)) < .5)
@@ -74,16 +91,10 @@ falses <- sum(table(truth)["FALSE"])
 total <- trues + falses
 trues / total
 
-dfWithTwoWeeks <- sessionsForUser[1:11, ]
-
 # Returns the sessions belonging to a random week in the df given.
 getRandomWeekData <- function(df) {
-  
   randomRowIndex <- sample(nrow(df), 1)
-  randomWeek <- df %>% filter(myWeek(start_date) == myWeek(df[randomRowIndex, ]$start_date))
+  randomWeek <- df %>% filter(getWeekNumber(start_date) == getWeekNumber(df[randomRowIndex, ]$start_date))
   return(randomWeek)
-}  
-set.seed(13)
-validateRandomWeek <- getRandomWeekData(dfWithTwoWeeks)
-validateRandomWeek$weekNo <- myWeek(validateRandomWeek$start_date)
+}
 
