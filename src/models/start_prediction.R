@@ -28,27 +28,6 @@ addFeatures <- function(df) {
     )
 }
 
-# Adds the probability chance from naiveBase to a dataframe
-addProbability <- function(dataframe, probability) {
-  probabilityDf <- probability
-  
-  if(!is.data.frame(probabilityDf)) {
-    probabilityDf <- as.data.frame(probability)
-  }
-  
-  # Retrieves the max value and set it into a new column named "max"
-  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:48], 1, max)
-  
-  numberOfDays <- c(1:7)
-  
-  for (i in numberOfDays) {
-    rowNumber <- which(dataframe$day == i)
-    dataframe[rowNumber, "pred_acc"] <- probabilityDf[i, "max"]
-  }
-  
-  return(dataframe)
-}
-
 # Returns sessions where users have minimumSessions amount of sessions
 getSessions <- function(minimumSessions = 30) {
   users <- df %>% 
@@ -65,6 +44,27 @@ getSessions <- function(minimumSessions = 30) {
   return(sessions)
 }
 
+# Adds the probability chance from naiveBase to a dataframe
+addProbability <- function(dataframe, probability) {
+  probabilityDf <- probability
+  
+  if (!is.data.frame(probabilityDf)) {
+    probabilityDf <- as.data.frame(probability)
+  }
+  
+  # Retrieves the max value and set it into a new column named "max"
+  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:48], 1, max)
+  
+  numberOfDays <- c(1:7)
+  
+  for (i in numberOfDays) {
+    rowNumber <- which(dataframe$day == i)
+    dataframe[rowNumber, "pred_acc"] <- probabilityDf[i, "max"]
+  }
+  
+  return(dataframe)
+}
+
 sessions <- getSessions(minimumSessions = 30)
 summary(sessions)
 sessionsForUser <- sessions %>% filter(user_id == 46)
@@ -72,10 +72,12 @@ sessionsPerUser <- sessions %>% group_by(user_id) %>% summarise(n = n())
 
 summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
 
+# Returns the amount of weeks elapsed between date1 and date2.
 getWeeksElapsed <- function(date1, date2) {
   as.numeric(round(abs(date1 - date2) / 7, 0))
 }
 
+# Predict a future week for the userId with the sessions given.
 predictWeekForUser <- function(userId, sessions) {
   sessions <- sessions %>% filter(user_id == userId)
   
@@ -118,13 +120,6 @@ predictWeekForUser <- function(userId, sessions) {
   }
   resultWeekDf <- base::merge(filteredWeekDf, sessionsPerDay[, c("day", "session_ratio")], by = "day", all = T)
   resultWeekDf <- addProbability(resultWeekDf, probability)
-}
-
-# Returns the sessions belonging to a random week in the df given.
-getRandomWeekData <- function(df) {
-  randomRowIndex <- sample(nrow(df), 1)
-  randomWeek <- df %>% filter(getWeekNumber(start_date) == getWeekNumber(df[randomRowIndex, ]$start_date))
-  return(randomWeek)
 }
 
 # Public API call -------------------------------------------------------------------------------------------------
