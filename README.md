@@ -118,7 +118,7 @@ Discovery plots are located here, each giving insight into the data by means of 
 
 ### Week Schedule
 ##### Location: `/server.R`
-This view shows the predicted sessions for a future week for the selected user profile. These sessions are predicted by first classifying users and then using regression to predict the starting time, duration and charged kWh for sessions for each day of the week.
+This view shows the predicted sessions for a future week for the selected user. These sessions are predicted by first classifying users and then using regression to predict the starting time, duration and charged kWh for sessions for each day of the week.
 
 **Note:** The code for this module is located in `/server.R` under the comment `# Weekschedule ---`.
 
