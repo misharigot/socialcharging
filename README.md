@@ -1,7 +1,7 @@
 # Quick start
-1. Checkout this project via a Git GUI or preferably via the command line: 
+1. Clone this project via a Git GUI or preferably via the command line: 
 ```
-$ git checkout https://github.com/misharigot/socialcharging.git
+$ git clone https://github.com/misharigot/socialcharging.git
 ```
 2. Create a copy of `config.yml.dist` and rename it to `config.yml`.
 3. Change the parameter values to your own personal values.
