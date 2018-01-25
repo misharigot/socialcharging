@@ -3,13 +3,29 @@
 ```
 $ git clone https://github.com/misharigot/socialcharging.git
 ```
+  >To open this project for the first time in RStudio:
+  File > New Project... > Click on 'Existing Directory' > Browse to the cloned project > Click on 'Create Project'
+
 2. Create a copy of `config.yml.dist` and rename it to `config.yml`.
 3. Change the parameter values to your own personal values.
 3. Run the `/deploy.R` script (you can do this in RStudio) to install dependencies via Packrat and create a CSV with predicted data.
 
+**Note: during the execution of the `deploy.R` script, an error might occur while installing packages. When this happens, keep running the `deploy.R` script, until all packages are installed.**
+
 ---
 
 # General Info
+### Data
+The data used by this project is not included in this repository, due to privacy reasons.
+To acquire your own data set, contact Social Charging.
+
+The csv we received from Social Charging that is being used by the project has the following columns:
+```
+session_id;user_id;smart_charging;start_date;end_date;ev_provider;car;corporate;evse_id;latitude;longitude;address;kw  charge point speed);outlets;charged_kwh,
+```
+
+The parameter `scDataset` in your `config.yml` file should contain the path to your the Social Charging csv.
+
 ### Packrat
 [Packrat](https://rstudio.github.io/packrat/walkthrough.html) is a package/dependency manager for R.
 Run the `deploy.R` script via RStudio.
