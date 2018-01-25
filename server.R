@@ -165,10 +165,10 @@ server <- function(input, output, session) {
     predictedValuesDf <- predictedValuesDf()
     data <- data.frame()
     
-    if (!input$wsProfileSelect == "Select a user profile") {
-      selectedValues <- predictedValuesDf %>% filter(formatted_class == input$wsProfileSelect)
+    if (!input$wsUserSelect == "Select a user") {
+      selectedValues <- predictedValuesDf %>% filter(user_id == input$wsUserSelect)
       timelineData <- convertSessionsToTimelineData(selectedValues)
-  
+      
       data <- data.frame(
         content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh, 
                                    stripDate(timelineData$start_datetime, "%Y-%m-%d %H:%M:%S"), 
@@ -176,9 +176,9 @@ server <- function(input, output, session) {
         start   = timelineData$start_datetime, # 2017-12-26 10:00:00
         end     = timelineData$end_datetime, # 2017-12-26 13:32:00
         title = c(paste0("Start time: ", timelineData$start_datetime,
-  " \nEnd time: ", timelineData$end_datetime,
-  " \nCharged kWh: ", timelineData$formatted_kwh,
-  " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed)))
+                         " \nEnd time: ", timelineData$end_datetime,
+                         " \nCharged kWh: ", timelineData$formatted_kwh,
+                         " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed)))
       )
     }
     
@@ -234,7 +234,7 @@ server <- function(input, output, session) {
   # Update the select input with unique user classifications/profiles to select from.
   observe({
     updateSelectInput(session,
-                      "wsProfileSelect",
-                      choices = isolate(distinct(predictedValuesDf())$formatted_class))
+                      "wsUserSelect",
+                      choices = isolate(distinct(predictedValuesDf())$user_id))
   })
 }

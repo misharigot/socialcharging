@@ -9,12 +9,11 @@ library(corrplot)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source(config$multiplotHelper)
+source("src/helpers/multiplot_helper.R")
 source("./src/models/user_class.R")
 
-df <- read_csv2(config$scDataset, col_names = FALSE)
-
-df <- cleanSecondDf(df)
+# df <- read_csv2(config$scDataset, col_names = FALSE)
+# df <- cleanSecondDf(df)
 
 # Data preperation --------------------------------------------------------
 

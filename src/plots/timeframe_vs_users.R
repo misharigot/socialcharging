@@ -3,7 +3,7 @@ library(config)
 library(readr)
 library(dplyr)
 config <- config::get(file = "config.yml")
-source(config$multiplotHelper)
+source("src/helpers/multiplot_helper.R")
 
 timeframeLevels <- c("6:00 7:00",
                      "7:00 8:00",
