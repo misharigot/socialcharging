@@ -122,4 +122,4 @@ This view shows the predicted sessions for a future week for the selected user p
 
 **Note:** The code for this module is located in `/server.R` under the comment `# Weekschedule ---`.
 
-![..](https://image.prntscr.com/image/rJtT-VErTbmlbxxfncbI3Q.png)
+![..](https://image.prntscr.com/image/sTZkNa1rQgew_g2_-AH0ew.png)
