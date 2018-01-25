@@ -148,7 +148,7 @@ ui <- dashboardPage(
                 #LHL	HitAndRun +
                 #HLH    LateNightCharging +
                 #      occPoint              userPoint                Charge point
-                
+
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
@@ -172,8 +172,7 @@ ui <- dashboardPage(
                 box(selectInput(inputId = "wsUserSelect", label = "Select a user", choices = c("Select a user")),
                     width = 6),
                 box(title = "Disclaimer",
-                    tags$p("This is the visualisation of the predictions. These predictions are not accurate due to the lack of data. 
-                           Social charging needs to gather more data to make the predictions accurate."),
+                    tags$p("The accuracy of the prediction is dependent on the amount of historic data the selected user has. The more data the user has, the more accurate the predictions can be."),
                     width = 3
                 ),
                 box(title = "Legend",

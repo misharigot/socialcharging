@@ -4,7 +4,7 @@ library(config)
 library(readr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source(config$multiplotHelper)
+source("src/helpers/multiplot_helper.R")
 
 cleanScData <- function(scData) {
   scData %>%

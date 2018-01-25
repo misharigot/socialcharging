@@ -2,31 +2,26 @@
 library(config)
 library(readr)
 
-
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source(config$multiplotHelper)
+source("src/helpers/multiplot_helper.R")
 
 df <- read.csv(config$dataFolder)
 
 # Testing linear model ----------------------------------------------------
 
-
 # Function that returns Root Mean Squared Error
-rmse <- function(error)
-{
+rmse <- function(error) {
   sqrt(mean(error ^ 2))
 }
 
 # Function that returns Mean Absolute Error
-mae <- function(error)
-{
+mae <- function(error) {
   mean(abs(error))
 }
 
 # Tests the prediction with several measurements
 testPrediction <- function(calculatedDiff, acceptableRange = 1) {
-  
   actual_predicts <- data.frame("difference" = calculatedDiff)
   
   rmse_test <- rmse(calculatedDiff)
@@ -54,7 +49,6 @@ testPrediction <- function(calculatedDiff, acceptableRange = 1) {
 
 #Test the regression based on user classification
 testUserClassBasedPrediction <- function() {
-  
   # Create dataframe with differences between actual times and predictions
   actual_predicts <- data.frame("difference" = c(df$hours_elapsed - df$user_pred))
   
@@ -65,7 +59,6 @@ testUserClassBasedPrediction <- function() {
   minMaxAccuracy <-
     mean(min(actual_predicts$difference) 
          / max(actual_predicts$difference))
-  
   
   # How many predictions are in the error range of 4 hours
   acceptableTimeRange <- 4
@@ -121,4 +114,3 @@ testStationClassBasedPrediction <- function() {
 # df <- df %>% filter(!(hours_elapsed < 1))
 # df <- df %>% filter(!(hours_elapsed > 12))
 # plot(df$hour, df$hours_elapsed)
-
