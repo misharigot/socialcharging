@@ -28,27 +28,6 @@ addFeatures <- function(df) {
     )
 }
 
-# Adds the probability chance from naiveBase to a dataframe
-addProbability <- function(dataframe, probability) {
-  probabilityDf <- probability
-  
-  if(!is.data.frame(probabilityDf)) {
-    probabilityDf <- as.data.frame(probability)
-  }
-  
-  # Retrieves the max value and set it into a new column named "max"
-  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:48], 1, max)
-  
-  numberOfDays <- c(1:7)
-  
-  for (i in numberOfDays) {
-    rowNumber <- which(dataframe$day == i)
-    dataframe[rowNumber, "pred_acc"] <- probabilityDf[i, "max"]
-  }
-  
-  return(dataframe)
-}
-
 # Returns sessions where users have minimumSessions amount of sessions
 getSessions <- function(minimumSessions = 30) {
   users <- df %>% 
@@ -65,28 +44,41 @@ getSessions <- function(minimumSessions = 30) {
   return(sessions)
 }
 
+# Adds the probability chance from naiveBase to a dataframe
+addProbability <- function(dataframe, probability) {
+  probabilityDf <- probability
+  
+  if (!is.data.frame(probabilityDf)) {
+    probabilityDf <- as.data.frame(probability)
+  }
+  
+  # Retrieves the max value and set it into a new column named "max"
+  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:48], 1, max)
+  
+  numberOfDays <- c(1:7)
+  
+  for (i in numberOfDays) {
+    rowNumber <- which(dataframe$day == i)
+    dataframe[rowNumber, "pred_acc"] <- probabilityDf[i, "max"]
+  }
+  
+  return(dataframe)
+}
+
 sessions <- getSessions(minimumSessions = 30)
 summary(sessions)
 sessionsForUser <- sessions %>% filter(user_id == 46)
-# sessionsForUser <- sessions %>% filter(user_id == 46) %>% filter(start_date >=  "2017-01-09", end_date <= "2017-01-17")
+sessionsPerUser <- sessions %>% group_by(user_id) %>% summarise(n = n())
 
 summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
 
-# Create a df that represents a week with the hours per day (24/7)
-# weekDf <- data.frame(
-#   day = c(rep(1,24), rep(2,24), rep(3,24), rep(4,24), rep(5,24), rep(6,24), rep(7,24)),
-#   hour = c(seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23), seq(0,23))
-# )
-
+# Returns the amount of weeks elapsed between date1 and date2.
 getWeeksElapsed <- function(date1, date2) {
   as.numeric(round(abs(date1 - date2) / 7, 0))
 }
 
-# 1. Predict the chance a session is going to happen on day x for user y.
-# 2. For days with > 0 sessions, predict their starting_hour
-
+# Predict a future week for the userId with the sessions given.
 predictWeekForUser <- function(userId, sessions) {
-  # userId = 1080
   sessions <- sessions %>% filter(user_id == userId)
   
   if (nrow(sessions) == 0) {
@@ -110,14 +102,13 @@ predictWeekForUser <- function(userId, sessions) {
     summarise(min = min(start_date), max = max(start_date), totalWeeksElapsed = getWeeksElapsed(min, max))
   
   sessionsPerDay <- base::merge(sessionsPerDay, weeksElapsed[, c("user_id", "totalWeeksElapsed")], by = "user_id") %>% 
-    mutate(sessionChance = totalWeeksElapsed / amountOfSessions * 100) %>%
+    mutate(session_ratio = amountOfSessions / totalWeeksElapsed) %>%
     filter(user_id == userId)
   
   occuringDays <- sessions %>% distinct(day)
   filteredWeekDf <- weekDf %>% filter(day %in% occuringDays$day) %>% mutate(day = factor(day, levels = occuringDays$day))
   filteredWeekDf$pred_starting_hour <- predict(classifier, filteredWeekDf, type = "class")
   
-  # To Do: get this prob in a column
   filteredWeekDf$pred_acc <- 0
   probability <- predict(classifier, filteredWeekDf, type = "prob")
   
@@ -127,23 +118,10 @@ predictWeekForUser <- function(userId, sessions) {
     nonOccuringDays$pred_acc <- NA
     filteredWeekDf <- rbind(filteredWeekDf, nonOccuringDays) 
   }
-  resultWeekDf <- base::merge(filteredWeekDf, sessionsPerDay[, c("day", "sessionChance")], by = "day", all = T)
+  resultWeekDf <- base::merge(filteredWeekDf, sessionsPerDay[, c("day", "session_ratio")], by = "day", all = T)
   resultWeekDf <- addProbability(resultWeekDf, probability)
 }
 
-predicted <- predictWeekForUser(1080, sessions)
+# Public API call -------------------------------------------------------------------------------------------------
 
-# Accuracy
-# truth <- (as.double(as.character(pred)) -  as.double(as.character(sessionsForUser$starting_hour)) < .5)
-# table(truth)
-# trues <- sum(table(truth)["TRUE"])
-# falses <- sum(table(truth)["FALSE"])
-# total <- trues + falses
-# trues / total
-
-# Returns the sessions belonging to a random week in the df given.
-getRandomWeekData <- function(df) {
-  randomRowIndex <- sample(nrow(df), 1)
-  randomWeek <- df %>% filter(getWeekNumber(start_date) == getWeekNumber(df[randomRowIndex, ]$start_date))
-  return(randomWeek)
-}
+predicted <- predictWeekForUser(1048, sessions)
