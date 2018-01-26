@@ -10,7 +10,7 @@ library(corrplot)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/helpers/multiplot_helper.R")
-source("./src/models/user_class.R")
+source("./src/models/exploratory/user_class.R")
 
 # df <- read_csv2(config$scDataset, col_names = FALSE)
 # df <- cleanSecondDf(df)
@@ -18,13 +18,13 @@ source("./src/models/user_class.R")
 # Data preperation --------------------------------------------------------
 
 prepareDataForUserPred <- function(df){
-  
-  # Create dataframe with user classifications 
+
+  # Create dataframe with user classifications
   userClassifications <- userClassificationDf(sessionClassificationDf(cleanDf(df)))
-  
+
   # Add user classifications to df
   df$user_class <- userClassifications$class[match(df$user_id, userClassifications$user_id)]
- 
+
   # Filter corrupted data
   df <- df %>%
     filter(
@@ -36,7 +36,7 @@ prepareDataForUserPred <- function(df){
       !is.na(charged_kwh),
       !is.na(user_class)
     )
-  
+
   # Gets the day of the week from the date
   df$dayOfWeek <- weekdays(as.Date(df$start_date))
   # Gets the starting hour of session
@@ -53,22 +53,22 @@ createLinearModelDataUser <- function(df){
   userClassificationsUnique <- unique(as.character(df$user_class))
 
   idsWithPreds <- data.frame("session_id" = numeric(0), "user_pred" = numeric(0))
-  
+
   # Predict session time for each profile
   while (i <= length(userClassificationsUnique)) {
-    # Create a df for current user classification 
+    # Create a df for current user classification
     sessionsWithSpecificClass <- df %>%
       filter(user_class == userClassificationsUnique[i])
-    
+
     if (nrow(sessionsWithSpecificClass) > minimumSessions) {
       # Create linear model
       lm_df <- lm(hours_elapsed ~ hour + charged_kwh, data = sessionsWithSpecificClass)
-      
+
       # Add predictions to sessions
       sessionsWithSpecificClass$user_pred <- predict(lm_df, sessionsWithSpecificClass)
-      
+
       dfToMerge <- sessionsWithSpecificClass[, c("session_id", "user_pred")]
-      
+
       # Append dfToMerge to idsWithPreds
       idsWithPreds <- rbind(idsWithPreds, dfToMerge)
     }
@@ -76,5 +76,3 @@ createLinearModelDataUser <- function(df){
   }
   return(idsWithPreds)
 }
-
-
