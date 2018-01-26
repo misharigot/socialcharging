@@ -148,7 +148,7 @@ ui <- dashboardPage(
                 #LHL	HitAndRun +
                 #HLH    LateNightCharging +
                 #      occPoint              userPoint                Charge point
-                
+
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
@@ -169,38 +169,15 @@ ui <- dashboardPage(
       # Week Schedule ---------------------------------------------------------------------------------------------------
       tabItem(tabName = "weekschedule",
               fluidRow(
-                box(selectInput(inputId = "wsProfileSelect", label = "Select a user profile", choices = c("Select a user profile")),
+                box(selectInput(inputId = "wsUserSelect", label = "Select a user", choices = c("Select a user")),
                     width = 6),
-                box(title = "Profile explanation",
-                    tags$p("Each digit in a profile id is a separate profile for each feature in the data."),
-                    tags$p(tags$b("Example:")),
-                    tags$p("User profile ID '3-1-4'"),
-                    tags$p("3 = start time profile id 3"),
-                    tags$p("1 = hours elapsed profile id 1"),
-                    tags$p("4 = kwh charged profile id 4"),
+                box(title = "Disclaimer",
+                    tags$p("The accuracy of the prediction is dependent on the amount of historic data the selected user has. The more data the user has, the more accurate the predictions can be."),
                     width = 3
                 ),
                 box(title = "Legend",
-                    tags$p("Colors range from orange (inefficient) to green (most efficient)"),
-                    tags$div(style = "
-                              background-color: #ff5722; 
-                              padding: 10px;
-                              font-weight: 500;
-                              margin-bottom: 10px;
-                              border-radius: 3px;
-                              width: 50%;
-                              box-shadow: 2px 2px 7px #0000004f;", 
-                             "Inefficient"),
-                    tags$div(style = "
-                              background-color: #4caf50; 
-                              padding: 10px;
-                              font-weight: 500;
-                              margin-bottom: 10px;
-                              border-radius: 3px;
-                              width: 50%;
-                              box-shadow: 2px 2px 7px #0000004f;",
-                             "Efficient"),
-                    width = 3
+                    img(src = "Legend.PNG", width = "50%", height = "50%"),
+                    width = 3, align = "center"
                 )
               ),
               fluidRow(
