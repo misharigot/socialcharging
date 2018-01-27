@@ -5,10 +5,12 @@ library(xgboost)
 library(lubridate)
 library(naivebayes)
 library(e1071)
+library(tidyr)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/helpers/date_helper.R")
+set.seed(10)
 
 df <- read_csv2(config$scDataset, col_names = FALSE)
 df <- cleanSecondDf(df)
@@ -22,14 +24,14 @@ filterSessions <- function(df) {
 addFeatures <- function(df) {
   df %>%
     mutate(
-      starting_hour = factor(as.double(paste0(hour(start_date), ".", ifelse(minute(start_date) < 30, "0", "5")), levels = seq(0, 23.5, by = .5))),
+      starting_hour = factor( hour(start_date), levels = seq(0, 23, by = 1) ),
       day = factor(getDay(start_date), levels = seq(1, 7)),
       weekend = as.logical(ifelse(day %in% c(6, 7), 1, 0))
     )
 }
 
 # Returns sessions where users have minimumSessions amount of sessions
-getSessions <- function(minimumSessions = 30) {
+getSessions <- function(df, minimumSessions = 30) {
   users <- df %>% 
     filterSessions() %>%
     group_by(user_id) %>%
@@ -53,7 +55,7 @@ addProbability <- function(dataframe, probability) {
   }
   
   # Retrieves the max value and set it into a new column named "max"
-  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:48], 1, max)
+  probabilityDf[, "max"] <- apply(probabilityDf[ ,1:24], 1, max)
   
   numberOfDays <- c(1:7)
   
@@ -64,13 +66,6 @@ addProbability <- function(dataframe, probability) {
   
   return(dataframe)
 }
-
-sessions <- getSessions(minimumSessions = 30)
-summary(sessions)
-sessionsForUser <- sessions %>% filter(user_id == 46)
-sessionsPerUser <- sessions %>% group_by(user_id) %>% summarise(n = n())
-
-summForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
 
 # Returns the amount of weeks elapsed between date1 and date2.
 getWeeksElapsed <- function(date1, date2) {
@@ -122,6 +117,48 @@ predictWeekForUser <- function(userId, sessions) {
   resultWeekDf <- addProbability(resultWeekDf, probability)
 }
 
+# Returns the sessions belonging to a random week in the sessions df given.		
+getRandomWeekData <- function(sessions, userId = NULL) {
+  randomRowIndex <- sample(nrow(sessions), 1)
+  randomWeek <- sessions %>% filter(getWeekNumber(start_date) == getWeekNumber(sessions[randomRowIndex, ]$start_date))
+  if (!is.null(userId)) {
+    randomWeek <- randomWeek %>% filter(user_id == userId)
+  }
+  randomWeek <- randomWeek %>% addFeatures() %>% select(day, user_id, weekend, starting_hour)
+  return(randomWeek)
+}
+
+evalPrediction <- function(actualWeek, predictedWeek, minPredAcc = 0, minSessionRatio = 0) {
+  actualWeek <- actualWeek %>% select(day, starting_hour)
+  origPredictedWeek <- predictedWeek
+  predictedWeek <- predictedWeek %>%
+    rename(starting_hour = pred_starting_hour) %>%
+    filter(pred_acc > minPredAcc, session_ratio > minSessionRatio) %>%
+    left_join(actualWeek %>% mutate(correct = TRUE)) %>%
+    replace_na(list(correct = FALSE))
+  
+  correctTable <- table(predictedWeek$correct)
+  accuracy <- correctTable[2]/(correctTable[1] + correctTable[2])
+  writeLines("\n\n********** Evaluation of the prediction: **********\n")
+  writeLines(paste0("Min prediction acc. from NB: ", minPredAcc))
+  writeLines(paste0("Min session ratio: ", minSessionRatio))
+  writeLines(paste0("Number of predicted sessions removed: ", nrow(origPredictedWeek) - nrow(predictedWeek)))
+  writeLines(paste0("\nAccuracy: " , round(accuracy, 2)))
+  writeLines("")
+  return(predictedWeek)
+}
+
 # Public API call -------------------------------------------------------------------------------------------------
 
-predicted <- predictWeekForUser(1048, sessions)
+userId = 1920 # The user being predicted
+
+sessions <- getSessions(df, minimumSessions = 30)
+sessionsPerUser <- sessions %>% group_by(user_id) %>% summarise(n = n())
+
+sessionsForUser <- sessions %>% filter(user_id == userId)
+summaryForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
+
+randomWeek <- getRandomWeekData(sessions, userId)
+predictedWeek <- predictWeekForUser(userId, sessions)
+evalPrediction(randomWeek, predictedWeek, minPredAcc = 0, minSessionRatio = 0)
+
