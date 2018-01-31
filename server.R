@@ -33,7 +33,7 @@ server <- function(input, output, session) {
   # })
 
   limitedSessions <- reactive({
-    source("src/models/predictive/start_prediction.R")
+    source("src/models/predictive/predict_future_week.R")
     getSessions(scData(), minimumSessions = 30)
   })
 
