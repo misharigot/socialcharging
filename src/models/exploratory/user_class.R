@@ -144,7 +144,7 @@ classDistributionDf <- function(sessionClassificationDf) {
   classDistribution <- sessionClassificationDf %>%
     count(user_id, class) %>%
     group_by(user_id) %>%
-    slice(which.max(n)) %>%
+    dplyr::slice(which.max(n)) %>%
     group_by(class) %>%
     summarise(n = n())
 }
