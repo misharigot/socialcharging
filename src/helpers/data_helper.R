@@ -21,12 +21,6 @@ generatePredictionCsv <- function() {
   # Creates a dataframe with predictions based on user classification
   cleanedDf <- prepareDataForUserPred(df)
   cleanedDf$smartCharging <- ifelse(cleanedDf$smart_charging == "Yes", 1, 0)
-  cleanedDf$IsWorkDay <-
-    ifelse(cleanedDf$dayOfWeekNo >= 1 & cleanedDf$dayOfWeekNo < 6, 1, 0)
-  # cleanedDf$IsWeekend <-
-  #   ifelse(cleanedDf$dayOfWeekNo == 0 | cleanedDf$dayOfWeekNo == 6, 1, 0)
-  cleanedDf$IsWorkingHours <-
-    ifelse(cleanedDf$hour > 7 & cleanedDf$hour < 18, 1, 0)
   
   # testingGamPred <- createGAMModelDataUser(df = cleanedDf, formula = hours_elapsed ~ hour + charged_kwh, minimumSessions = 5)
   sessionsIdsWithPreds <- createLinearModelDataUser(cleanedDf)
@@ -115,22 +109,32 @@ formatKwh <- function(kwh) {
   paste0(kwh, " kWh")
 }
 
-test <- function() {
-  str(cleanedDf.filtered)
-  # cleanedDf.filtered <- cleanedDf %>%
-  #   select("smartCharging", "kw_charge_point_speed", "charged_kwh", "hours_elapsed",
-  #          "effective_charging_hours", "user_class", "dayOfWeekNo", "hour", "IsWorkDay", "IsWorkingHours")
+test <- function(cleanedDf) {
+  
+  cleanedDf$IsWorkDay <-
+    ifelse(cleanedDf$dayOfWeekNo >= 1 & cleanedDf$dayOfWeekNo < 6, 1, 0)
+  
+  cleanedDf$IsWorkingHours <-
+    ifelse(cleanedDf$hour > 7 & cleanedDf$hour < 18, 1, 0)
   
   cleanedDf.filtered <- cleanedDf %>%
-    select("hours_elapsed",
-           "user_class", "dayOfWeekNo", "hour", "IsWorkDay", "IsWorkingHours")
-  cleanedDf.filtered$user_class <- as.numeric(as.character(cleanedDf.filtered$user_class))
+    select("dayOfWeekNo", "hour", "IsWorkDay", "IsWorkingHours")
   
-  trainDf <- cleanedDf.filtered[1:11000, ]
-  testDf <- cleanedDf.filtered[11001:14727, ]
+  # split data 25% test, 75% train
+  size = floor(0.25 * nrow(cleanedDf))
+  sizeNext = size + 1
+  total = nrow(cleanedDf)
+  
+  trainDf <- cleanedDf.filtered[sizeNext:total, ]
+  trainDf.label <- cleanedDf[sizeNext:total, ]$hours_elapsed
+  
+  testDf <- cleanedDf.filtered[1:size, ]
+  
+  testDf$hours_elapsed <- NULL
+  
   cv <- xgb.cv(
     data = as.matrix(trainDf),
-    label = trainDf$hours_elapsed,
+    label = trainDf.label,
     nrounds = 1000,
     nfold = 5,
     objective = "reg:linear",
@@ -143,7 +147,7 @@ test <- function() {
   elog <- cv$evaluation_log
   
   # Determine and print how many trees minimize training and test error
-  elog %>%
+  elog <- elog %>%
     summarize(
       ntrees.train = which.min(train_rmse_mean),
       # find the index of min(train_rmse_mean)
@@ -151,9 +155,9 @@ test <- function() {
     )   # find the index of min(test_rmse_mean)
     
   
-    test_model_xgb <- xgboost(data = as.matrix(cleanedDf.filtered), # training data as matrix
-                              label = cleanedDf.filtered$hours_elapsed,  # column of outcomes
-                              nrounds = 378,       # number of trees to build
+    test_model_xgb <- xgboost(data = as.matrix(trainDf), # training data as matrix
+                              label = trainDf.label,  # column of outcomes
+                              nrounds = elog$ntrees.train,       # number of trees to build
                               objective = "reg:linear", # objective
                               eta = 0.3,
                               depth = 6,
@@ -161,4 +165,5 @@ test <- function() {
     )
     
     testDf$pred_hours_elapsed <- predict(test_model_xgb, as.matrix(testDf))
+    testDf$actual_hours <- trainDf.label <- cleanedDf[1:size, ]$hours_elapsed
 }
