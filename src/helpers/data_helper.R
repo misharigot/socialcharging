@@ -101,20 +101,18 @@ formatKwh <- function(kwh) {
   paste0(kwh, " kWh")
 }
 
-predictFeature <- function(sessionsForUser, predictedWeek, valueToPredict) {
-  valueToPredict <- noquote("hours_elapsed")
+predictFeature <- function(sessionsForUser, predictedWeek, valueToPredict, desiredColumnName) {
+  valueToPredict <- noquote(valueToPredict)
   
-  sessionsForUser.filtered <- sessionsForUser %>%
+  sessionsForUserFiltered <- sessionsForUser %>%
     select("day", "starting_hour", "weekend")
   
-  sessionsForUser.filtered$day <- as.numeric(sessionsForUser.filtered$day)
-  sessionsForUser.filtered$starting_hour <- as.numeric(sessionsForUser.filtered$starting_hour)
-  sessionsForUser.filtered$weekend <- ifelse( sessionsForUser.filtered$weekend == TRUE, 1, 0)
+  sessionsForUserFiltered$day <- as.numeric(sessionsForUserFiltered$day)
+  sessionsForUserFiltered$starting_hour <- as.numeric(sessionsForUserFiltered$starting_hour)
+  sessionsForUserFiltered$weekend <- ifelse( sessionsForUserFiltered$weekend == TRUE, 1, 0)
   
-  trainDf <- sessionsForUser.filtered
+  trainDf <- sessionsForUserFiltered
   trainDf.label <- sessionsForUser[[valueToPredict]]
-  
-  testDf <- sessionsForUser.filtered
   
   cv <- xgb.cv(
     data = as.matrix(trainDf),
@@ -148,12 +146,17 @@ predictFeature <- function(sessionsForUser, predictedWeek, valueToPredict) {
                             verbose = 0  # silent
   )
   
-  testDf$pred_hours_elapsed <- predict(test_model_xgb, as.matrix(testDf))
-  testDf$actual_hours <- sessionsForUser$hours_elapsed
-  testDf$diff_hours <- testDf$actual_hours - testDf$pred_hours_elapsed
-  
+  predictedWeekFiltered <- predictedWeek %>%
+    select("day", "pred_starting_hour", "weekend")
+    
+  predictedWeekFiltered$day <- as.numeric(predictedWeekFiltered$day)
+  predictedWeekFiltered$pred_starting_hour <- as.numeric(predictedWeekFiltered$pred_starting_hour)
+  predictedWeekFiltered$weekend <- ifelse(predictedWeekFiltered$weekend == TRUE, 1, 0)
+
+  predictedWeek[[desiredColumnName]] <- predict(test_model_xgb, as.matrix(predictedWeekFiltered))
+
   source("src/models/old_predictions/regression_test.R")
-  result <- testPrediction(testDf$diff_hours)
+  # result <- testPrediction(testDf$diff_hours)
   
-  return(testDf)
+  return(predictedWeek)
 }

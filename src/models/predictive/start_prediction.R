@@ -166,4 +166,9 @@ evalPrediction(randomWeek, predictedWeek, minPredAcc = 0, minSessionRatio = 0)
 source('src/helpers/data_helper.R')
 result <- predictFeature(sessionsForUser = sessionsForUser,
                          predictedWeek =  predictedWeek,
-                         valueToPredict = "hours_elapsed")
+                         valueToPredict = "hours_elapsed",
+                         desiredColumnName = "pred_hours_elapsed")
+result <- predictFeature(sessionsForUser = sessionsForUser,
+                         predictedWeek =  result,
+                         valueToPredict = "charged_kwh",
+                         desiredColumnName = "pred_charged_kwh")
