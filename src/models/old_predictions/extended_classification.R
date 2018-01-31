@@ -20,7 +20,7 @@ cleanDf <- function(df) {
     summarise(count = n()) %>%
     filter(count >= minUserSessions) %>%
     select(user_id)
-  
+
   df <- df %>%
     filter(
       !is.na(hours_elapsed),
@@ -35,8 +35,8 @@ cleanDf <- function(df) {
            start_date,
            start_date_hour,
            charged_kwh,
-           hours_elapsed) 
-  
+           hours_elapsed)
+
   return(df)
 }
 
@@ -44,25 +44,25 @@ cleanDf <- function(df) {
 
 getPredictedValuesDf <- function(df) {
   total_df <- cleanDf(df)
-  
+
   total_df$day <-
     strftime(as.Date(total_df$start_date), format = "%u")
-  
+
   lm_df_connectionTime <-
     lm(hours_elapsed ~ start_date_hour + hours_elapsed + charged_kwh + day ,
        data = total_df)
-  
+
   lm_df_kwh <-
     lm(charged_kwh ~ start_date_hour + hours_elapsed + charged_kwh + day, data = total_df)
-  
+
   lm_df_startTime <-
     lm(start_date_hour ~ start_date_hour + hours_elapsed + charged_kwh + day, data = total_df)
-  
+
   total_df$pred_hours_elapsed <-
     predict(lm_df_connectionTime, total_df)
   total_df$pred_kwh <- predict(lm_df_kwh, total_df)
   total_df$pred_start_time <- predict(lm_df_startTime, total_df)
-  
+
   total_df <- total_df %>%
     filter(
       !is.na(pred_hours_elapsed),

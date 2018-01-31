@@ -29,3 +29,4 @@ config.yml
 .Rproj.user
 packrat/lib*/
 data
+xgboost.model

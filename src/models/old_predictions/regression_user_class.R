@@ -6,6 +6,7 @@ library(lubridate)
 library(tidyr)
 library(purrr)
 library(corrplot)
+library(mgcv)
 
 config <- config::get(file = "config.yml")
 source(config$baseClean)
@@ -39,6 +40,10 @@ prepareDataForUserPred <- function(df){
 
   # Gets the day of the week from the date
   df$dayOfWeek <- weekdays(as.Date(df$start_date))
+  
+  # Gets the starting day of the week in number
+  df$dayOfWeekNo <- as.numeric(format(df$start_date, "%w"))
+  
   # Gets the starting hour of session
   df$hour <- as.numeric(format(round(df$start_date, "hours"), format = "%H"))
   return(df)
@@ -73,6 +78,37 @@ createLinearModelDataUser <- function(df){
       idsWithPreds <- rbind(idsWithPreds, dfToMerge)
     }
     i <- i + 1
+  }
+  return(idsWithPreds)
+}
+
+# Testing if we can get a more accurate prediction using GAM
+createGAMModelDataUser <- function(df, formula, minimumSessions){
+  index <- 1
+  
+  userClassificationsUnique <- unique(as.character(df$user_class))
+  
+  idsWithPreds <- data.frame("session_id" = numeric(0), "user_pred" = numeric(0))
+  
+  # Predict session time for each profile
+  while (index <= length(userClassificationsUnique)) {
+    # Create a df for current user classification 
+    sessionsWithSpecificClass <- df %>%
+      filter(user_class == userClassificationsUnique[index])
+    
+    if (nrow(sessionsWithSpecificClass) > minimumSessions) {
+      # Create linear model
+      gam_df <- gam(formula, data = sessionsWithSpecificClass)
+      
+      # Add predictions to sessions
+      sessionsWithSpecificClass$user_pred <- predict(gam_df, sessionsWithSpecificClass)
+      
+      dfToMerge <- sessionsWithSpecificClass[, c("session_id", "user_pred")]
+      
+      # Append dfToMerge to idsWithPreds
+      idsWithPreds <- rbind(idsWithPreds, dfToMerge)
+    }
+    index <- index + 1
   }
   return(idsWithPreds)
 }
