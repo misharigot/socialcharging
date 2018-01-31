@@ -40,10 +40,10 @@ ui <- dashboardPage(
       tabItem(tabName = "home",
               fluidRow(
                 box(width = 6, align = "center",
-                    h2("Welcome to our presentation"),
+                    h2("Welcome"),
                     img(src = "Social-Charging-sheet-smaller.jpg", width = "100%", height = "100%")
                 )
-              ) 
+              )
       ),
       tabItem(
         tabName = "table",
@@ -68,7 +68,7 @@ ui <- dashboardPage(
                            width = 6)
               ),
               actionButton("reset_input", "Reset")
-              
+
       ),
       tabItem(tabName = "chart2",
               fluidRow(
@@ -184,7 +184,7 @@ ui <- dashboardPage(
                 #LHL	HitAndRun +
                 #HLH    LateNightCharging +
                 #      occPoint              userPoint                Charge point
-                
+
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
