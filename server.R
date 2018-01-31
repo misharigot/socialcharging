@@ -176,11 +176,11 @@ server <- function(input, output, session) {
         start   = timelineData$start_datetime, # 2017-12-26 10:00:00
         end     = timelineData$end_datetime, # 2017-12-26 13:32:00
         title = c(paste0("Start time: ", timelineData$start_datetime,
-                        "\n", " End time: ", timelineData$end_datetime,
-                        "\n", " \nCharged kWh: ", timelineData$formatted_kwh,
-                        "\n", " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed),
-                        "\n", " \nPredicted time probability: ", timelineData$pred_acc,
-                        "\n", " \nSession/", strftime(timelineData$start_datetime,'%A'), " ratio: ", round(timelineData$session_ratio, 2)))
+                        "\nEnd time: ", timelineData$end_datetime,
+                        "\nCharged kWh: ", timelineData$formatted_kwh,
+                        "\nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed),
+                        "\nPredicted time probability: ", timelineData$pred_acc,
+                        "\nSession/", strftime(timelineData$start_datetime,'%A'), " ratio: ", round(timelineData$session_ratio, 2)))
       )
     }
 
