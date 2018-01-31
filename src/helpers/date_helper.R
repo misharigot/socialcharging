@@ -71,3 +71,10 @@ toHourAndMinutes <- function(decimal){
   
   return(paste0(hourAndMinutes, ":00"))
 }
+
+# Returns the number of the day of the month
+getWeekOfMonth <- function(start_date){
+  weekOfMonth <- ceiling(day(start_date) / 7)
+  
+  return (weekOfMonth)
+}
