@@ -269,7 +269,7 @@ handleDefaultMapCreation <-
     values <- createLegendValues(mapData)
     title <- createLegendTitle()
 
-    leaflet() %>%
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png") %>%
       setView(lng = 4.32, lat = 52.05, zoom = 12) %>%
       defaultCircles(mapData, radius, color) %>%
