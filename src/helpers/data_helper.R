@@ -108,8 +108,9 @@ formatKwh <- function(kwh) {
   paste0(kwh, " kWh")
 }
 
-test <- function(cleanedDf) {
-  
+
+predictFeature <- function(cleanedDf, valueToPredict) {
+  valueToPredict <- noquote("hours_elapsed")
   cleanedDf$IsWorkDay <-
     ifelse(cleanedDf$dayOfWeekNo >= 1 & cleanedDf$dayOfWeekNo < 6, 1, 0)
   
@@ -125,11 +126,11 @@ test <- function(cleanedDf) {
   total = nrow(cleanedDf)
   
   trainDf <- cleanedDf.filtered[sizeNext:total, ]
-  trainDf.label <- cleanedDf[sizeNext:total, ]$hours_elapsed
+  trainDf.label <- cleanedDf[sizeNext:total, valueToPredict]
   
   testDf <- cleanedDf.filtered[1:size, ]
   
-  testDf$hours_elapsed <- NULL
+  testDf[ ,valueToPredict] <- NULL
   
   cv <- xgb.cv(
     data = as.matrix(trainDf),
@@ -165,4 +166,8 @@ test <- function(cleanedDf) {
     
     testDf$pred_hours_elapsed <- predict(test_model_xgb, as.matrix(testDf))
     testDf$actual_hours <- trainDf.label <- cleanedDf[1:size, ]$hours_elapsed
+    testDf$diff_hours <- testDf$actual_hours - testDf$pred_hours_elapsed
+    
+    source("src/models/predictive/regression_test.R")
+    result <- testPrediction(testDf$diff_hours)
 }
