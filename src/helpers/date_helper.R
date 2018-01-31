@@ -1,6 +1,18 @@
 # This class has several helper functions regarding date, containing custom functions that lubridate doesn't provide.
 library(lubridate)
 
+# Get weeknumber from date starting on monday
+# Created a custom function, because lubridate's week function starts the week on sunday
+getWeekNumber <- function(date) {
+  strftime(as.Date(date), format = "%V")
+}
+
+# Gets weekday from the date starting on monday
+# Created a custom function, because lubridate's day function starts the counting on sunday
+getDay <- function(date)  {
+  strftime(as.Date(date), format = "%u")
+}
+
 # Return a date string of the next weekday specified:
 # Example: wday = 1 (Monday)
 # Returns the date of the next sunday based on current time
