@@ -4,8 +4,8 @@ library(xgboost)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/helpers/multiplot_helper.R")
-source("src/models/predictive/regression_user_class.R")
-source("src/models/predictive/regression_station_class.R")
+source("src/models/old_predictions/regression_user_class.R")
+source("src/models/old_predictions/regression_station_class.R")
 source("src/helpers/date_helper.R")
 
 # Writes a csv to data folder with predictions
@@ -154,6 +154,6 @@ predictFeature <- function(cleanedDf, valueToPredict) {
     testDf$actual_hours <- cleanedDf$hours_elapsed
     testDf$diff_hours <- testDf$actual_hours - testDf$pred_hours_elapsed
     
-    source("src/models/predictive/regression_test.R")
+    source("src/models/old_predictions/regression_test.R")
     result <- testPrediction(testDf$diff_hours)
 }

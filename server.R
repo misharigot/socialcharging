@@ -33,7 +33,7 @@ server <- function(input, output, session) {
   # })
 
   predictedValuesDf <- reactive({
-    source("src/models/predictive/extended_classification.R")
+    source("src/models/old_predictions/extended_classification.R")
     getPredictedValuesDf(scData())
   })
 
