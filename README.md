@@ -49,7 +49,7 @@ The root directory has several folders and files:
 **Notable files**
 - `/config.yml.dist`, this file contains the global parameters that are used throughout the project. These parameters are specific to the user that checks out this project.
 **Important:** In order to change these parameters to your personal values, a copy of this file should be made and named `config.yml`. This file is ignored by Git and will include your own personal parameter values. Examples of the values are in the .dist file.
-- `/deploy.R`, this file can be run to deploy the project. This will install dependencies via [Packrat](https://rstudio.github.io/packrat/) and create a csv with values predicted by our machine learning models. If all goes well, the project can be run without problems after running this R file and configuring your personal `/config.yml` file.
+- `/deploy.R`, this file can be run to deploy the project. This will install dependencies via [Packrat](https://rstudio.github.io/packrat/). If all goes well, the project can be run without problems after running this R file and configuring your personal `/config.yml` file.
 - `lint-script.R`, this file can be used to lint the file in the path in `config.yml` under `fileToLint`.
 - `server.R`, this file holds the server function for the Shiny application.
 For more information, see the shiny documentation or follow the tutorial on https://shiny.rstudio.com/tutorial/.
@@ -79,7 +79,7 @@ This directory holds css files. These files can be used in shiny's UI, by callin
 ##### Location: `/src/helpers`
 This directory holds all the helper scripts that contain utility functions.
 
-- **helpers/data_helper.R** contains the `generatePredictionCsv()` function, that generates a prediction CSV in the config parameter `dataFolder`, in your `config.yml` file. This prediction CSV is used by several views visualizing our prediction modeling.
+- **helpers/data_helper.R** contains several function that help generating and converting specific data formats.
 - **helpers/date_helper.R** contains functions regarding date, containing custom functions that [lubridate](https://github.com/tidyverse/lubridate) doesn't provide. These functions are mainly used by our Week Schedule module.
 - **helpers/multiplot_helper.R** helps with displaying multiple plots as a single output.
 
