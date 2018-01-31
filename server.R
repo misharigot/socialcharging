@@ -24,13 +24,13 @@ server <- function(input, output, session) {
     return(df)
   })
 
-  regressionData <- reactive({
-    df <- read.csv2(config$dataFolder, sep = ",")
-    head(df)
-    df <- changeStructures(df)
-    head(df)
-    return(df)
-  })
+  # regressionData <- reactive({
+  #   df <- read.csv2(config$dataFolder, sep = ",")
+  #   head(df)
+  #   df <- changeStructures(df)
+  #   head(df)
+  #   return(df)
+  # })
 
   predictedValuesDf <- reactive({
     source("src/models/predictive/extended_classification.R")
@@ -49,7 +49,7 @@ server <- function(input, output, session) {
     return(names(numberfiedDf()))
   })
 
-  callModule(module = mapModule, id = "map", data = regressionData())
+  callModule(module = mapModule, id = "map", data = scData())
   callModule(module = corruptedExplorerModule, id = "corrupt", data = scData())
 
   output$user_selection <- renderUI({

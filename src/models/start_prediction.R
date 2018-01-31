@@ -138,12 +138,12 @@ evalPrediction <- function(actualWeek, predictedWeek, minPredAcc = 0, minSession
     replace_na(list(correct = FALSE))
   
   correctTable <- table(predictedWeek$correct)
-  accuracy <- correctTable[2]/(correctTable[1] + correctTable[2])
+  accuracy <- correctTable[2] / (correctTable[1] + correctTable[2])
   writeLines("\n\n********** Evaluation of the prediction: **********\n")
   writeLines(paste0("Min prediction acc. from NB: ", minPredAcc))
   writeLines(paste0("Min session ratio: ", minSessionRatio))
   writeLines(paste0("Number of predicted sessions removed: ", nrow(origPredictedWeek) - nrow(predictedWeek)))
-  writeLines(paste0("\nAccuracy: " , round(accuracy, 2)))
+  writeLines(paste0("\nAccuracy: ", round(accuracy, 2)))
   writeLines("")
   return(predictedWeek)
 }
@@ -161,4 +161,3 @@ summaryForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise
 randomWeek <- getRandomWeekData(sessions, userId)
 predictedWeek <- predictWeekForUser(userId, sessions)
 evalPrediction(randomWeek, predictedWeek, minPredAcc = 0, minSessionRatio = 0)
-

@@ -8,33 +8,32 @@ source("src/models/predictive/regression_station_class.R")
 source("src/helpers/date_helper.R")
 
 # Writes a csv to data folder with predictions
-generatePredictionCsv <- function() {
-  if (file.exists(config$dataFolder)) {
-    file.remove(config$dataFolder)
-  }
-
-  df <- read_csv2(config$scDataset, col_names = FALSE)
-  df <- cleanDataframe(df)
-
-  # Creates a dataframe with predictions based on user classification
-  cleanDf <- prepareDataForUserPred(df)
-  sessionsIdsWithPreds <- createLinearModelDataUser(cleanDf)
-  result <- base::merge(cleanDf, sessionsIdsWithPreds, by = "session_id")
-
-  # Creates a dataframe with predictions based on station classification
-  cleanDf <- prepareDataForStationPred(result)
-  sessionsIdsWithPreds <- createLinearModelDataStation(cleanDf)
-  result <- base::merge(cleanDf, sessionsIdsWithPreds, by = "session_id")
-
-  # Change numeric user classifications to descriptive names
-  result$user_class <- as.character(result$user_class)
-  result$user_class <- lapply(result$user_class, changeToDescriptiveName)
-
-  # Writes dataframe to csv file
-  result <- as.data.frame(lapply(result, unlist))
-  write.csv(result, config$dataFolder)
-}
-
+# generatePredictionCsv <- function() {
+#   if (file.exists(config$dataFolder)) {
+#     file.remove(config$dataFolder)
+#   }
+# 
+#   df <- read_csv2(config$scDataset, col_names = FALSE)
+#   df <- cleanDataframe(df)
+# 
+#   # Creates a dataframe with predictions based on user classification
+#   cleanDf <- prepareDataForUserPred(df)
+#   sessionsIdsWithPreds <- createLinearModelDataUser(cleanDf)
+#   result <- base::merge(cleanDf, sessionsIdsWithPreds, by = "session_id")
+# 
+#   # Creates a dataframe with predictions based on station classification
+#   cleanDf <- prepareDataForStationPred(result)
+#   sessionsIdsWithPreds <- createLinearModelDataStation(cleanDf)
+#   result <- base::merge(cleanDf, sessionsIdsWithPreds, by = "session_id")
+# 
+#   # Change numeric user classifications to descriptive names
+#   result$user_class <- as.character(result$user_class)
+#   result$user_class <- lapply(result$user_class, changeToDescriptiveName)
+# 
+#   # Writes dataframe to csv file
+#   result <- as.data.frame(lapply(result, unlist))
+#   write.csv(result, config$dataFolder)
+# }
 
 # Helper functions ----------------------------------------------------
 changeToDescriptiveName <- function(x) {

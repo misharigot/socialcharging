@@ -2,4 +2,4 @@ default:
   scDataset: "data/social_charging_data.csv"
   baseClean: "src/base_clean.R"
   fileToLint: "src/file_to_lint.R"
-  dataFolder: "data/results.csv" # This should end with '/results.csv'!
+  

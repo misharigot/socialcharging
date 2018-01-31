@@ -73,7 +73,6 @@ mapModuleUI <- function(id) {
         left = 300,
         right = "auto",
         bottom = 10,
-        width = 1300,
         height = "auto",
         h3("Station sessions"),
         div(style = "height: 200px; overflow-y: auto;", tableOutput(ns("stationTable")))
@@ -173,11 +172,7 @@ mapModule <- function(input, output, session, data) {
         start_date,
         end_date,
         charged_kwh,
-        hours_elapsed,
-        user_class,
-        user_pred,
-        station_class,
-        station_pred
+        hours_elapsed
       )
     tableDisplayData
   })
@@ -208,11 +203,7 @@ prepTableData <- function(dataf) {
       start_date,
       end_date,
       charged_kwh,
-      hours_elapsed,
-      user_class,
-      user_pred,
-      station_class,
-      station_pred
+      hours_elapsed
     )
 
   return(dataf)

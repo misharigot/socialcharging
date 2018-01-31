@@ -139,16 +139,6 @@ ui <- dashboardPage(
                 box(withSpinner(plotOutput("pred7"), type = 4), width = 16)
               ),
               fluidRow(
-                #HLL  	MarriedToThisStation +
-                # HHL 	ParkingSpace +
-                #HHH	LadyOfTheEvening +
-                #LLL	ForeverAlone +
-                #LLH	PowerBank +
-                #LHH    WorkerBee +
-                #LHL	HitAndRun +
-                #HLH    LateNightCharging +
-                #      occPoint              userPoint                Charge point
-
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
