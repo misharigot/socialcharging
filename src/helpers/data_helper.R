@@ -9,7 +9,6 @@ source("src/models/predictive/regression_station_class.R")
 source("src/helpers/date_helper.R")
 
 # Writes a csv to data folder with predictions
-<<<<<<< HEAD
 # generatePredictionCsv <- function() {
 #   if (file.exists(config$dataFolder)) {
 #     file.remove(config$dataFolder)
@@ -36,41 +35,6 @@ source("src/helpers/date_helper.R")
 #   result <- as.data.frame(lapply(result, unlist))
 #   write.csv(result, config$dataFolder)
 # }
-=======
-generatePredictionCsv <- function() {
-  if (file.exists(config$dataFolder)) {
-    file.remove(config$dataFolder)
-  }
-  
-  df <- read_csv2(config$scDataset, col_names = FALSE)
-  df <- cleanDataframe(df)
-  
-  # Creates a dataframe with predictions based on user classification
-  cleanedDf <- prepareDataForUserPred(df)
-  cleanedDf$smartCharging <- ifelse(cleanedDf$smart_charging == "Yes", 1, 0)
-  
-  # testingGamPred <- createGAMModelDataUser(df = cleanedDf, formula = hours_elapsed ~ hour + charged_kwh, minimumSessions = 5)
-  sessionsIdsWithPreds <- createLinearModelDataUser(cleanedDf)
-  result <-
-    base::merge(cleanedDf, sessionsIdsWithPreds, by = "session_id")
-  
-  # Creates a dataframe with predictions based on station classification
-  cleanedDf <- prepareDataForStationPred(result)
-  sessionsIdsWithPreds <- createLinearModelDataStation(cleanedDf)
-  result <-
-    base::merge(cleanedDf, sessionsIdsWithPreds, by = "session_id")
-  
-  # Change numeric user classifications to descriptive names
-  result$user_class <- as.character(result$user_class)
-  result$user_class <-
-    lapply(result$user_class, changeToDescriptiveName)
-  
-  # Writes dataframe to csv file
-  result <- as.data.frame(lapply(result, unlist))
-  write.csv(result, config$dataFolder)
-}
-
->>>>>>> origin/feature/38-xgboost-prediction-implementation
 
 # Helper functions ----------------------------------------------------
 changeToDescriptiveName <- function(x) {
