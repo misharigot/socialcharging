@@ -5,7 +5,7 @@ library(plotly)
 library(clValid)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source("src/models/user_class.R")
+source("src/models/exploratory/user_class.R")
 set.seed(100)
 
 # df <- read_csv2(config$scDataset, col_names = FALSE)
@@ -23,7 +23,7 @@ cleanDataChargedKwh <- function(data) {
 }
 
 cleanDataTime <- function(data) {
-  data <- data %>% 
+  data <- data %>%
     filter(!is.na(start_date), !is.na(end_date), !is.na(hours_elapsed), hours_elapsed < 56, !is.na(charged_kwh)) %>%
     select(charged_kwh, hours_elapsed, start_date_hour)
 }
@@ -38,7 +38,7 @@ cleanDataTime <- function(data) {
 
 # Screeplot ---------------------------------------------------------------------------------------------------
 
-screePlot <- function(data) { 
+screePlot <- function(data) {
   ratioSs <- rep(0, 10)
   for (k in 1:10) {
     kmeansObj <- kmeans(data, k, nstart = 20)
@@ -85,7 +85,7 @@ plotClusterDataTime <- function(data, kmeans) {
                         zaxis = list(title = "start_date_hour")))
 }
 
-# Calls -------------------------------------------------------------------------------------------------------- 
+# Calls --------------------------------------------------------------------------------------------------------
 
 # Fucked up #1
 plotUserCluster1 <- function(scData) {

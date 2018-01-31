@@ -2,10 +2,9 @@ library(config)
 library(dplyr)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source(config$multiplotHelper)
-
-source("./src/models/regression_user_class.R")
-source("./src/models/regression_station_class.R")
+source("src/helpers/multiplot_helper.R")
+source("src/models/predictive/regression_user_class.R")
+source("src/models/predictive/regression_station_class.R")
 source("src/helpers/date_helper.R")
 
 # Writes a csv to data folder with predictions

@@ -4,7 +4,7 @@ library(dplyr)
 library(ggplot2)
 config <- config::get(file = "config.yml")
 source(config$baseClean)
-source(config$multiplotHelper)
+source("src/helpers/multiplot_helper.R")
 
 # Table functions ---------------------------------------------------------
 

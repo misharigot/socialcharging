@@ -56,16 +56,16 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart1",
               fluidRow(box(h4("Social Charging dataset"),
-                withSpinner(plotOutput("plot1", height = 400,
+                           withSpinner(plotOutput("plot1", height = 400,
                                                   dblclick = "dblclick",
                                                   brush = brushOpts(
                                                     id = "brush",
                                                     resetOnNew = TRUE
                                                   )), type = 4), width = 6),
-              box(h4("HVA dataset"),
-                  img(src = "EffectiveChargingHvA.png",
-                      width = "100%", height = "100%"),
-                      width = 6)
+                       box(h4("HVA dataset"),
+                           img(src = "EffectiveChargingHvA.png",
+                               width = "100%", height = "100%"),
+                           width = 6)
               ),
               actionButton("reset_input", "Reset")
               
@@ -79,7 +79,7 @@ ui <- dashboardPage(
       tabItem(tabName = "chart3",
               fluidRow(
                 box(h4("Social Charging dataset"),
-                  withSpinner(plotOutput("plot3"), type = 4), width = 6),
+                    withSpinner(plotOutput("plot3"), type = 4), width = 6),
                 box(h4("HVA dataset"),
                     img(src = "WeeklyChargingBehaviour.png",
                         width = "100%", height = "100%"),
@@ -87,14 +87,14 @@ ui <- dashboardPage(
               )
       ),
       tabItem(tabName = "chart4",
-                fluidRow(
-                  box(h4("Social Charging dataset"),
+              fluidRow(
+                box(h4("Social Charging dataset"),
                     withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750),
-                  box(h4("HVA dataset"),
-                      img(src = "SessionsPerTimeframe.png",
-                          width = "100%", height = "100%"),
-                      width = 12)
-                )
+                box(h4("HVA dataset"),
+                    img(src = "SessionsPerTimeframe.png",
+                        width = "100%", height = "100%"),
+                    width = 12)
+              )
       ),
       tabItem(tabName = "chart7",
               fluidRow(
@@ -116,7 +116,7 @@ ui <- dashboardPage(
       tabItem(tabName = "chart8",
               fluidRow(
                 box(h4("Social Charging dataset"),
-                  withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750),
+                    withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750),
                 box(h4("HVA dataset"),
                     img(src = "DailyChargingBehaviour.png",
                         width = "100%", height = "100%"),
@@ -137,7 +137,7 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab1",
               fluidRow(
                 box(h4("Social Charging dataset"),
-                  withSpinner(plotOutput("pred1"), type = 4), width = 12, align = "center"),
+                    withSpinner(plotOutput("pred1"), type = 4), width = 12, align = "center"),
                 box(h4("HVA dataset"),
                     img(src = "UserClassification.png",
                         width = "100%", height = "100%"),
@@ -153,7 +153,7 @@ ui <- dashboardPage(
               fluidRow(
                 box(uiOutput("corColumns")),
                 box(h4("Social Charging dataset"),
-                     withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750, align = "center"),
+                    withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750, align = "center"),
                 box(h4("HVA dataset"),
                     img(src = "CorrelationPlot.png",
                         width = "50%", height = "50%"),
@@ -168,7 +168,7 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab7",
               fluidRow(
                 box(h4("Social Charging dataset"),
-                  withSpinner(plotOutput("pred7"), type = 4), width = 16, align = "center"),
+                    withSpinner(plotOutput("pred7"), type = 4), width = 16, align = "center"),
                 box(h4("HVA dataset"),
                     img(src = "StationClassification.png",
                         width = "100%", height = "100%"),
@@ -205,38 +205,15 @@ ui <- dashboardPage(
       # Week Schedule ---------------------------------------------------------------------------------------------------
       tabItem(tabName = "weekschedule",
               fluidRow(
-                box(selectInput(inputId = "wsProfileSelect", label = "Select a user profile", choices = c("Select a user profile")),
+                box(selectInput(inputId = "wsUserSelect", label = "Select a user", choices = c("Select a user")),
                     width = 6),
-                box(title = "Profile explanation",
-                    tags$p("Each digit in a profile id is a separate profile for each feature in the data."),
-                    tags$p(tags$b("Example:")),
-                    tags$p("User profile ID '3-1-4'"),
-                    tags$p("3 = start time profile id 3"),
-                    tags$p("1 = hours elapsed profile id 1"),
-                    tags$p("4 = kwh charged profile id 4"),
+                box(title = "Disclaimer",
+                    tags$p("The accuracy of the prediction is dependent on the amount of historic data the selected user has. The more data the user has, the more accurate the predictions can be."),
                     width = 3
                 ),
                 box(title = "Legend",
-                    tags$p("Colors range from orange (inefficient) to green (most efficient)"),
-                    tags$div(style = "
-                              background-color: #ff5722; 
-                              padding: 10px;
-                              font-weight: 500;
-                              margin-bottom: 10px;
-                              border-radius: 3px;
-                              width: 50%;
-                              box-shadow: 2px 2px 7px #0000004f;", 
-                             "Inefficient"),
-                    tags$div(style = "
-                              background-color: #4caf50; 
-                              padding: 10px;
-                              font-weight: 500;
-                              margin-bottom: 10px;
-                              border-radius: 3px;
-                              width: 50%;
-                              box-shadow: 2px 2px 7px #0000004f;",
-                             "Efficient"),
-                    width = 3
+                    img(src = "Legend.PNG", width = "50%", height = "50%"),
+                    width = 3, align = "center"
                 )
               ),
               fluidRow(
