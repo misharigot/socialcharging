@@ -3,6 +3,7 @@ library(ggplot2)
 library(leaflet)
 library(shinyjs)
 library(data.table)
+library(shinyBS)
 source("src/map/map_functions.R")
 
 # UI --------------------------------------------------------------------------------------------------------------
@@ -22,13 +23,29 @@ mapModuleUI <- function(id) {
       class = "panel panel-default",
       fixed = TRUE,
       draggable = FALSE,
-      top = 60,
+      top = 80,
       left = "auto",
       right = 20,
       bottom = "auto",
       width = 330,
       height = "auto",
-      h3("Size"),
+      
+      div(
+        div(
+          style = "width: 80%; display: inline-block; vertical-align: middle;",
+          h3("Size")
+        ),
+        div(
+          style = "display: inline-block; vertical-align: middle; padding-left: 31px; padding-top: 10px;",
+          bsButton("q1", label = "", icon = icon("question"),
+                   style = "info", size = "extra-small"),
+          bsPopover(id = "q1", title = "Explanation",
+                    content = "efficiency : This means that car is charged efficiently by comparing the time and charge.",
+                    placement = "left",
+                    trigger = "focus")
+          )
+      ),
+      
       selectInput(
         ns("size"),
         "",
@@ -63,6 +80,7 @@ mapModuleUI <- function(id) {
                   c("Show all" = "all")),
       actionButton(ns("btnHide"), "Show/Hide Table")
     ),
+    
     hidden(
       absolutePanel(
         id = ns("session-table"),
@@ -109,7 +127,7 @@ mapModule <- function(input, output, session, data) {
   # This reactive function should be called to use the data
   plainData <- reactive({
     data %>% filter(
-      !is.na(latitude),!is.na(longitude),!is.na(charged_kwh),!is.na(hours_elapsed)
+      !is.na(latitude), !is.na(longitude), !is.na(charged_kwh), !is.na(hours_elapsed)
     )
   })
 
@@ -349,7 +367,7 @@ defaultCircles <- function(leaflet, mapData, radius, color) {
 
 # Adds a popup to leaflet map when a node is clicked
 chargingStationPopup <- function(id, lat, lng, mapData) {
-  selectedChargingPole <- mapData[id,]
+  selectedChargingPole <- mapData[id, ]
   content <- as.character(
     tagList(
       tags$h4("Location: ", selectedChargingPole$address),
