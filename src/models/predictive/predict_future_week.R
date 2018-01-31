@@ -150,7 +150,8 @@ evalPrediction <- function(actualWeek, predictedWeek, minPredAcc = 0, minSession
 
 # Public API call -------------------------------------------------------------------------------------------------
 
-getNextWeeksPrediction <- function(userId, df, minPredAcc = 0, minSessionRatio = 0) {
+# Get the predictions for a future week (next week), for userId with sessions in df.
+getNextWeeksPrediction <- function(userId, df, minPredAcc = 0.5, minSessionRatio = 0) {
   source('src/helpers/data_helper.R')
   
   sessions <- getSessions(df, minimumSessions = 30)
@@ -162,17 +163,18 @@ getNextWeeksPrediction <- function(userId, df, minPredAcc = 0, minSessionRatio =
   # Filter starting_hour predictions
   predictedWeek <- predictedWeek %>%
     filter(pred_acc > minPredAcc, session_ratio > minSessionRatio)
-  
-  # Add hours_elapsed prediction
-  predictedWeek <- predictFeature(sessionsForUser = sessionsForUser,
-                           predictedWeek =  predictedWeek,
-                           valueToPredict = "hours_elapsed",
-                           desiredColumnName = "pred_hours_elapsed")
-  
-  # Add charged_kwh prediction
-  predictedWeek <- predictFeature(sessionsForUser = sessionsForUser,
-                           predictedWeek =  predictedWeek,
-                           valueToPredict = "charged_kwh",
-                           desiredColumnName = "pred_charged_kwh")
+  if (nrow(predictedWeek) > 0) {
+    # Add hours_elapsed prediction
+    predictedWeek <- predictFeature(sessionsForUser = sessionsForUser,
+                                    predictedWeek =  predictedWeek,
+                                    valueToPredict = "hours_elapsed",
+                                    desiredColumnName = "pred_hours_elapsed")
+    
+    # Add charged_kwh prediction
+    predictedWeek <- predictFeature(sessionsForUser = sessionsForUser,
+                                    predictedWeek =  predictedWeek,
+                                    valueToPredict = "charged_kwh",
+                                    desiredColumnName = "pred_charged_kwh")
+  }
   return(predictedWeek)
 }

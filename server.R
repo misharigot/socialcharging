@@ -166,22 +166,31 @@ server <- function(input, output, session) {
     if (!input$wsUserSelect == "Select a user") {
       selectedValues <- getNextWeeksPrediction(input$wsUserSelect, scData())
       
-      # selectedValues <- limitedSessions %>% filter(user_id == input$wsUserSelect)
-      timelineData <- convertSessionsToTimelineData(selectedValues)
-
-      data <- data.frame(
-        content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh,
-                                   stripDate(timelineData$start_datetime, "%Y-%m-%d %H:%M:%S"),
-                                   stripDate(timelineData$end_datetime, "%Y-%m-%d %H:%M:%S")),
-        start   = timelineData$start_datetime, # 2017-12-26 10:00:00
-        end     = timelineData$end_datetime, # 2017-12-26 13:32:00
-        title = c(paste0("Start time: ", timelineData$start_datetime,
-                        "\nEnd time: ", timelineData$end_datetime,
-                        "\nCharged kWh: ", timelineData$formatted_kwh,
-                        "\nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed),
-                        "\nPredicted time probability: ", timelineData$pred_acc,
-                        "\nSession/", strftime(timelineData$start_datetime,'%A'), " ratio: ", round(timelineData$session_ratio, 2)))
-      )
+      if (nrow(selectedValues) == 0) {
+        data <- data.frame(
+          content = c(),
+          start   = c(),
+          end     = c(),
+          title = c()
+        )
+      } else {
+        # selectedValues <- limitedSessions %>% filter(user_id == input$wsUserSelect)
+        timelineData <- convertSessionsToTimelineData(selectedValues)
+  
+        data <- data.frame(
+          content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh,
+                                     stripDate(timelineData$start_datetime, "%Y-%m-%d %H:%M:%S"),
+                                     stripDate(timelineData$end_datetime, "%Y-%m-%d %H:%M:%S")),
+          start   = timelineData$start_datetime, # 2017-12-26 10:00:00
+          end     = timelineData$end_datetime, # 2017-12-26 13:32:00
+          title = c(paste0("Start time: ", timelineData$start_datetime,
+                          "\nEnd time: ", timelineData$end_datetime,
+                          "\nCharged kWh: ", timelineData$formatted_kwh,
+                          "\nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed),
+                          "\nPredicted time probability: ", timelineData$pred_acc,
+                          "\nSession/", strftime(timelineData$start_datetime,'%A'), " ratio: ", round(timelineData$session_ratio, 2)))
+        )
+      }
     }
 
     config <- list(
@@ -237,6 +246,6 @@ server <- function(input, output, session) {
   observe({
     updateSelectInput(session,
                       "wsUserSelect",
-                      choices = isolate(distinct(limitedSessions())$user_id))
+                      choices = isolate( sort(distinct(limitedSessions())$user_id) ))
   })
 }
