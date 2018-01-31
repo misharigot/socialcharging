@@ -70,7 +70,7 @@ getDummyPredictedSessions <- function() {
     "day" = rNum(7, 300),
     "pred_start_time" = rNum(24, 300),
     "pred_hours_elapsed" = rNum(24, 300),
-    "pred_kwh" = rNum(10, 300)
+    "pred_charged_kwh" = rNum(10, 300)
   )
 }
 
@@ -79,19 +79,21 @@ rNum <- function(x, size) {
   sample(1:x, size, replace = T)
 }
 
-# Convert the predicted sessions DF from extended_classification.R to data usable by the timeline visualisation library.
+# Convert the predicted sessions DF to data usable by the timeline visualisation library.
 convertSessionsToTimelineData <- function(predictedSessions) {
   predictedSessions %>%
     mutate(day = as.numeric(day)) %>%
     filter(pred_hours_elapsed > 0) %>%
     rowwise() %>%
     mutate(
-      start_datetime = toNextWeekStartDate(pred_start_time, day),
-      end_datetime = toNextWeekEndDate(pred_start_time, day, pred_hours_elapsed),
-      formatted_kwh = formatKwh(pred_kwh),
-      efficiency = 100 / (pred_hours_elapsed * 11) * pred_kwh,
+      start_datetime = toNextWeekStartDate(pred_starting_hour, day),
+      end_datetime = toNextWeekEndDate(pred_starting_hour, day, pred_hours_elapsed),
+      formatted_kwh = formatKwh(pred_charged_kwh),
+      efficiency = 100 / (pred_hours_elapsed * 11) * pred_charged_kwh,
       # 11 is the charging speed
-      rounded_efficiency = paste0("eff-", plyr::round_any(efficiency, 20, f = ceiling))
+      rounded_efficiency = paste0("eff-", plyr::round_any(efficiency, 20, f = ceiling)),
+      pred_acc = paste0(round(pred_acc * 100, 2), "%"),
+      session_ratio = session_ratio
     )
 }
 

@@ -26,7 +26,6 @@ addFeatures <- function(df) {
     mutate(
       starting_hour = factor( hour(start_date), levels = seq(0, 23, by = 1) ),
       day = factor(getDay(start_date), levels = seq(1, 7)),
-      week_of_month = factor(getWeekOfMonth(start_date), levels = seq(1, 5)), # e.g. second monday of januari
       weekend = as.logical(ifelse(day %in% c(6, 7), 1, 0))
     )
 }
@@ -81,7 +80,7 @@ predictWeekForUser <- function(userId, sessions) {
     warning("sessions df is empty.")
   }
 
-  classifier <- naive_bayes(starting_hour ~ day + weekend + week_of_month, sessions, laplace = 1)
+  classifier <- naive_bayes(starting_hour ~ day + weekend, sessions, laplace = 1)
 
   weekDf <- data.frame(
     user_id = rep(userId, 7),
@@ -125,7 +124,7 @@ getRandomWeekData <- function(sessions, userId = NULL) {
   if (!is.null(userId)) {
     randomWeek <- randomWeek %>% filter(user_id == userId)
   }
-  randomWeek <- randomWeek %>% addFeatures() %>% select(day, user_id, weekend, starting_hour, week_of_month)
+  randomWeek <- randomWeek %>% addFeatures() %>% select(day, user_id, weekend, starting_hour)
   return(randomWeek)
 }
 
@@ -151,24 +150,29 @@ evalPrediction <- function(actualWeek, predictedWeek, minPredAcc = 0, minSession
 
 # Public API call -------------------------------------------------------------------------------------------------
 
-userId = 46 # The user being predicted
-
-sessions <- getSessions(df, minimumSessions = 30)
-sessionsPerUser <- sessions %>% group_by(user_id) %>% summarise(n = n())
-
-sessionsForUser <- sessions %>% filter(user_id == userId)
-summaryForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise(count = n())
-
-randomWeek <- getRandomWeekData(sessions, userId)
-predictedWeek <- predictWeekForUser(userId, sessions)
-evalPrediction(randomWeek, predictedWeek, minPredAcc = 0, minSessionRatio = 0)
-
-source('src/helpers/data_helper.R')
-result <- predictFeature(sessionsForUser = sessionsForUser,
-                         predictedWeek =  predictedWeek,
-                         valueToPredict = "hours_elapsed",
-                         desiredColumnName = "pred_hours_elapsed")
-result <- predictFeature(sessionsForUser = sessionsForUser,
-                         predictedWeek =  result,
-                         valueToPredict = "charged_kwh",
-                         desiredColumnName = "pred_charged_kwh")
+getNextWeeksPrediction <- function(userId, df, minPredAcc = 0, minSessionRatio = 0) {
+  source('src/helpers/data_helper.R')
+  
+  sessions <- getSessions(df, minimumSessions = 30)
+  sessionsForUser <- sessions %>% filter(user_id == userId)
+  
+  # Add starting_hour prediction
+  predictedWeek <- predictWeekForUser(userId, sessions)
+  
+  # Filter starting_hour predictions
+  predictedWeek <- predictedWeek %>%
+    filter(pred_acc > minPredAcc, session_ratio > minSessionRatio)
+  
+  # Add hours_elapsed prediction
+  predictedWeek <- predictFeature(sessionsForUser = sessionsForUser,
+                           predictedWeek =  predictedWeek,
+                           valueToPredict = "hours_elapsed",
+                           desiredColumnName = "pred_hours_elapsed")
+  
+  # Add charged_kwh prediction
+  predictedWeek <- predictFeature(sessionsForUser = sessionsForUser,
+                           predictedWeek =  predictedWeek,
+                           valueToPredict = "charged_kwh",
+                           desiredColumnName = "pred_charged_kwh")
+  return(predictedWeek)
+}

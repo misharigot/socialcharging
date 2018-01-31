@@ -32,9 +32,9 @@ server <- function(input, output, session) {
   #   return(df)
   # })
 
-  predictedValuesDf <- reactive({
-    source("src/models/old_predictions/extended_classification.R")
-    getPredictedValuesDf(scData())
+  limitedSessions <- reactive({
+    source("src/models/predictive/start_prediction.R")
+    getSessions(scData(), minimumSessions = 30)
   })
 
   # Returns the numberfied dataframe
@@ -161,11 +161,12 @@ server <- function(input, output, session) {
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
 
-    predictedValuesDf <- predictedValuesDf()
     data <- data.frame()
 
     if (!input$wsUserSelect == "Select a user") {
-      selectedValues <- predictedValuesDf %>% filter(user_id == input$wsUserSelect)
+      selectedValues <- getNextWeeksPrediction(input$wsUserSelect, scData())
+      
+      # selectedValues <- limitedSessions %>% filter(user_id == input$wsUserSelect)
       timelineData <- convertSessionsToTimelineData(selectedValues)
 
       data <- data.frame(
@@ -175,9 +176,11 @@ server <- function(input, output, session) {
         start   = timelineData$start_datetime, # 2017-12-26 10:00:00
         end     = timelineData$end_datetime, # 2017-12-26 13:32:00
         title = c(paste0("Start time: ", timelineData$start_datetime,
-                         " \nEnd time: ", timelineData$end_datetime,
-                         " \nCharged kWh: ", timelineData$formatted_kwh,
-                         " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed)))
+                        "\n", " End time: ", timelineData$end_datetime,
+                        "\n", " \nCharged kWh: ", timelineData$formatted_kwh,
+                        "\n", " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed),
+                        "\n", " \nPredicted time probability: ", timelineData$pred_acc,
+                        "\n", " \nSession/", strftime(timelineData$start_datetime,'%A'), " ratio: ", round(timelineData$session_ratio, 2)))
       )
     }
 
@@ -234,6 +237,6 @@ server <- function(input, output, session) {
   observe({
     updateSelectInput(session,
                       "wsUserSelect",
-                      choices = isolate(distinct(predictedValuesDf())$user_id))
+                      choices = isolate(distinct(limitedSessions())$user_id))
   })
 }
