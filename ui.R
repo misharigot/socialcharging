@@ -25,12 +25,12 @@ ui <- dashboardPage(
                menuSubItem("Smart charging vs Non-smart", tabName = "chart2")
       ),
       menuItem("Prediction Plots", tabName = "pred-charts", icon = icon("bar-chart"),
-               menuSubItem("Correlation", tabName = "predtab5"),
                menuSubItem("User class distribution", tabName = "predtab1"),
                menuSubItem("Station class distribution", tabName = "predtab7"),
                menuSubItem("User clustering", tabName = "predtab2"),
                menuSubItem("Station clustering", tabName = "predtab6")
       ),
+      menuItem("Correlation Plots", tabName = "predtab5", icon = icon("bar-chart")),
       menuItem("Map", tabName = "mapTab", icon = icon("globe")),
       menuItem("Week Schedule", tabName = "weekschedule", icon = icon("calendar"))
     )
@@ -43,7 +43,7 @@ ui <- dashboardPage(
                     h2("Welcome to our presentation"),
                     img(src = "Social-Charging-sheet-smaller.jpg", width = "100%", height = "100%")
                 )
-              )
+              ) 
       ),
       tabItem(
         tabName = "table",
@@ -55,29 +55,45 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "chart1",
-              fluidRow(box(withSpinner(plotOutput("plot1", height = 400,
+              fluidRow(box(h4("Social Charging dataset"),
+                           withSpinner(plotOutput("plot1", height = 400,
                                                   dblclick = "dblclick",
                                                   brush = brushOpts(
                                                     id = "brush",
                                                     resetOnNew = TRUE
-                                                  )), type = 4), width = 12)),
+                                                  )), type = 4), width = 6),
+                       box(h4("HVA dataset"),
+                           img(src = "EffectiveChargingHvA.png",
+                               width = "100%", height = "100%"),
+                           width = 6)
+              ),
               actionButton("reset_input", "Reset")
+              
       ),
       tabItem(tabName = "chart2",
               fluidRow(
-                box(withSpinner(plotOutput("plot2", height = 750), type = 4), width = 12, height = 800)
+                box(
+                  withSpinner(plotOutput("plot2", height = 750), type = 4), width = 12, height = 800)
               )
       ),
       tabItem(tabName = "chart3",
               fluidRow(
-                box(withSpinner(plotOutput("plot3"), type = 4), width = 12)
+                box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("plot3"), type = 4), width = 6),
+                box(h4("HVA dataset"),
+                    img(src = "WeeklyChargingBehaviour.png",
+                        width = "100%", height = "100%"),
+                    width = 6)
               )
       ),
       tabItem(tabName = "chart4",
               fluidRow(
-                fluidRow(
-                  box(withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750)
-                )
+                box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("plot4", height = 700), type = 4), width = 12, height = 750),
+                box(h4("HVA dataset"),
+                    img(src = "SessionsPerTimeframe.png",
+                        width = "100%", height = "100%"),
+                    width = 12)
               )
       ),
       tabItem(tabName = "chart7",
@@ -99,7 +115,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "chart8",
               fluidRow(
-                box(withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750)
+                box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("plot8", height = 700), type = 4), width = 12, height = 750),
+                box(h4("HVA dataset"),
+                    img(src = "DailyChargingBehaviour.png",
+                        width = "100%", height = "100%"),
+                    width = 12)
               )
       ),
       tabItem(tabName = "chart9",
@@ -115,7 +136,12 @@ ui <- dashboardPage(
       # Pred plots ------------------------------------------------------------------------------------------------------
       tabItem(tabName = "predtab1",
               fluidRow(
-                box(withSpinner(plotOutput("pred1"), type = 4), width = 12)
+                box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("pred1"), type = 4), width = 12, align = "center"),
+                box(h4("HVA dataset"),
+                    img(src = "UserClassification.png",
+                        width = "100%", height = "100%"),
+                    width = 12, align = "center")
               )
       ),
       tabItem(tabName = "predtab2",
@@ -126,7 +152,12 @@ ui <- dashboardPage(
       tabItem(tabName = "predtab5",
               fluidRow(
                 box(uiOutput("corColumns")),
-                box(withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750)
+                box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("cor1", height = 700), type = 4), width = 12, height = 750, align = "center"),
+                box(h4("HVA dataset"),
+                    img(src = "CorrelationPlot.png",
+                        width = "50%", height = "50%"),
+                    width = 12, align = "center")
               )
       ),
       tabItem(tabName = "predtab6",
@@ -136,9 +167,24 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "predtab7",
               fluidRow(
-                box(withSpinner(plotOutput("pred7"), type = 4), width = 16)
+                box(h4("Social Charging dataset"),
+                    withSpinner(plotOutput("pred7"), type = 4), width = 16, align = "center"),
+                box(h4("HVA dataset"),
+                    img(src = "StationClassification.png",
+                        width = "100%", height = "100%"),
+                    width = 12, align = "center")
               ),
               fluidRow(
+                #HLL  	MarriedToThisStation +
+                # HHL 	ParkingSpace +
+                #HHH	LadyOfTheEvening +
+                #LLL	ForeverAlone +
+                #LLH	PowerBank +
+                #LHH    WorkerBee +
+                #LHL	HitAndRun +
+                #HLH    LateNightCharging +
+                #      occPoint              userPoint                Charge point
+                
                 valueBox("MarriedToThisStation", "High occupancy, Low user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("ParkingSpace", "High occupancy, High user amount, Low charging amount", icon = icon("list"), color = "green"),
                 valueBox("LadyOfTheEvening", "High occupancy, High user amount, High charging amount", icon = icon("list"), color = "green"),
