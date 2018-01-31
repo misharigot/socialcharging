@@ -120,17 +120,10 @@ predictFeature <- function(cleanedDf, valueToPredict) {
   cleanedDf.filtered <- cleanedDf %>%
     select("dayOfWeekNo", "hour", "IsWorkDay", "IsWorkingHours")
   
-  # split data 25% test, 75% train
-  size = floor(0.25 * nrow(cleanedDf))
-  sizeNext = size + 1
-  total = nrow(cleanedDf)
+  trainDf <- cleanedDf.filtered
+  trainDf.label <- cleanedDf[valueToPredict]
   
-  trainDf <- cleanedDf.filtered[sizeNext:total, ]
-  trainDf.label <- cleanedDf[sizeNext:total, valueToPredict]
-  
-  testDf <- cleanedDf.filtered[1:size, ]
-  
-  testDf[ ,valueToPredict] <- NULL
+  testDf <- cleanedDf.filtered
   
   cv <- xgb.cv(
     data = as.matrix(trainDf),
@@ -165,7 +158,7 @@ predictFeature <- function(cleanedDf, valueToPredict) {
     )
     
     testDf$pred_hours_elapsed <- predict(test_model_xgb, as.matrix(testDf))
-    testDf$actual_hours <- trainDf.label <- cleanedDf[1:size, ]$hours_elapsed
+    testDf$actual_hours <- cleanedDf$hours_elapsed
     testDf$diff_hours <- testDf$actual_hours - testDf$pred_hours_elapsed
     
     source("src/models/predictive/regression_test.R")
