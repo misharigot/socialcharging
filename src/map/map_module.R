@@ -32,16 +32,16 @@ mapModuleUI <- function(id) {
       
       div(
         div(
-          style = "width: 80%; display: inline-block; vertical-align: middle;",
+          style = "width: 30%; display: inline-block; vertical-align: middle;",
           h3("Size")
         ),
         div(
-          style = "display: inline-block; vertical-align: middle; padding-left: 31px; padding-top: 10px;",
+          style = "display: inline-block; padding-left: 58%;",
           bsButton("q1", label = "", icon = icon("question"),
-                   style = "info", size = "extra-small"),
-          bsPopover(id = "q1", title = "Explanation",
-                    content = "efficiency : This means that car is charged efficiently by comparing the time and charge.",
-                    placement = "left",
+                   style = "default", size = "small"),
+          bsPopover(id = "q1", title = "Explanation of terms",
+                    content = "Efficiency percentage: The efficiency of a station. The higher the percentage, the more efficient a station is, in regards to charging vs idle time for sessions on a station.",
+                    placement = "bottom",
                     trigger = "focus")
           )
       ),
