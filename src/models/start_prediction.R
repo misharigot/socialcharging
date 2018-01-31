@@ -26,6 +26,7 @@ addFeatures <- function(df) {
     mutate(
       starting_hour = factor( hour(start_date), levels = seq(0, 23, by = 1) ),
       day = factor(getDay(start_date), levels = seq(1, 7)),
+      week_of_month = factor(getWeekOfMonth(start_date), levels = seq(1, 5)), # e.g. second monday of januari
       weekend = as.logical(ifelse(day %in% c(6, 7), 1, 0))
     )
 }
@@ -80,7 +81,7 @@ predictWeekForUser <- function(userId, sessions) {
     warning("sessions df is empty.")
   }
   
-  classifier <- naive_bayes(starting_hour ~ day + weekend, sessions, laplace = 1)
+  classifier <- naive_bayes(starting_hour ~ day + weekend + week_of_month, sessions, laplace = 1)
   
   weekDf <- data.frame(
     user_id = rep(userId, 7),
@@ -124,7 +125,7 @@ getRandomWeekData <- function(sessions, userId = NULL) {
   if (!is.null(userId)) {
     randomWeek <- randomWeek %>% filter(user_id == userId)
   }
-  randomWeek <- randomWeek %>% addFeatures() %>% select(day, user_id, weekend, starting_hour)
+  randomWeek <- randomWeek %>% addFeatures() %>% select(day, user_id, weekend, starting_hour, week_of_month)
   return(randomWeek)
 }
 
@@ -150,7 +151,7 @@ evalPrediction <- function(actualWeek, predictedWeek, minPredAcc = 0, minSession
 
 # Public API call -------------------------------------------------------------------------------------------------
 
-userId = 1920 # The user being predicted
+userId = 46 # The user being predicted
 
 sessions <- getSessions(df, minimumSessions = 30)
 sessionsPerUser <- sessions %>% group_by(user_id) %>% summarise(n = n())
