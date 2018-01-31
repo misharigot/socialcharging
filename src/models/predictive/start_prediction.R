@@ -162,3 +162,8 @@ summaryForUser <- sessionsForUser %>% group_by(day, starting_hour) %>% summarise
 randomWeek <- getRandomWeekData(sessions, userId)
 predictedWeek <- predictWeekForUser(userId, sessions)
 evalPrediction(randomWeek, predictedWeek, minPredAcc = 0, minSessionRatio = 0)
+
+source('src/helpers/data_helper.R')
+result <- predictFeature(sessionsForUser = sessionsForUser,
+                         predictedWeek =  predictedWeek,
+                         valueToPredict = "hours_elapsed")

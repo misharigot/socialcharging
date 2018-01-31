@@ -101,22 +101,20 @@ formatKwh <- function(kwh) {
   paste0(kwh, " kWh")
 }
 
-
-predictFeature <- function(cleanedDf, valueToPredict) {
+predictFeature <- function(sessionsForUser, predictedWeek, valueToPredict) {
   valueToPredict <- noquote("hours_elapsed")
-  cleanedDf$IsWorkDay <-
-    ifelse(cleanedDf$dayOfWeekNo >= 1 & cleanedDf$dayOfWeekNo < 6, 1, 0)
   
-  cleanedDf$IsWorkingHours <-
-    ifelse(cleanedDf$hour > 7 & cleanedDf$hour < 18, 1, 0)
+  sessionsForUser.filtered <- sessionsForUser %>%
+    select("day", "starting_hour", "weekend")
   
-  cleanedDf.filtered <- cleanedDf %>%
-    select("dayOfWeekNo", "hour", "IsWorkDay", "IsWorkingHours")
+  sessionsForUser.filtered$day <- as.numeric(sessionsForUser.filtered$day)
+  sessionsForUser.filtered$starting_hour <- as.numeric(sessionsForUser.filtered$starting_hour)
+  sessionsForUser.filtered$weekend <- ifelse( sessionsForUser.filtered$weekend == TRUE, 1, 0)
   
-  trainDf <- cleanedDf.filtered
-  trainDf.label <- cleanedDf[valueToPredict]
+  trainDf <- sessionsForUser.filtered
+  trainDf.label <- sessionsForUser[[valueToPredict]]
   
-  testDf <- cleanedDf.filtered
+  testDf <- sessionsForUser.filtered
   
   cv <- xgb.cv(
     data = as.matrix(trainDf),
@@ -139,21 +137,23 @@ predictFeature <- function(cleanedDf, valueToPredict) {
       # find the index of min(train_rmse_mean)
       ntrees.test  = which.min(test_rmse_mean)
     )   # find the index of min(test_rmse_mean)
-    
   
-    test_model_xgb <- xgboost(data = as.matrix(trainDf), # training data as matrix
-                              label = trainDf.label,  # column of outcomes
-                              nrounds = elog$ntrees.train,       # number of trees to build
-                              objective = "reg:linear", # objective
-                              eta = 0.3,
-                              depth = 6,
-                              verbose = 0  # silent
-    )
-    
-    testDf$pred_hours_elapsed <- predict(test_model_xgb, as.matrix(testDf))
-    testDf$actual_hours <- cleanedDf$hours_elapsed
-    testDf$diff_hours <- testDf$actual_hours - testDf$pred_hours_elapsed
-    
-    source("src/models/old_predictions/regression_test.R")
-    result <- testPrediction(testDf$diff_hours)
+  
+  test_model_xgb <- xgboost(data = as.matrix(trainDf), # training data as matrix
+                            label = trainDf.label,  # column of outcomes
+                            nrounds = elog$ntrees.train,       # number of trees to build
+                            objective = "reg:linear", # objective
+                            eta = 0.3,
+                            depth = 6,
+                            verbose = 0  # silent
+  )
+  
+  testDf$pred_hours_elapsed <- predict(test_model_xgb, as.matrix(testDf))
+  testDf$actual_hours <- sessionsForUser$hours_elapsed
+  testDf$diff_hours <- testDf$actual_hours - testDf$pred_hours_elapsed
+  
+  source("src/models/old_predictions/regression_test.R")
+  result <- testPrediction(testDf$diff_hours)
+  
+  return(testDf)
 }
