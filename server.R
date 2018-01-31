@@ -13,7 +13,6 @@ config <- config::get(file = "config.yml")
 source(config$baseClean)
 source("src/map/map_module.R")
 source("src/corrupted_explorer/corrupted_explorer_module.R")
-source("src/models/regression_test.R")
 
 server <- function(input, output, session) {
   options(shiny.maxRequestSize = 30 * 1024 ^ 2)
@@ -25,22 +24,22 @@ server <- function(input, output, session) {
     return(df)
   })
 
-  regressionData <- reactive({
-    df <- read.csv2(config$dataFolder, sep = ",")
-    head(df)
-    df <- changeStructures(df)
-    head(df)
-    return(df)
-  })
-  
-  predictedValuesDf <- reactive({
-    source("src/models/extended_classification.R")
-    getPredictedValuesDf(scData())
+  # regressionData <- reactive({
+  #   df <- read.csv2(config$dataFolder, sep = ",")
+  #   head(df)
+  #   df <- changeStructures(df)
+  #   head(df)
+  #   return(df)
+  # })
+
+  limitedSessions <- reactive({
+    source("src/models/predictive/predict_future_week.R")
+    getSessions(scData(), minimumSessions = 30)
   })
 
   # Returns the numberfied dataframe
   numberfiedDf <- reactive({
-    source("src/models/Interactive_correlation.R")
+    source("src/models/exploratory/Interactive_correlation.R")
     corDf <- convertDfToNumeric(sessionClassificationDf(cleanDf(scData())))
     return(corDf)
   })
@@ -50,7 +49,7 @@ server <- function(input, output, session) {
     return(names(numberfiedDf()))
   })
 
-  callModule(module = mapModule, id = "map", data = regressionData())
+  callModule(module = mapModule, id = "map", data = scData())
   callModule(module = corruptedExplorerModule, id = "corrupt", data = scData())
 
   output$user_selection <- renderUI({
@@ -119,23 +118,23 @@ server <- function(input, output, session) {
   # Prediction plots ------------------------------------------------------------------------------------------------
 
   output$pred1 <- renderPlot({
-    source("src/models/user_class.R")
+    source("src/models/exploratory/user_class.R")
     return(plotClassCountShiny(scData()))
   })
 
   output$pred2 <- renderPlotly({
-    source("src/models/user_clust.R")
+    source("src/models/exploratory/user_clust.R")
     return(plotUserCluster1(scData()))
   })
 
   output$pred3 <- renderPlotly({
-    source("src/models/user_clust.R")
+    source("src/models/exploratory/user_clust.R")
     return(plotUserCluster2(scData()))
   })
 
   output$cor1 <- renderPlot({
     if (length(input$columns) < 2) {
-      source("src/models/Interactive_correlation.R")
+      source("src/models/exploratory/Interactive_correlation.R")
       return(plotCorrelationplot(scData()))
     } else {
       return(corrplot.mixed(cor(numberfiedDf()[,input$columns])))
@@ -143,45 +142,57 @@ server <- function(input, output, session) {
   })
 
   output$pred6 <- renderPlotly({
-    source("src/models/cluster_charging_station.R")
+    source("src/models/exploratory/cluster_charging_station.R")
     return(createStationClusterPlot(scData()))
   })
 
   output$pred7 <- renderPlot({
-    source("src/models/station_classification.R")
+    source("src/models/exploratory/station_classification.R")
     return(showDistributionPlot(scData()))
   })
-  
+
 # Weekschedule ----------------------------------------------------------------------------------------------------
-  
+
   output$weekschedule <- renderTimevis({
     source("src/helpers/date_helper.R")
     source("src/helpers/data_helper.R")
     source("src/models/charging_template.R")
-    
+
     nextMonday <- nextWeekday(1)
     nextSunday <- nextWeekday(7)
-    
-    predictedValuesDf <- predictedValuesDf()
+
     data <- data.frame()
-    
+
     if (!input$wsUserSelect == "Select a user") {
-      selectedValues <- predictedValuesDf %>% filter(user_id == input$wsUserSelect)
-      timelineData <- convertSessionsToTimelineData(selectedValues)
+      selectedValues <- getNextWeeksPrediction(input$wsUserSelect, scData())
       
-      data <- data.frame(
-        content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh, 
-                                   stripDate(timelineData$start_datetime, "%Y-%m-%d %H:%M:%S"), 
-                                   stripDate(timelineData$end_datetime, "%Y-%m-%d %H:%M:%S")),
-        start   = timelineData$start_datetime, # 2017-12-26 10:00:00
-        end     = timelineData$end_datetime, # 2017-12-26 13:32:00
-        title = c(paste0("Start time: ", timelineData$start_datetime,
-                         " \nEnd time: ", timelineData$end_datetime,
-                         " \nCharged kWh: ", timelineData$formatted_kwh,
-                         " \nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed)))
-      )
+      if (nrow(selectedValues) == 0) {
+        data <- data.frame(
+          content = c(),
+          start   = c(),
+          end     = c(),
+          title = c()
+        )
+      } else {
+        # selectedValues <- limitedSessions %>% filter(user_id == input$wsUserSelect)
+        timelineData <- convertSessionsToTimelineData(selectedValues)
+  
+        data <- data.frame(
+          content = templateCharging(timelineData$rounded_efficiency, timelineData$formatted_kwh,
+                                     stripDate(timelineData$start_datetime, "%Y-%m-%d %H:%M:%S"),
+                                     stripDate(timelineData$end_datetime, "%Y-%m-%d %H:%M:%S")),
+          start   = timelineData$start_datetime, # 2017-12-26 10:00:00
+          end     = timelineData$end_datetime, # 2017-12-26 13:32:00
+          title = c(paste0("Start time: ", timelineData$start_datetime,
+                          "\nEnd time: ", timelineData$end_datetime,
+                          "\nCharged kWh: ", timelineData$formatted_kwh,
+                          "\nHours elapsed: ", toHourAndMinutes(timelineData$pred_hours_elapsed),
+                          "\nPredicted time probability: ", timelineData$pred_acc,
+                          "\nSession/", strftime(timelineData$start_datetime,'%A'), " ratio: ", round(timelineData$session_ratio, 2)))
+        )
+      }
     }
-    
+
     config <- list(
       editable = FALSE,
       orientation = "top",
@@ -194,18 +205,18 @@ server <- function(input, output, session) {
       min = nextMonday,
       max = nextSunday + 1
     )
-    
+
     timevis(data, showZoom = TRUE, fit = TRUE, options = config) %>%
       setWindow(nextMonday, nextSunday + 1, options = list(animation = FALSE))
   })
-  
+
   output$table2 <- renderTable({
     source("src/week_schedule/week_schedule.R")
     if (input$action) {
       isolate(selectData(regressionData(), input$text, input$dates))
     }
   })
-  
+
   # Observers -------------------------------------------------------------------------------------------------------
 
   # When a double-click happens, check if there's a brush on the plot.
@@ -230,11 +241,11 @@ server <- function(input, output, session) {
     ranges$x <- NULL
     ranges$y <- NULL
   })
-  
+
   # Update the select input with unique user classifications/profiles to select from.
   observe({
     updateSelectInput(session,
                       "wsUserSelect",
-                      choices = isolate(distinct(predictedValuesDf())$user_id))
+                      choices = isolate( sort(distinct(limitedSessions())$user_id) ))
   })
 }

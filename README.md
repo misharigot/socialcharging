@@ -7,7 +7,7 @@ $ git clone https://github.com/misharigot/socialcharging.git
   File > New Project... > Click on 'Existing Directory' > Browse to the cloned project > Click on 'Create Project'
 
 2. Create a copy of `config.yml.dist` and rename it to `config.yml`.
-3. Change the parameter values to your own personal values.
+3. Change the parameter values in `config.yml` to your own personal values.
 3. Run the `/deploy.R` script (you can do this in RStudio) to install dependencies via Packrat and create a CSV with predicted data.
 
 **Note: during the execution of the `deploy.R` script, an error might occur while installing packages. When this happens, keep running the `deploy.R` script, until all packages are installed.**
