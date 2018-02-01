@@ -13,6 +13,7 @@ corruptedExplorerModuleUI <- function(id) {
   tabItem(tabName = "static",
           fluidRow(
             # Filters
+            h1("Social Charging Data", style = "padding-left: 20px;"),
             box(
               h2("Filters"),
               withSpinner(uiOutput(ns("valuesNA")), proxy.height = "50px"),
@@ -30,6 +31,7 @@ corruptedExplorerModuleUI <- function(id) {
             )
           ),
           fluidRow(
+            h1("HvA Data", style = "padding-left: 20px;"),
             box(
               img(src = "corruption-explorer-filter.PNG", width = "90%", height = "90%"),
               width = 5

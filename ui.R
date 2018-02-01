@@ -4,6 +4,7 @@ library(leaflet)
 library(shinycssloaders)
 library(plotly)
 library(timevis)
+library(shinyBS)
 
 source("src/map/map_module.R")
 source("src/corrupted_explorer/corrupted_explorer_module.R")
@@ -206,14 +207,30 @@ ui <- dashboardPage(
       tabItem(tabName = "weekschedule",
               fluidRow(
                 box(selectInput(inputId = "wsUserSelect", label = "Select a user", choices = c("Select a user")),
-                    width = 6),
-                box(title = "Disclaimer",
-                    tags$p("The accuracy of the prediction is dependent on the amount of historic data the selected user has. The more data the user has, the more accurate the predictions can be."),
-                    width = 3
+                    width = 3),
+                box(title = "Info",
+                    div(
+                      tags$p("- The accuracy of the prediction is dependent on the amount of historic data the selected user has.
+                             The more data the user has, the more accurate the predictions can be."),
+                      tags$p("- When a predicted week has no sessions, then no reliable predictions could be made, due to too little data available for the selected user."),
+                      tags$b("Tip: Mouse over a predicted session to see additional information about that session.")
+                    ),
+                    width = 6
                 ),
                 box(title = "Legend",
-                    img(src = "Legend.PNG", width = "50%", height = "50%"),
-                    width = 3, align = "center"
+                    div(
+                      div(
+                        style = "text-align: right;",
+                        bsButton("legendInfo", label = "", icon = icon("question"),
+                                 style = "default", size = "small"),
+                        bsPopover(id = "legendInfo", title = "Explanation of terms",
+                                  content = "Efficiency: The efficiency of a predicted session. This is based on the predicted amount of time charging vs idle time (plugged in without actually charging).",
+                                  placement = "bottom",
+                                  trigger = "focus")
+                      ),
+                      img(src = "Legend.PNG", width = "50%", height = "50%")
+                    ),
+                    width = 3
                 )
               ),
               fluidRow(
