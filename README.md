@@ -8,7 +8,9 @@ $ git clone https://github.com/misharigot/socialcharging.git
 
 2. Create a copy of `config.yml.dist` and rename it to `config.yml`.
 3. Change the parameter values in `config.yml` to your own personal values.
-3. Run the `/deploy.R` script (you can do this in RStudio) to install dependencies via Packrat and create a CSV with predicted data.
+4. Run the `/deploy.R` script (you can do this in RStudio) to install dependencies via Packrat and create a CSV with predicted data.
+  a. Optionally you can install the packages manually when R Studio asks for it.
+5. Run the app via `ui.R`/`server.R`.
 
 **Note: during the execution of the `deploy.R` script, an error might occur while installing packages. When this happens, keep running the `deploy.R` script, until all packages are installed.**
 
